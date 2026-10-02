@@ -87,7 +87,7 @@ Tout est stocké en JSON sous quelques clés LocalStorage, préfixées `spesa_`.
 }
 ```
 
-Un ingrédient sans quantité (ex. « sel ») est autorisé : `"quantite": null, "unite": ""`. Unités v1 provisoires : `g`, `kg`, `ml`, `l`, `cs`, `cc`, `piece`, `pincee`. Les identifiants de recettes sont de la forme `r_` + code unique.
+Un ingrédient sans quantité (ex. « sel ») est autorisé : `"quantite": null, "unite": ""`. Unités v1 : `g`, `kg`, `ml`, `l`, `cs`, `cc`, `piece`, `pincee`. Les identifiants de recettes sont de la forme `r_` + code unique.
 
 **Dictionnaire** (`spesa_dico`, objet) : clé normalisée → fiche
 ```json
@@ -170,7 +170,42 @@ Principe : l'appli ne lit pas les images. un assistant IA s'en charge, l'appli r
 
 Le prompt standard est stocké dans l'appli (bouton « Copier le prompt »). Le fichier JSON de chaque recette peut aussi être conservé dans un dossier Drive : c'est une sauvegarde naturelle des recettes.
 
-Le prompt exigera : unités parmi une liste fermée (`g`, `kg`, `ml`, `l`, `cs`, `cc`, `piece`, `pincee`, etc.), quantités en nombres, noms d'ingrédients au singulier et en minuscules, aucune invention : en cas d'illisibilité, le signaler au lieu de deviner. Le texte exact du prompt sera rédigé à l'étape 3 et ajouté à ce document.
+Mise en œuvre (étape 3) :
+- Le JSON accepte une clé facultative `avertissements` (liste de phrases) où l'assistant signale ses doutes. Elle s'affiche dans l'aperçu et n'est pas enregistrée dans la recette.
+- Le texte est lu même s'il est entouré de blabla ou de ``` (on garde de la première `{` à la dernière `}`). Format, titre, ingrédients, quantités et unités sont vérifiés avant tout aperçu.
+- Parts absentes : 4 par défaut, signalé dans l'aperçu.
+- L'aperçu à valider est le formulaire de recette lui-même, prérempli : on relit, on corrige, on choisit le rayon des ingrédients inconnus, puis on enregistre. Rien n'est enregistré avant.
+- Liste fermée des unités (confirmée) : `g`, `kg`, `ml`, `l`, `cs`, `cc`, `piece`, `pincee`. Les éléments comptés (gousse, tranche, boîte, botte...) passent en `piece`, le type étant dans le nom (« gousse d'ail »).
+- Le prompt est stocké dans `langues/fr.json` (clé `prompt_import`). Texte actuel :
+
+```
+Tu reçois la photo ou la capture d'écran d'une recette. Transforme-la en un fichier JSON strictement conforme au format ci-dessous. Réponds uniquement avec ce JSON, sans aucun autre texte.
+
+Format :
+{
+  "format": "spesa-recette-v1",
+  "titre": "Ratatouille",
+  "parts": 4,
+  "ingredients": [
+    { "nom": "aubergine", "quantite": 2, "unite": "piece" },
+    { "nom": "huile d'olive", "quantite": 3, "unite": "cs" },
+    { "nom": "sel", "quantite": null, "unite": "" }
+  ],
+  "etapes": ["Couper les légumes.", "Faire revenir."],
+  "notes": "",
+  "avertissements": []
+}
+
+Règles :
+- "unite" : une seule valeur parmi g, kg, ml, l, cs (cuillère à soupe), cc (cuillère à café), piece, pincee. Ne convertis pas les quantités : 250 g reste 250 g.
+- Pour les éléments comptés (gousse, tranche, boîte, botte, sachet, brin...), utilise "piece" et mets le type dans le nom : "gousse d'ail", quantité 2, unité "piece".
+- "quantite" : un nombre écrit avec un point (1.5, jamais "1 1/2" ni "1,5"), ou null s'il n'y a pas de quantité (sel, poivre "à votre goût"). Dans ce cas "unite" vaut "".
+- "nom" : au singulier, en minuscules, sans quantité ni indication de préparation ("oignon", pas "2 oignons émincés").
+- "parts" : le nombre de personnes ou de parts indiqué, en nombre entier. S'il est absent, mets null.
+- "etapes" : une phrase courte par étape, dans l'ordre. Liste vide si la recette n'en donne aucune.
+- "notes" : conseils ou remarques de la recette, sinon une chaîne vide.
+- N'invente rien. Si un mot, un nombre ou une unité est illisible ou ambigu, ne devine pas en silence : donne ton meilleur choix si tu en as un et signale le doute dans "avertissements" (une phrase par doute, par exemple "Quantité de farine peu lisible : 250 g ?"). Si tout est clair, laisse "avertissements" vide.
+```
 
 ## 9. Sauvegarde
 
@@ -221,6 +256,5 @@ Ordre non négociable : 1 → 2 → 4 → 5 → 6 sont le cœur. 3, 7, 8 peuvent
 ## 12. Points ouverts
 
 - Liste des rayons et leur ordre exact (à caler sur ton magasin habituel).
-- Liste fermée des unités à confirmer à l'étape 3.
 - Choix de la couleur d'accent et de l'icône de l'appli.
 - Décision v2 : passer à Drive automatique si la sauvegarde manuelle gêne à l'usage.

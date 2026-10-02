@@ -119,5 +119,27 @@
   "rayon_surgeles": "Surgelés",
   "rayon_boissons": "Boissons",
   "rayon_hygiene_entretien": "Hygiène et entretien",
-  "rayon_autre": "Autre"
+  "rayon_autre": "Autre",
+
+  "importer_recette": "Importer une recette",
+  "titre_import": "Importer une recette",
+  "aide_import": "1. Copie le prompt. 2. Envoie-le à ton assistant IA avec la photo ou la capture de la recette. 3. Colle ici le fichier JSON reçu, ou choisis-le.",
+  "copier_prompt": "Copier le prompt",
+  "voir_prompt": "Voir le prompt",
+  "prompt_copie": "Prompt copié. Colle-le dans ta conversation avec ton assistant IA.",
+  "prompt_copie_echec": "Copie impossible. Sélectionne le texte du prompt ci-dessous et copie-le à la main.",
+  "champ_import": "Recette à importer (texte JSON)",
+  "apercu_import": "Voir l'aperçu",
+  "choisir_fichier": "Choisir un fichier",
+  "titre_apercu_import": "Aperçu de la recette importée",
+  "avertissements_import": "Points à vérifier avant d'enregistrer :",
+  "avertissement_parts": "Le nombre de parts était absent : 4 par défaut. Corrige-le si besoin.",
+  "erreur_import_illisible": "Ce texte ne contient pas de JSON lisible.",
+  "erreur_import_format": "Ce texte n'est pas une recette au format SPESA.",
+  "erreur_import_titre": "La recette n'a pas de titre.",
+  "erreur_import_ingredients": "La recette n'a aucun ingrédient.",
+  "erreur_import_ingredient_nom": "Un ingrédient n'a pas de nom.",
+  "erreur_import_quantite": "La quantité de « {detail} » n'est pas un nombre valide.",
+  "erreur_import_unite": "Unité inconnue : {detail}.",
+  "prompt_import": "Tu reçois la photo ou la capture d'écran d'une recette. Transforme-la en un fichier JSON strictement conforme au format ci-dessous. Réponds uniquement avec ce JSON, sans aucun autre texte.\n\nFormat :\n{\n  \"format\": \"spesa-recette-v1\",\n  \"titre\": \"Ratatouille\",\n  \"parts\": 4,\n  \"ingredients\": [\n    { \"nom\": \"aubergine\", \"quantite\": 2, \"unite\": \"piece\" },\n    { \"nom\": \"huile d'olive\", \"quantite\": 3, \"unite\": \"cs\" },\n    { \"nom\": \"sel\", \"quantite\": null, \"unite\": \"\" }\n  ],\n  \"etapes\": [\"Couper les légumes.\", \"Faire revenir.\"],\n  \"notes\": \"\",\n  \"avertissements\": []\n}\n\nRègles :\n- \"unite\" : une seule valeur parmi g, kg, ml, l, cs (cuillère à soupe), cc (cuillère à café), piece, pincee. Ne convertis pas les quantités : 250 g reste 250 g.\n- Pour les éléments comptés (gousse, tranche, boîte, botte, sachet, brin...), utilise \"piece\" et mets le type dans le nom : \"gousse d'ail\", quantité 2, unité \"piece\".\n- \"quantite\" : un nombre écrit avec un point (1.5, jamais \"1 1/2\" ni \"1,5\"), ou null s'il n'y a pas de quantité (sel, poivre \"à votre goût\"). Dans ce cas \"unite\" vaut \"\".\n- \"nom\" : au singulier, en minuscules, sans quantité ni indication de préparation (\"oignon\", pas \"2 oignons émincés\").\n- \"parts\" : le nombre de personnes ou de parts indiqué, en nombre entier. S'il est absent, mets null.\n- \"etapes\" : une phrase courte par étape, dans l'ordre. Liste vide si la recette n'en donne aucune.\n- \"notes\" : conseils ou remarques de la recette, sinon une chaîne vide.\n- N'invente rien. Si un mot, un nombre ou une unité est illisible ou ambigu, ne devine pas en silence : donne ton meilleur choix si tu en as un et signale le doute dans \"avertissements\" (une phrase par doute, par exemple \"Quantité de farine peu lisible : 250 g ?\"). Si tout est clair, laisse \"avertissements\" vide."
 }

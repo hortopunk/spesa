@@ -25,9 +25,9 @@ const UI = {
     });
   },
 
-  // Dans l'écran Recettes : "liste", "detail" ou "form"
+  // Dans l'écran Recettes : "liste", "detail", "form" ou "import"
   afficherVueRecettes(nom) {
-    ["liste", "detail", "form"].forEach((vue) => {
+    ["liste", "detail", "form", "import"].forEach((vue) => {
       document.getElementById("vue-" + vue).hidden = vue !== nom;
     });
     window.scrollTo(0, 0);
@@ -92,12 +92,54 @@ const UI = {
     ]));
   },
 
+  // --- Import d'une recette (texte JSON collé ou fichier) ---
+  rendreImport() {
+    document.getElementById("vue-import").replaceChildren(
+      el("h1", { texte: t("titre_import") }),
+      el("p", { class: "aide", texte: t("aide_import") }),
+      el("button", { class: "bouton", "data-action": "import-copier", texte: t("copier_prompt") }),
+      el("details", { id: "import-prompt" }, [
+        el("summary", { texte: t("voir_prompt") }),
+        el("textarea", { readonly: true, rows: "8", texte: t("prompt_import") })
+      ]),
+      el("label", { "for": "import-texte", texte: t("champ_import") }),
+      el("textarea", { id: "import-texte", rows: "8" }),
+      el("p", { id: "import-message", hidden: true }),
+      el("div", { class: "actions" }, [
+        el("button", { class: "bouton principal", "data-action": "import-apercu", texte: t("apercu_import") }),
+        el("button", { class: "bouton", "data-action": "import-fichier", texte: t("choisir_fichier") }),
+        el("button", { class: "bouton", "data-action": "annuler-import", texte: t("annuler") })
+      ])
+    );
+  },
+
+  // Message de l'écran d'import (réussite ou erreur)
+  messageImport(texte, erreur) {
+    const p = document.getElementById("import-message");
+    p.textContent = texte;
+    p.className = erreur ? "erreur" : "succes";
+    p.hidden = false;
+  },
+
+  // Déplie le prompt pour le copier à la main
+  deplierPrompt() {
+    document.getElementById("import-prompt").open = true;
+  },
+
   // --- Formulaire de création / modification ---
   // `ingredients` = ingrédients de la recette avec leur rayon (voir Logic.ingredientsAvecRayon)
-  rendreFormulaire(recette, ingredients) {
+  // `options` (import) : { titre: titre de la vue, avertissements: [textes à vérifier] }
+  rendreFormulaire(recette, ingredients, options = {}) {
     const vue = document.getElementById("vue-form");
+    const avertissements = options.avertissements || [];
     vue.replaceChildren(
-      el("h1", { texte: recette ? t("titre_modifier_recette") : t("titre_nouvelle_recette") }),
+      el("h1", { texte: options.titre || (recette ? t("titre_modifier_recette") : t("titre_nouvelle_recette")) }),
+      ...(avertissements.length === 0 ? [] : [
+        el("div", { class: "avertissements" }, [
+          el("p", { texte: t("avertissements_import") }),
+          el("ul", {}, avertissements.map((a) => el("li", { texte: a })))
+        ])
+      ]),
       el("label", { "for": "f-titre", texte: t("champ_titre") }),
       el("input", { id: "f-titre", type: "text", value: recette ? recette.titre : "" }),
       el("label", { "for": "f-parts", texte: t("champ_parts") }),

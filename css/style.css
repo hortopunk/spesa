@@ -256,3 +256,18 @@ input[type="checkbox"] {
 .bouton-historique { margin-top: 32px; }
 .carte-historique { flex-direction: column; align-items: flex-start; gap: 2px; }
 .carte-historique .carte-info { white-space: normal; }
+
+/* ---------- Import de recettes ---------- */
+.bouton-import { width: 100%; margin-top: 12px; }
+details { margin: 12px 0; }
+summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--accent); }
+textarea[readonly] { font-size: 0.8rem; color: var(--gris); }
+.avertissements {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px solid #d9a441;
+  border-radius: 8px;
+  background: #fdf4e0;
+}
+.avertissements p { margin: 0 0 4px; font-weight: 600; }
+.avertissements ul { margin: 0; padding-left: 1.2em; }

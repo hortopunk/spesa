@@ -220,6 +220,66 @@ const Logic = {
     };
   },
 
+  // --- Import de recettes ---
+  FORMAT_IMPORT: "spesa-recette-v1",
+
+  // Lit le texte d'un import (fichier ou texte collé) et le vérifie.
+  // Renvoie { erreur, detail? } ou { recette, avertissements, partsParDefaut }.
+  // `recette` n'a pas d'id : elle sera validée et enregistrée comme une saisie normale.
+  lireRecetteImportee(texte) {
+    // L'IA peut entourer le JSON de texte ou de ``` : on garde de la première { à la dernière }
+    const debut = texte.indexOf("{");
+    const fin = texte.lastIndexOf("}");
+    if (debut < 0 || fin < debut) return { erreur: "erreur_import_illisible" };
+    let donnees;
+    try {
+      donnees = JSON.parse(texte.slice(debut, fin + 1));
+    } catch (e) {
+      return { erreur: "erreur_import_illisible" };
+    }
+    if (donnees.format !== this.FORMAT_IMPORT) return { erreur: "erreur_import_format" };
+
+    const titre = typeof donnees.titre === "string" ? donnees.titre.trim() : "";
+    if (titre === "") return { erreur: "erreur_import_titre" };
+
+    // Parts absentes ou invalides : 4 par défaut, signalé dans l'aperçu
+    const partsValides = Number.isInteger(donnees.parts) && donnees.parts >= 1;
+    const parts = partsValides ? donnees.parts : 4;
+
+    if (!Array.isArray(donnees.ingredients) || donnees.ingredients.length === 0) {
+      return { erreur: "erreur_import_ingredients" };
+    }
+    const ingredients = [];
+    for (const brut of donnees.ingredients) {
+      const nom = brut && typeof brut.nom === "string" ? brut.nom.trim() : "";
+      if (nom === "") return { erreur: "erreur_import_ingredient_nom" };
+      if (brut.quantite === null || brut.quantite === undefined || brut.quantite === "") {
+        ingredients.push({ nom, quantite: null, unite: "" });
+        continue;
+      }
+      const quantite = typeof brut.quantite === "number"
+        ? (Number.isFinite(brut.quantite) && brut.quantite >= 0 ? brut.quantite : null)
+        : this.lireNombre(brut.quantite);
+      if (quantite === null) return { erreur: "erreur_import_quantite", detail: nom };
+      if (!this.UNITES.includes(brut.unite)) {
+        return { erreur: "erreur_import_unite", detail: nom + " (" + brut.unite + ")" };
+      }
+      ingredients.push({ nom, quantite, unite: brut.unite });
+    }
+
+    const textes = (liste) => (Array.isArray(liste) ? liste : [])
+      .filter((x) => typeof x === "string").map((x) => x.trim()).filter((x) => x !== "");
+    return {
+      recette: {
+        titre, parts, ingredients,
+        etapes: textes(donnees.etapes),
+        notes: typeof donnees.notes === "string" ? donnees.notes.trim() : ""
+      },
+      avertissements: textes(donnees.avertissements),
+      partsParDefaut: !partsValides
+    };
+  },
+
   // Transforme la saisie du formulaire (du texte) en recette propre.
   // Renvoie { recette, rayons } si tout va bien (rayons = [{ nom, rayon }] à mémoriser
   // dans le dictionnaire), sinon { erreur: "cle_de_texte" }.

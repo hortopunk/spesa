@@ -24,9 +24,13 @@
         <ul id="liste-recettes" class="cartes"></ul>
         <p class="vide" id="vide-recettes"></p>
         <button class="bouton principal" data-action="nouvelle" data-i18n="nouvelle_recette"></button>
+        <button class="bouton bouton-import" data-action="importer" data-i18n="importer_recette"></button>
       </div>
       <div id="vue-detail" hidden></div>
       <div id="vue-form" hidden></div>
+      <div id="vue-import" hidden></div>
+      <!-- Sélecteur de fichier caché : ouvert par le bouton « Choisir un fichier » -->
+      <input type="file" id="fichier-import" accept=".json,application/json,text/plain" hidden>
     </section>
 
     <section class="ecran" id="ecran-liste" data-ecran="liste" hidden>

@@ -48,6 +48,42 @@ function enregistrer() {
   ouvrirRecette(id);
 }
 
+// --- Import de recettes ---
+
+function afficherImport() {
+  UI.rendreImport();
+  UI.afficherVueRecettes("import");
+}
+
+async function copierPrompt() {
+  try {
+    await navigator.clipboard.writeText(t("prompt_import"));
+    UI.messageImport(t("prompt_copie"), false);
+  } catch (e) {
+    UI.deplierPrompt();
+    UI.messageImport(t("prompt_copie_echec"), true);
+  }
+}
+
+// Vérifie le texte importé. S'il est bon, il s'affiche dans le formulaire de recette,
+// qui sert d'aperçu : on relit, on corrige, on choisit les rayons inconnus, puis on enregistre.
+function analyserImport(texte) {
+  const resultat = Logic.lireRecetteImportee(texte);
+  if (resultat.erreur) {
+    return UI.messageImport(t(resultat.erreur).replace("{detail}", resultat.detail || ""), true);
+  }
+  const avertissements = resultat.partsParDefaut
+    ? [t("avertissement_parts"), ...resultat.avertissements]
+    : resultat.avertissements;
+  etat.editionId = null;   // c'est une nouvelle recette
+  UI.rendreFormulaire(
+    resultat.recette,
+    Logic.ingredientsAvecRayon(resultat.recette.ingredients, DB.dico()),
+    { titre: t("titre_apercu_import"), avertissements }
+  );
+  UI.afficherVueRecettes("form");
+}
+
 // Quand on tape un nom d'ingrédient : suggestions + rayon connu
 function surSaisieNom(champ) {
   const ligne = champ.closest(".ligne-ingredient");
@@ -63,6 +99,11 @@ function gererClic(evenement) {
   if (!bouton) return;
   switch (bouton.dataset.action) {
     case "nouvelle": afficherFormulaire(null); break;
+    case "importer": afficherImport(); break;
+    case "import-copier": copierPrompt(); break;
+    case "import-apercu": analyserImport(document.getElementById("import-texte").value); break;
+    case "import-fichier": document.getElementById("fichier-import").click(); break;
+    case "annuler-import": afficherListe(); break;
     case "ouvrir": ouvrirRecette(bouton.dataset.id); break;
     case "retour": afficherListe(); break;
     case "parts-moins":
@@ -323,6 +364,14 @@ async function demarrer() {
       if (onglet.dataset.cible === "reglages") afficherReglages();
       rafraichirBandeau();
     });
+  });
+
+  // Import : fichier choisi dans le sélecteur caché, lu puis analysé tout de suite
+  const champImport = document.getElementById("fichier-import");
+  champImport.addEventListener("change", async () => {
+    const fichier = champImport.files[0];
+    champImport.value = "";
+    if (fichier) analyserImport(await fichier.text());
   });
 
   // Restauration : fichier choisi dans le sélecteur caché
