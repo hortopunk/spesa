@@ -4,6 +4,12 @@ const Logic = {
   // Liste fermée des unités (à confirmer à l'étape 3)
   UNITES: ["g", "kg", "ml", "l", "cs", "cc", "piece", "pincee"],
 
+  // Rayons, dans l'ordre d'affichage (à ajuster selon ton magasin habituel)
+  RAYONS: [
+    "fruits_legumes", "boulangerie", "boucherie_poissonnerie", "cremerie", "epicerie_salee",
+    "epicerie_sucree", "surgeles", "boissons", "hygiene_entretien", "autre"
+  ],
+
   // Normalisation : minuscules, sans accents, ponctuation et espaces nettoyés
   normaliser(texte) {
     return String(texte)
@@ -11,7 +17,7 @@ const Logic = {
       .replace(/œ/g, "oe")
       .replace(/æ/g, "ae")
       .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9\s]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
@@ -60,8 +66,48 @@ const Logic = {
     );
   },
 
+  // Autocomplétion : libellés du dictionnaire qui correspondent à la saisie.
+  // D'abord ceux qui commencent par la saisie, puis ceux dont un mot commence
+  // par elle, puis ceux qui la contiennent. Maximum `max` suggestions.
+  suggerer(dico, saisie, max = 5) {
+    const motif = this.normaliser(saisie);
+    if (motif === "") return [];
+    const trouves = [];
+    for (const [cle, fiche] of Object.entries(dico)) {
+      if (cle === motif) continue;   // déjà tapé en entier : rien à suggérer
+      let rang;
+      if (cle.startsWith(motif)) rang = 0;
+      else if (cle.split(" ").some((mot) => mot.startsWith(motif))) rang = 1;
+      else if (cle.includes(motif)) rang = 2;
+      else continue;
+      trouves.push({ rang, libelle: fiche.libelle });
+    }
+    trouves.sort((a, b) => a.rang - b.rang || a.libelle.localeCompare(b.libelle, "fr"));
+    return trouves.slice(0, max).map((x) => x.libelle);
+  },
+
+  // Ajoute à chaque ingrédient le rayon connu du dictionnaire ("" si inconnu)
+  ingredientsAvecRayon(ingredients, dico) {
+    return ingredients.map((ing) => {
+      const fiche = dico[this.normaliser(ing.nom)];
+      return { ...ing, rayon: fiche ? fiche.rayon : "" };
+    });
+  },
+
+  // Renvoie un nouveau dictionnaire avec les ingrédients [{ nom, rayon }] ajoutés.
+  // Un ingrédient déjà connu garde son libellé d'origine ; seul son rayon est mis à jour.
+  mettreAJourDico(dico, entrees) {
+    const nouveau = { ...dico };
+    entrees.forEach(({ nom, rayon }) => {
+      const cle = this.normaliser(nom);
+      nouveau[cle] = nouveau[cle] ? { ...nouveau[cle], rayon } : { libelle: nom, rayon };
+    });
+    return nouveau;
+  },
+
   // Transforme la saisie du formulaire (du texte) en recette propre.
-  // Renvoie { recette } si tout va bien, sinon { erreur: "cle_de_texte" }.
+  // Renvoie { recette, rayons } si tout va bien (rayons = [{ nom, rayon }] à mémoriser
+  // dans le dictionnaire), sinon { erreur: "cle_de_texte" }.
   construireRecette(saisie, id) {
     const titre = saisie.titre.trim();
     if (titre === "") return { erreur: "erreur_titre" };
@@ -70,11 +116,14 @@ const Logic = {
     if (parts === null || parts < 1 || !Number.isInteger(parts)) return { erreur: "erreur_parts" };
 
     const ingredients = [];
+    const rayons = [];
     for (const ligne of saisie.ingredients) {
       const nom = ligne.nom.trim();
       const texteQuantite = ligne.quantite.trim();
       if (nom === "" && texteQuantite === "") continue;   // ligne vide : ignorée
       if (nom === "") return { erreur: "erreur_ingredient_nom" };
+      if (!this.RAYONS.includes(ligne.rayon)) return { erreur: "erreur_rayon" };
+      rayons.push({ nom, rayon: ligne.rayon });
       if (texteQuantite === "") {
         // Pas de quantité (ex. « sel ») : accepté
         ingredients.push({ nom, quantite: null, unite: "" });
@@ -88,6 +137,6 @@ const Logic = {
 
     const etapes = saisie.etapes.split("\n").map((e) => e.trim()).filter((e) => e !== "");
 
-    return { recette: { id, titre, parts, ingredients, etapes, notes: saisie.notes.trim() } };
+    return { recette: { id, titre, parts, ingredients, etapes, notes: saisie.notes.trim() }, rayons };
   }
 };

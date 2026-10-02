@@ -33,6 +33,15 @@ const DB = {
     return this.lire("reglages", {});
   },
 
+  // --- Dictionnaire des ingrédients (clé normalisée -> { libelle, rayon }) ---
+  dico() {
+    return this.lire("dico", {});
+  },
+
+  enregistrerDico(dico) {
+    this.ecrire("dico", dico);
+  },
+
   // --- Recettes ---
   recettes() {
     return this.lire("recettes", []);

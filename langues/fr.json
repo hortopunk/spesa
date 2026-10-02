@@ -43,6 +43,8 @@
   "champ_quantite": "Quantité",
   "champ_etapes": "Étapes (une par ligne)",
   "champ_notes": "Notes",
+  "champ_rayon": "Rayon",
+  "choisir_rayon": "Rayon…",
   "ajouter_ingredient": "Ajouter un ingrédient",
   "retirer_ingredient": "Retirer cet ingrédient",
 
@@ -50,6 +52,7 @@
   "erreur_parts": "Le nombre de parts doit être un entier, 1 au minimum.",
   "erreur_ingredient_nom": "Un ingrédient a une quantité mais pas de nom.",
   "erreur_quantite": "Une quantité n'est pas un nombre valide (exemple : 1,5).",
+  "erreur_rayon": "Choisis un rayon pour chaque ingrédient.",
   "erreur_ingredient_vide": "Ajoute au moins un ingrédient.",
 
   "unite_g": "g",
@@ -59,5 +62,16 @@
   "unite_cs": "c. à soupe",
   "unite_cc": "c. à café",
   "unite_piece": "pièce(s)",
-  "unite_pincee": "pincée(s)"
+  "unite_pincee": "pincée(s)",
+
+  "rayon_fruits_legumes": "Fruits et légumes",
+  "rayon_boulangerie": "Boulangerie",
+  "rayon_boucherie_poissonnerie": "Boucherie-poissonnerie",
+  "rayon_cremerie": "Crémerie",
+  "rayon_epicerie_salee": "Épicerie salée",
+  "rayon_epicerie_sucree": "Épicerie sucrée",
+  "rayon_surgeles": "Surgelés",
+  "rayon_boissons": "Boissons",
+  "rayon_hygiene_entretien": "Hygiène et entretien",
+  "rayon_autre": "Autre"
 }

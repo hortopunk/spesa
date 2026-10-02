@@ -32,7 +32,8 @@ function ouvrirRecette(id) {
 
 function afficherFormulaire(id) {
   etat.editionId = id;
-  UI.rendreFormulaire(id ? DB.recette(id) : null);
+  const recette = id ? DB.recette(id) : null;
+  UI.rendreFormulaire(recette, recette ? Logic.ingredientsAvecRayon(recette.ingredients, DB.dico()) : []);
   UI.afficherVueRecettes("form");
 }
 
@@ -41,7 +42,17 @@ function enregistrer() {
   const resultat = Logic.construireRecette(UI.lireFormulaire(), id);
   if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur));
   DB.enregistrerRecette(resultat.recette);
+  DB.enregistrerDico(Logic.mettreAJourDico(DB.dico(), resultat.rayons));
   ouvrirRecette(id);
+}
+
+// Quand on tape un nom d'ingrédient : suggestions + rayon connu
+function surSaisieNom(champ) {
+  const ligne = champ.closest(".ligne-ingredient");
+  const dico = DB.dico();
+  UI.rendreSuggestions(ligne, Logic.suggerer(dico, champ.value));
+  const fiche = dico[Logic.normaliser(champ.value)];
+  UI.proposerRayon(ligne, fiche ? fiche.rayon : null);
 }
 
 // Tous les clics de l'écran Recettes passent par ici (un bouton = un data-action)
@@ -65,6 +76,12 @@ function gererClic(evenement) {
       break;
     case "ajouter-ingredient": UI.ajouterLigneIngredient(); break;
     case "retirer-ingredient": UI.retirerLigneIngredient(bouton); break;
+    case "choisir-suggestion": {
+      const ligne = bouton.closest(".ligne-ingredient");
+      UI.remplirNom(ligne, bouton.textContent);
+      surSaisieNom(ligne.querySelector(".i-nom"));
+      break;
+    }
     case "enregistrer": enregistrer(); break;
     case "annuler": etat.editionId ? afficherDetail(etat.editionId) : afficherListe(); break;
   }
@@ -85,6 +102,20 @@ async function demarrer() {
   document.getElementById("recherche").addEventListener("input", (e) => {
     etat.recherche = e.target.value;
     afficherListe();
+  });
+
+  // Formulaire : autocomplétion des ingrédients. Les lignes sont recréées à chaque
+  // ouverture, donc on écoute le conteneur fixe #vue-form.
+  const formulaire = document.getElementById("vue-form");
+  formulaire.addEventListener("input", (e) => {
+    if (e.target.matches(".i-nom")) surSaisieNom(e.target);
+  });
+  formulaire.addEventListener("focusout", (e) => {
+    if (e.target.matches(".i-nom")) UI.rendreSuggestions(e.target.closest(".ligne-ingredient"), []);
+  });
+  formulaire.addEventListener("change", (e) => {
+    // Rayon choisi à la main : il ne sera plus remis à zéro automatiquement
+    if (e.target.matches(".i-rayon")) delete e.target.dataset.auto;
   });
 
   afficherListe();

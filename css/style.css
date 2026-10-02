@@ -111,7 +111,32 @@ h2 { font-size: 1.1rem; margin: 24px 0 8px; }
   gap: 8px;
   margin-bottom: 12px;
 }
-.ligne-ingredient .i-nom { grid-column: 1 / -1; }
+.ligne-ingredient .i-nom,
+.ligne-ingredient .i-rayon { grid-column: 1 / -1; }
+
+/* Suggestions d'autocomplétion, sous le nom de l'ingrédient */
+.suggestions {
+  grid-column: 1 / -1;
+  list-style: none;
+  margin: -4px 0 0;
+  padding: 0;
+  border: 1px solid #cfcabd;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+.suggestion {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 1px solid #e3dfd6;
+  background: none;
+  color: var(--texte);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 
 /* ---------- Liste de recettes ---------- */
 .cartes { list-style: none; padding: 0; margin: 16px 0 0; }

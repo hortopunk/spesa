@@ -93,7 +93,8 @@ const UI = {
   },
 
   // --- Formulaire de création / modification ---
-  rendreFormulaire(recette) {
+  // `ingredients` = ingrédients de la recette avec leur rayon (voir Logic.ingredientsAvecRayon)
+  rendreFormulaire(recette, ingredients) {
     const vue = document.getElementById("vue-form");
     vue.replaceChildren(
       el("h1", { texte: recette ? t("titre_modifier_recette") : t("titre_nouvelle_recette") }),
@@ -114,26 +115,64 @@ const UI = {
         el("button", { class: "bouton", "data-action": "annuler", texte: t("annuler") })
       ])
     );
-    const ingredients = recette ? recette.ingredients : [{ nom: "", quantite: null, unite: "piece" }];
-    ingredients.forEach((ing) => this.ajouterLigneIngredient(ing));
+    // Nouvelle recette : une seule ligne vide
+    (recette ? ingredients : [undefined]).forEach((ing) => this.ajouterLigneIngredient(ing));
   },
 
   // Ajoute une ligne d'ingrédient au formulaire
-  ajouterLigneIngredient(ing = { nom: "", quantite: null, unite: "piece" }) {
+  ajouterLigneIngredient(ing = { nom: "", quantite: null, unite: "piece", rayon: "" }) {
     const options = Logic.UNITES.map((u) =>
       el("option", { value: u, selected: u === (ing.unite || "piece"), texte: t("unite_" + u) })
     );
+    const optionsRayon = [el("option", { value: "", texte: t("choisir_rayon") })].concat(
+      Logic.RAYONS.map((r) => el("option", { value: r, selected: r === ing.rayon, texte: t("rayon_" + r) }))
+    );
+    const suggestions = el("ul", { class: "suggestions", hidden: true });
+    // Garde le focus dans le champ quand on touche une suggestion
+    suggestions.addEventListener("mousedown", (e) => e.preventDefault());
+    const rayon = el("select", { class: "i-rayon", "aria-label": t("champ_rayon") }, optionsRayon);
+    if (ing.rayon) rayon.dataset.auto = "1";   // rayon repris du dictionnaire
     document.getElementById("f-ingredients").append(
       el("div", { class: "ligne-ingredient" }, [
-        el("input", { class: "i-nom", type: "text", placeholder: t("champ_nom_ingredient"), value: ing.nom }),
+        el("input", { class: "i-nom", type: "text", autocomplete: "off", placeholder: t("champ_nom_ingredient"), value: ing.nom }),
+        suggestions,
         el("input", {
           class: "i-quantite", type: "text", inputmode: "decimal",
           placeholder: t("champ_quantite"), value: ing.quantite === null ? "" : String(ing.quantite).replace(".", ",")
         }),
         el("select", { class: "i-unite" }, options),
-        el("button", { class: "bouton rond", "data-action": "retirer-ingredient", "aria-label": t("retirer_ingredient"), texte: "✕" })
+        el("button", { class: "bouton rond", "data-action": "retirer-ingredient", "aria-label": t("retirer_ingredient"), texte: "✕" }),
+        rayon
       ])
     );
+  },
+
+  // Affiche (ou cache si la liste est vide) les suggestions d'une ligne
+  rendreSuggestions(ligne, libelles) {
+    const ul = ligne.querySelector(".suggestions");
+    ul.replaceChildren(...libelles.map((libelle) =>
+      el("li", {}, [el("button", { type: "button", class: "suggestion", "data-action": "choisir-suggestion", texte: libelle })])
+    ));
+    ul.hidden = libelles.length === 0;
+  },
+
+  // Remplace le nom saisi par la suggestion choisie
+  remplirNom(ligne, libelle) {
+    ligne.querySelector(".i-nom").value = libelle;
+  },
+
+  // Rayon d'une ligne : prérempli si l'ingrédient est connu (`rayon`). Sinon, remis
+  // à vide s'il avait été prérempli pour un autre nom. Un rayon choisi à la main
+  // n'est jamais écrasé par un vide.
+  proposerRayon(ligne, rayon) {
+    const champ = ligne.querySelector(".i-rayon");
+    if (rayon) {
+      champ.value = rayon;
+      champ.dataset.auto = "1";
+    } else if (champ.dataset.auto === "1") {
+      champ.value = "";
+      delete champ.dataset.auto;
+    }
   },
 
   retirerLigneIngredient(bouton) {
@@ -148,7 +187,8 @@ const UI = {
       ingredients: [...document.querySelectorAll(".ligne-ingredient")].map((ligne) => ({
         nom: ligne.querySelector(".i-nom").value,
         quantite: ligne.querySelector(".i-quantite").value,
-        unite: ligne.querySelector(".i-unite").value
+        unite: ligne.querySelector(".i-unite").value,
+        rayon: ligne.querySelector(".i-rayon").value
       })),
       etapes: document.getElementById("f-etapes").value,
       notes: document.getElementById("f-notes").value

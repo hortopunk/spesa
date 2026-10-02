@@ -95,6 +95,8 @@ Un ingrédient sans quantité (ex. « sel ») est autorisé : `"quantite": null,
 ```
 Un nouvel ingrédient validé est ajouté automatiquement. Le rayon est demandé une seule fois, puis mémorisé.
 
+Mise en œuvre (étape 4) : chaque ligne d'ingrédient du formulaire de recette porte un champ « Rayon ». Il est prérempli si l'ingrédient est connu, obligatoire sinon. Le modifier dans une recette met à jour la fiche du dictionnaire. Identifiants de rayons, dans l'ordre : `fruits_legumes`, `boulangerie`, `boucherie_poissonnerie`, `cremerie`, `epicerie_salee`, `epicerie_sucree`, `surgeles`, `boissons`, `hygiene_entretien`, `autre`.
+
 **Liste en cours** (`spesa_liste`, objet)
 ```json
 {
