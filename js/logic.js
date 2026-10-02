@@ -105,6 +105,97 @@ const Logic = {
     return nouveau;
   },
 
+  // Transforme une ligne saisie { nom, quantite, unite, rayon } (du texte) en ingrédient propre.
+  // Renvoie { vide: true }, { erreur } ou { ingredient, rayon } (rayon à mémoriser dans le dictionnaire).
+  construireLigne(ligne) {
+    const nom = ligne.nom.trim();
+    const texteQuantite = ligne.quantite.trim();
+    if (nom === "" && texteQuantite === "") return { vide: true };
+    if (nom === "") return { erreur: "erreur_ingredient_nom" };
+    if (!this.RAYONS.includes(ligne.rayon)) return { erreur: "erreur_rayon" };
+    const rayon = { nom, rayon: ligne.rayon };
+    // Pas de quantité (ex. « sel ») : accepté
+    if (texteQuantite === "") return { ingredient: { nom, quantite: null, unite: "" }, rayon };
+    const quantite = this.lireNombre(texteQuantite);
+    if (quantite === null) return { erreur: "erreur_quantite" };
+    return { ingredient: { nom, quantite, unite: ligne.unite }, rayon };
+  },
+
+  // --- Liste de courses ---
+
+  // Toutes les lignes brutes de la liste : recettes (quantités recalculées pour les
+  // parts choisies) puis articles libres. Une recette supprimée est ignorée.
+  lignesDeListe(liste, recettes) {
+    const lignes = [];
+    liste.recettes.forEach((choix) => {
+      const recette = recettes.find((r) => r.id === choix.id);
+      if (recette) lignes.push(...this.ingredientsPourParts(recette, choix.parts));
+    });
+    liste.manuels.forEach((m) => lignes.push({ nom: m.nom, quantite: m.quantite, unite: m.unite, rayon: m.rayon }));
+    return lignes;
+  },
+
+  // Ramène une quantité à l'unité de base de sa famille (kg -> g, l -> ml).
+  // Les autres unités ne se convertissent pas : elles forment leur propre famille.
+  versBase(quantite, unite) {
+    if (unite === "kg") return { famille: "g", valeur: quantite * 1000 };
+    if (unite === "l") return { famille: "ml", valeur: quantite * 1000 };
+    return { famille: unite, valeur: quantite };
+  },
+
+  // Affiche un total dans l'unité la plus lisible : 1500 g devient 1,5 kg
+  lisible(total, famille) {
+    if (famille === "g" && total >= 1000) return { quantite: this.arrondir(total / 1000), unite: "kg" };
+    if (famille === "ml" && total >= 1000) return { quantite: this.arrondir(total / 1000), unite: "l" };
+    return { quantite: this.arrondir(total), unite: famille };
+  },
+
+  // Fusion : même clé normalisée = même ligne. Les quantités s'additionnent si les unités
+  // sont compatibles (g/kg, ml/l, ou unité identique), sinon elles restent côte à côte.
+  // Renvoie [{ cle, libelle, rayon, quantites: [{ quantite, unite }] }].
+  // `quantites` est vide pour un ingrédient sans quantité (ex. « sel »).
+  fusionner(lignes, dico) {
+    const groupes = new Map();
+    lignes.forEach((ligne) => {
+      const cle = this.normaliser(ligne.nom);
+      if (!groupes.has(cle)) {
+        const fiche = dico[cle];
+        const rayon = fiche ? fiche.rayon : ligne.rayon;
+        groupes.set(cle, {
+          cle,
+          libelle: fiche ? fiche.libelle : ligne.nom,
+          rayon: this.RAYONS.includes(rayon) ? rayon : "autre",
+          totaux: new Map()
+        });
+      }
+      if (ligne.quantite === null) return;
+      const { famille, valeur } = this.versBase(ligne.quantite, ligne.unite);
+      const totaux = groupes.get(cle).totaux;
+      totaux.set(famille, (totaux.get(famille) || 0) + valeur);
+    });
+    return [...groupes.values()].map((g) => ({
+      cle: g.cle,
+      libelle: g.libelle,
+      rayon: g.rayon,
+      quantites: [...g.totaux].map(([famille, total]) => this.lisible(total, famille))
+    }));
+  },
+
+  // Enlève les ingrédients décochés (clés normalisées) pendant la révision
+  retirerDecoches(lignes, decoches) {
+    return lignes.filter((l) => !decoches.includes(l.cle));
+  },
+
+  // Range par rayon (dans l'ordre de RAYONS), puis par ordre alphabétique
+  grouperParRayon(lignes) {
+    return this.RAYONS
+      .map((rayon) => ({
+        rayon,
+        lignes: lignes.filter((l) => l.rayon === rayon).sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"))
+      }))
+      .filter((groupe) => groupe.lignes.length > 0);
+  },
+
   // Transforme la saisie du formulaire (du texte) en recette propre.
   // Renvoie { recette, rayons } si tout va bien (rayons = [{ nom, rayon }] à mémoriser
   // dans le dictionnaire), sinon { erreur: "cle_de_texte" }.
@@ -118,20 +209,11 @@ const Logic = {
     const ingredients = [];
     const rayons = [];
     for (const ligne of saisie.ingredients) {
-      const nom = ligne.nom.trim();
-      const texteQuantite = ligne.quantite.trim();
-      if (nom === "" && texteQuantite === "") continue;   // ligne vide : ignorée
-      if (nom === "") return { erreur: "erreur_ingredient_nom" };
-      if (!this.RAYONS.includes(ligne.rayon)) return { erreur: "erreur_rayon" };
-      rayons.push({ nom, rayon: ligne.rayon });
-      if (texteQuantite === "") {
-        // Pas de quantité (ex. « sel ») : accepté
-        ingredients.push({ nom, quantite: null, unite: "" });
-        continue;
-      }
-      const quantite = this.lireNombre(texteQuantite);
-      if (quantite === null) return { erreur: "erreur_quantite" };
-      ingredients.push({ nom, quantite, unite: ligne.unite });
+      const resultat = this.construireLigne(ligne);
+      if (resultat.vide) continue;   // ligne vide : ignorée
+      if (resultat.erreur) return { erreur: resultat.erreur };
+      ingredients.push(resultat.ingredient);
+      rayons.push(resultat.rayon);
     }
     if (ingredients.length === 0) return { erreur: "erreur_ingredient_vide" };
 

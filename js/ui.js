@@ -10,7 +10,7 @@ function el(balise, props = {}, enfants = []) {
     else if (cle === "class") e.className = valeur;
     else e.setAttribute(cle, valeur === true ? "" : valeur);
   }
-  enfants.forEach((enfant) => e.append(enfant));
+  enfants.filter(Boolean).forEach((enfant) => e.append(enfant));   // `false` = pas d'enfant
   return e;
 }
 
@@ -116,11 +116,13 @@ const UI = {
       ])
     );
     // Nouvelle recette : une seule ligne vide
-    (recette ? ingredients : [undefined]).forEach((ing) => this.ajouterLigneIngredient(ing));
+    const conteneur = document.getElementById("f-ingredients");
+    (recette ? ingredients : [undefined]).forEach((ing) => this.ajouterLigneIngredient(conteneur, ing));
   },
 
-  // Ajoute une ligne d'ingrédient au formulaire
-  ajouterLigneIngredient(ing = { nom: "", quantite: null, unite: "piece", rayon: "" }) {
+  // Ajoute une ligne d'ingrédient (nom, quantité, unité, rayon) dans `conteneur`.
+  // Utilisée par le formulaire de recette et par les articles libres de la liste.
+  ajouterLigneIngredient(conteneur, ing = { nom: "", quantite: null, unite: "piece", rayon: "" }, avecRetrait = true) {
     const options = Logic.UNITES.map((u) =>
       el("option", { value: u, selected: u === (ing.unite || "piece"), texte: t("unite_" + u) })
     );
@@ -132,8 +134,8 @@ const UI = {
     suggestions.addEventListener("mousedown", (e) => e.preventDefault());
     const rayon = el("select", { class: "i-rayon", "aria-label": t("champ_rayon") }, optionsRayon);
     if (ing.rayon) rayon.dataset.auto = "1";   // rayon repris du dictionnaire
-    document.getElementById("f-ingredients").append(
-      el("div", { class: "ligne-ingredient" }, [
+    conteneur.append(
+      el("div", { class: "ligne-ingredient" + (avecRetrait ? "" : " sans-retrait") }, [
         el("input", { class: "i-nom", type: "text", autocomplete: "off", placeholder: t("champ_nom_ingredient"), value: ing.nom }),
         suggestions,
         el("input", {
@@ -141,7 +143,7 @@ const UI = {
           placeholder: t("champ_quantite"), value: ing.quantite === null ? "" : String(ing.quantite).replace(".", ",")
         }),
         el("select", { class: "i-unite" }, options),
-        el("button", { class: "bouton rond", "data-action": "retirer-ingredient", "aria-label": t("retirer_ingredient"), texte: "✕" }),
+        avecRetrait && el("button", { class: "bouton rond", "data-action": "retirer-ingredient", "aria-label": t("retirer_ingredient"), texte: "✕" }),
         rayon
       ])
     );
@@ -184,20 +186,135 @@ const UI = {
     return {
       titre: document.getElementById("f-titre").value,
       parts: document.getElementById("f-parts").value,
-      ingredients: [...document.querySelectorAll(".ligne-ingredient")].map((ligne) => ({
-        nom: ligne.querySelector(".i-nom").value,
-        quantite: ligne.querySelector(".i-quantite").value,
-        unite: ligne.querySelector(".i-unite").value,
-        rayon: ligne.querySelector(".i-rayon").value
-      })),
+      ingredients: [...document.querySelectorAll("#f-ingredients .ligne-ingredient")].map((ligne) => this.lireLigne(ligne)),
       etapes: document.getElementById("f-etapes").value,
       notes: document.getElementById("f-notes").value
     };
   },
 
-  afficherErreur(message) {
-    const p = document.getElementById("f-erreur");
+  // Lit une ligne d'ingrédient (texte brut)
+  lireLigne(ligne) {
+    return {
+      nom: ligne.querySelector(".i-nom").value,
+      quantite: ligne.querySelector(".i-quantite").value,
+      unite: ligne.querySelector(".i-unite").value,
+      rayon: ligne.querySelector(".i-rayon").value
+    };
+  },
+
+  // Message d'erreur dans la zone `id` (celle du formulaire de recette par défaut)
+  afficherErreur(message, id = "f-erreur") {
+    const p = document.getElementById(id);
     p.textContent = message;
     p.hidden = false;
+  },
+
+  // --- Liste : texte d'une ou plusieurs quantités, ex. "1,5 kg + 2 pièce(s)" ---
+  texteQuantites(quantites) {
+    return quantites.map((q) => Logic.formaterNombre(q.quantite) + " " + t("unite_" + q.unite)).join(" + ");
+  },
+
+  // --- Liste, étape « ajouts » ---
+  // choisies : [{ index, titre, parts }] ; disponibles : [{ id, titre }] ;
+  // manuels : articles libres ; choixOuvert : le choix de recette est déplié
+  rendreAjouts(choisies, disponibles, manuels, choixOuvert) {
+    const c = document.getElementById("contenu-liste");
+    c.replaceChildren(el("h2", { texte: t("section_recettes") }));
+
+    if (choisies.length === 0) c.append(el("p", { class: "vide", texte: t("liste_sans_recette") }));
+    choisies.forEach((r) => c.append(el("div", { class: "ligne-liste" }, [
+      el("span", { class: "ligne-titre", texte: r.titre }),
+      el("div", { class: "parts" }, [
+        el("button", { class: "bouton rond", "data-action": "liste-parts-moins", "data-index": r.index, "aria-label": t("diminuer_parts"), texte: "−" }),
+        el("strong", { class: "parts-nombre", texte: r.parts }),
+        el("button", { class: "bouton rond", "data-action": "liste-parts-plus", "data-index": r.index, "aria-label": t("augmenter_parts"), texte: "+" }),
+        el("span", { texte: r.parts > 1 ? t("parts") : t("part") })
+      ]),
+      el("button", { class: "bouton rond retrait", "data-action": "liste-retirer-recette", "data-index": r.index, "aria-label": t("retirer"), texte: "✕" })
+    ])));
+
+    c.append(el("button", {
+      class: "bouton", "data-action": "liste-choix-recette",
+      texte: choixOuvert ? t("fermer") : "+ " + t("ajouter_recette")
+    }));
+    if (choixOuvert) {
+      if (disponibles.length === 0) c.append(el("p", { class: "vide", texte: t("aucune_recette_disponible") }));
+      c.append(el("ul", { class: "cartes" }, disponibles.map((r) => el("li", {}, [
+        el("button", { class: "carte", "data-action": "liste-ajouter-recette", "data-id": r.id }, [
+          el("span", { class: "carte-titre", texte: r.titre })
+        ])
+      ]))));
+    }
+
+    c.append(el("h2", { texte: t("section_articles") }));
+    manuels.forEach((m, index) => c.append(el("div", { class: "ligne-liste" }, [
+      el("span", { class: "ligne-titre", texte: m.nom }),
+      el("span", { class: "quantite", texte: m.quantite === null ? "" : this.texteQuantites([m]) }),
+      el("button", { class: "bouton rond retrait", "data-action": "liste-retirer-article", "data-index": index, "aria-label": t("retirer"), texte: "✕" })
+    ])));
+    c.append(el("div", { id: "m-ligne" }));
+    this.ajouterLigneIngredient(document.getElementById("m-ligne"), undefined, false);
+    c.append(
+      el("button", { class: "bouton", "data-action": "liste-ajouter-article", texte: "+ " + t("ajouter_article") }),
+      el("p", { id: "m-erreur", class: "erreur", hidden: true }),
+      el("div", { class: "actions" }, [
+        el("button", {
+          class: "bouton principal", "data-action": "liste-reviser",
+          disabled: choisies.length === 0 && manuels.length === 0, texte: t("passer_revision")
+        }),
+        el("button", { class: "bouton danger", "data-action": "liste-effacer", texte: t("tout_effacer") })
+      ])
+    );
+  },
+
+  // Ligne de l'article libre en cours de saisie
+  lireArticle() {
+    return this.lireLigne(document.querySelector("#m-ligne .ligne-ingredient"));
+  },
+
+  // --- Liste, étape « révision » : tout est coché, on décoche ce qu'on a déjà ---
+  rendreRevision(groupes, decoches) {
+    const c = document.getElementById("contenu-liste");
+    c.replaceChildren(
+      el("button", { class: "bouton lien", "data-action": "revision-retour", texte: "‹ " + t("retour_ajouts") }),
+      el("h2", { texte: t("titre_revision") }),
+      el("p", { class: "aide", texte: t("aide_revision") })
+    );
+    groupes.forEach((groupe) => {
+      c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
+      groupe.lignes.forEach((l) => c.append(el("label", { class: "coche-ligne" }, [
+        el("input", { type: "checkbox", "data-action": "basculer", "data-cle": l.cle, checked: !decoches.includes(l.cle) }),
+        el("span", { class: "coche-nom", texte: l.libelle }),
+        el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
+      ])));
+    });
+    c.append(el("div", { class: "actions" }, [
+      el("button", { class: "bouton principal", "data-action": "revision-valider", texte: t("valider_liste") })
+    ]));
+  },
+
+  // --- Liste, étape « courses » (liste validée) ---
+  rendreListeValidee() {
+    document.getElementById("contenu-liste").replaceChildren(
+      el("p", { texte: t("liste_validee") }),
+      el("div", { class: "actions" }, [
+        el("button", { class: "bouton", "data-action": "liste-modifier", texte: t("modifier_liste") })
+      ])
+    );
+  },
+
+  // --- Onglet Courses : liste finale rangée par rayon ---
+  rendreCourses(groupes, listeValidee) {
+    const c = document.getElementById("contenu-courses");
+    c.replaceChildren();
+    if (!listeValidee) return c.append(el("p", { class: "vide", texte: t("courses_pas_prete") }));
+    if (groupes.length === 0) return c.append(el("p", { class: "vide", texte: t("courses_liste_vide") }));
+    groupes.forEach((groupe) => {
+      c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
+      groupe.lignes.forEach((l) => c.append(el("div", { class: "ligne-course" }, [
+        el("span", { class: "coche-nom", texte: l.libelle }),
+        el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
+      ])));
+    });
   }
 };

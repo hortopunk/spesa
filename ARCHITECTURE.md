@@ -109,6 +109,8 @@ Mise en œuvre (étape 4) : chaque ligne d'ingrédient du formulaire de recette 
 ```
 `etat` : `ajouts`, `revision`, `courses`.
 
+Précisions (étape 5) : `decoches` contient des clés normalisées (ex. `huile d olive`), pas des libellés. Un décochage vaut pour toutes les lignes de l'ingrédient, quelle que soit l'unité. Un article libre (`manuels`) mémorise aussi son rayon dans le dictionnaire. Une recette supprimée disparaît de la liste à l'affichage suivant.
+
 **Historique** (`spesa_historique`, tableau) : copies figées des listes validées, avec date. Consultation seule.
 
 **Réglages** (`spesa_reglages`) : langue, date de dernière sauvegarde, version du schéma.

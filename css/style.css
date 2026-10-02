@@ -175,3 +175,41 @@ h2 { font-size: 1.1rem; margin: 24px 0 8px; }
 .etapes { padding-left: 1.4em; }
 .etapes li { margin-bottom: 8px; }
 .notes { color: var(--gris); }
+
+/* ---------- Liste de courses ---------- */
+.ligne-ingredient.sans-retrait { grid-template-columns: 1fr 1fr; }
+h3 { font-size: 1rem; margin: 20px 0 4px; color: var(--accent); }
+.aide { color: var(--gris); }
+
+/* Recette ou article de la liste : titre, puis boutons */
+.ligne-liste {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e3dfd6;
+}
+.ligne-titre { flex: 1 1 8em; }
+.ligne-liste .retrait { margin-left: auto; }
+#contenu-liste > .bouton { margin-top: 12px; }
+
+/* Ligne cochable (révision) et ligne de la liste finale */
+.coche-ligne, .ligne-course {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  margin: 0;
+  padding: 6px 0;
+  border-bottom: 1px solid #e3dfd6;
+  font-weight: normal;
+}
+.coche-nom { flex: 1; }
+input[type="checkbox"] {
+  flex: none;
+  width: 28px;
+  min-height: 28px;
+  height: 28px;
+  accent-color: var(--accent);
+}

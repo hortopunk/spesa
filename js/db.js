@@ -42,6 +42,15 @@ const DB = {
     this.ecrire("dico", dico);
   },
 
+  // --- Liste en cours ---
+  liste() {
+    return this.lire("liste", { recettes: [], manuels: [], decoches: [], etat: "ajouts", coches: [] });
+  },
+
+  enregistrerListe(liste) {
+    this.ecrire("liste", liste);
+  },
+
   // --- Recettes ---
   recettes() {
     return this.lire("recettes", []);

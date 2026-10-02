@@ -5,7 +5,8 @@ const etat = {
   recherche: "",
   ouverteId: null,     // recette affichée en détail
   partsVoulues: 1,     // parts choisies dans le détail (non enregistrées)
-  editionId: null      // recette en cours de modification (null = nouvelle)
+  editionId: null,     // recette en cours de modification (null = nouvelle)
+  choixRecette: false  // écran Liste : le choix d'une recette à ajouter est déplié
 };
 
 function afficherListe() {
@@ -74,7 +75,7 @@ function gererClic(evenement) {
         afficherListe();
       }
       break;
-    case "ajouter-ingredient": UI.ajouterLigneIngredient(); break;
+    case "ajouter-ingredient": UI.ajouterLigneIngredient(document.getElementById("f-ingredients")); break;
     case "retirer-ingredient": UI.retirerLigneIngredient(bouton); break;
     case "choisir-suggestion": {
       const ligne = bouton.closest(".ligne-ingredient");
@@ -84,7 +85,103 @@ function gererClic(evenement) {
     }
     case "enregistrer": enregistrer(); break;
     case "annuler": etat.editionId ? afficherDetail(etat.editionId) : afficherListe(); break;
+
+    // Écran Liste
+    case "liste-choix-recette": etat.choixRecette = !etat.choixRecette; afficherEcranListe(); break;
+    case "liste-ajouter-recette": modifierListe((l) => {
+      const recette = DB.recette(bouton.dataset.id);
+      if (recette) l.recettes.push({ id: recette.id, parts: recette.parts });
+    }); break;
+    case "liste-retirer-recette": modifierListe((l) => l.recettes.splice(Number(bouton.dataset.index), 1)); break;
+    case "liste-parts-moins": modifierListe((l) => {
+      const choix = l.recettes[Number(bouton.dataset.index)];
+      if (choix.parts > 1) choix.parts--;
+    }); break;
+    case "liste-parts-plus": modifierListe((l) => l.recettes[Number(bouton.dataset.index)].parts++); break;
+    case "liste-ajouter-article": ajouterArticle(); break;
+    case "liste-retirer-article": modifierListe((l) => l.manuels.splice(Number(bouton.dataset.index), 1)); break;
+    case "liste-effacer":
+      if (confirm(t("confirmer_effacer_liste"))) {
+        etat.choixRecette = false;
+        modifierListe((l) => { l.recettes = []; l.manuels = []; l.decoches = []; });
+      }
+      break;
+    case "liste-reviser": modifierListe((l) => { l.etat = "revision"; }); break;
+    case "revision-retour": modifierListe((l) => { l.etat = "ajouts"; }); break;
+    case "revision-valider":
+      modifierListe((l) => { l.etat = "courses"; l.coches = []; });
+      UI.afficherEcran("courses");
+      break;
+    case "liste-modifier": modifierListe((l) => { l.etat = "revision"; }); break;
+    case "basculer": {
+      // Décocher = « je l'ai déjà » : la clé est mémorisée dans `decoches`
+      const liste = DB.liste();
+      liste.decoches = liste.decoches.filter((cle) => cle !== bouton.dataset.cle);
+      if (!bouton.checked) liste.decoches.push(bouton.dataset.cle);
+      DB.enregistrerListe(liste);
+      break;
+    }
   }
+}
+
+// --- Liste de courses ---
+
+// Lignes de la liste, fusionnées, rangées par rayon (sans les décochés si `final`)
+function groupesDeLaListe(liste, final) {
+  let lignes = Logic.fusionner(Logic.lignesDeListe(liste, DB.recettes()), DB.dico());
+  if (final) lignes = Logic.retirerDecoches(lignes, liste.decoches);
+  return Logic.grouperParRayon(lignes);
+}
+
+// Affiche l'écran Liste selon l'étape en cours (ajouts, révision, courses)
+function afficherEcranListe() {
+  const liste = DB.liste();
+  // Une recette supprimée disparaît de la liste
+  liste.recettes = liste.recettes.filter((choix) => DB.recette(choix.id));
+
+  if (liste.etat === "revision") {
+    const groupes = groupesDeLaListe(liste, false);
+    // On oublie les décochés qui ne sont plus dans la liste
+    const cles = groupes.flatMap((g) => g.lignes.map((l) => l.cle));
+    liste.decoches = liste.decoches.filter((cle) => cles.includes(cle));
+    DB.enregistrerListe(liste);
+    UI.rendreRevision(groupes, liste.decoches);
+  } else if (liste.etat === "courses") {
+    DB.enregistrerListe(liste);
+    UI.rendreListeValidee();
+  } else {
+    DB.enregistrerListe(liste);
+    const choisies = liste.recettes.map((choix, index) => ({
+      index, titre: DB.recette(choix.id).titre, parts: choix.parts
+    }));
+    const dejaChoisies = liste.recettes.map((choix) => choix.id);
+    const disponibles = DB.recettes().filter((r) => !dejaChoisies.includes(r.id));
+    UI.rendreAjouts(choisies, disponibles, liste.manuels, etat.choixRecette);
+  }
+}
+
+// Affiche l'onglet Courses : liste finale rangée par rayon
+function afficherEcranCourses() {
+  const liste = DB.liste();
+  UI.rendreCourses(groupesDeLaListe(liste, true), liste.etat === "courses");
+}
+
+// Applique un changement à la liste, l'enregistre et réaffiche
+function modifierListe(changement) {
+  const liste = DB.liste();
+  changement(liste);
+  DB.enregistrerListe(liste);
+  afficherEcranListe();
+  afficherEcranCourses();
+}
+
+// Ajoute l'article libre saisi (nom, quantité, unité, rayon) à la liste
+function ajouterArticle() {
+  const resultat = Logic.construireLigne(UI.lireArticle());
+  if (resultat.vide) return UI.afficherErreur(t("erreur_article_vide"), "m-erreur");
+  if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur), "m-erreur");
+  DB.enregistrerDico(Logic.mettreAJourDico(DB.dico(), [resultat.rayon]));
+  modifierListe((l) => l.manuels.push({ ...resultat.ingredient, rayon: resultat.rayon.rayon }));
 }
 
 async function demarrer() {
@@ -92,33 +189,38 @@ async function demarrer() {
   await Langue.init(DB.reglages().langue);
   Langue.appliquer();
 
-  // Navigation du bas
+  // Navigation du bas : on réaffiche l'écran choisi, car ses données ont pu changer
   document.querySelectorAll(".onglet").forEach((onglet) => {
-    onglet.addEventListener("click", () => UI.afficherEcran(onglet.dataset.cible));
+    onglet.addEventListener("click", () => {
+      UI.afficherEcran(onglet.dataset.cible);
+      if (onglet.dataset.cible === "liste") afficherEcranListe();
+      if (onglet.dataset.cible === "courses") afficherEcranCourses();
+    });
   });
 
-  // Écran Recettes
-  document.getElementById("ecran-recettes").addEventListener("click", gererClic);
+  // Tous les clics passent par gererClic. Les boutons et lignes sont recréés à chaque
+  // affichage, donc on écoute le document (délégation) plutôt que chaque bouton.
+  document.addEventListener("click", gererClic);
   document.getElementById("recherche").addEventListener("input", (e) => {
     etat.recherche = e.target.value;
     afficherListe();
   });
 
-  // Formulaire : autocomplétion des ingrédients. Les lignes sont recréées à chaque
-  // ouverture, donc on écoute le conteneur fixe #vue-form.
-  const formulaire = document.getElementById("vue-form");
-  formulaire.addEventListener("input", (e) => {
+  // Lignes d'ingrédient (recette ou article libre) : autocomplétion et rayon
+  document.addEventListener("input", (e) => {
     if (e.target.matches(".i-nom")) surSaisieNom(e.target);
   });
-  formulaire.addEventListener("focusout", (e) => {
+  document.addEventListener("focusout", (e) => {
     if (e.target.matches(".i-nom")) UI.rendreSuggestions(e.target.closest(".ligne-ingredient"), []);
   });
-  formulaire.addEventListener("change", (e) => {
+  document.addEventListener("change", (e) => {
     // Rayon choisi à la main : il ne sera plus remis à zéro automatiquement
     if (e.target.matches(".i-rayon")) delete e.target.dataset.auto;
   });
 
   afficherListe();
+  afficherEcranListe();
+  afficherEcranCourses();
 }
 
 demarrer();
