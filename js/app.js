@@ -126,6 +126,12 @@ function gererClic(evenement) {
     }
     case "terminer-courses": terminerCourses(); break;
 
+    // Historique
+    case "historique-ouvrir": afficherHistorique(); break;
+    case "historique-detail": afficherArchive(Number(bouton.dataset.index)); break;
+    case "historique-retour": afficherHistorique(); break;
+    case "historique-fermer": UI.afficherVueCourses("courses"); break;
+
     // Sauvegarde
     case "sauvegarder": sauvegarder(); break;
     case "restaurer": document.getElementById("fichier-restauration").click(); break;
@@ -187,11 +193,37 @@ function afficherEcranCourses() {
 
 // --- Sauvegarde et restauration (le travail est dans backup.js) ---
 
+// "2 octobre 2026" à partir d'une date enregistrée
+function formaterDate(dateISO) {
+  return new Date(dateISO).toLocaleDateString(Langue.courante, { day: "numeric", month: "long", year: "numeric" });
+}
+
 function textePhraseSauvegarde() {
   const date = DB.reglages().derniere_sauvegarde;
   if (!date) return t("derniere_sauvegarde_jamais");
-  const lisible = new Date(date).toLocaleDateString(Langue.courante, { day: "numeric", month: "long", year: "numeric" });
-  return t("derniere_sauvegarde").replace("{date}", lisible);
+  return t("derniere_sauvegarde").replace("{date}", formaterDate(date));
+}
+
+// --- Historique ---
+
+// Liste des courses terminées, de la plus récente à la plus ancienne
+function afficherHistorique() {
+  const entrees = DB.historique()
+    .map((archive, index) => {
+      const nb = archive.lignes.length;
+      const articles = nb + " " + (nb > 1 ? t("articles") : t("article"));
+      const titres = archive.recettes.map((r) => r.titre).join(", ");
+      return { index, date: formaterDate(archive.date), resume: titres ? titres + " · " + articles : articles };
+    })
+    .reverse();
+  UI.rendreHistorique(entrees);
+  UI.afficherVueCourses("historique");
+}
+
+function afficherArchive(index) {
+  const archive = DB.historique()[index];
+  if (!archive) return afficherHistorique();
+  UI.rendreDetailHistorique(archive, formaterDate(archive.date), Logic.grouperParRayon(archive.lignes));
 }
 
 function afficherReglages() {
@@ -284,7 +316,10 @@ async function demarrer() {
     onglet.addEventListener("click", () => {
       UI.afficherEcran(onglet.dataset.cible);
       if (onglet.dataset.cible === "liste") afficherEcranListe();
-      if (onglet.dataset.cible === "courses") afficherEcranCourses();
+      if (onglet.dataset.cible === "courses") {
+        UI.afficherVueCourses("courses");   // on revient toujours à la liste en cours
+        afficherEcranCourses();
+      }
       if (onglet.dataset.cible === "reglages") afficherReglages();
       rafraichirBandeau();
     });

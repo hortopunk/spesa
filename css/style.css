@@ -251,3 +251,8 @@ input[type="checkbox"] {
   font-size: 0.9rem;
 }
 .succes { color: var(--accent); font-weight: 600; }
+
+/* ---------- Historique ---------- */
+.bouton-historique { margin-top: 32px; }
+.carte-historique { flex-direction: column; align-items: flex-start; gap: 2px; }
+.carte-historique .carte-info { white-space: normal; }

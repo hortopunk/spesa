@@ -325,6 +325,57 @@ const UI = {
     ]));
   },
 
+  // --- Historique (consultation seule) ---
+  // Dans l'écran Courses : "courses" (liste en cours) ou "historique"
+  afficherVueCourses(nom) {
+    document.getElementById("vue-courses").hidden = nom !== "courses";
+    document.getElementById("vue-historique").hidden = nom !== "historique";
+    window.scrollTo(0, 0);
+  },
+
+  // entrees : [{ index, date, resume }], de la plus récente à la plus ancienne
+  rendreHistorique(entrees) {
+    const vue = document.getElementById("vue-historique");
+    vue.replaceChildren(
+      el("button", { class: "bouton lien", "data-action": "historique-fermer", texte: "‹ " + t("retour") }),
+      el("h1", { texte: t("titre_historique") })
+    );
+    if (entrees.length === 0) return vue.append(el("p", { class: "vide", texte: t("historique_vide") }));
+    vue.append(el("ul", { class: "cartes" }, entrees.map((e) => el("li", {}, [
+      el("button", { class: "carte carte-historique", "data-action": "historique-detail", "data-index": e.index }, [
+        el("span", { class: "carte-titre", texte: e.date }),
+        el("span", { class: "carte-info", texte: e.resume })
+      ])
+    ]))));
+  },
+
+  // Une liste terminée : recettes, puis articles par rayon (cochés = étaient dans le caddie)
+  rendreDetailHistorique(entree, date, groupes) {
+    const vue = document.getElementById("vue-historique");
+    vue.replaceChildren(
+      el("button", { class: "bouton lien", "data-action": "historique-retour", texte: "‹ " + t("retour") }),
+      el("h1", { texte: date })
+    );
+    if (entree.recettes.length > 0) {
+      vue.append(
+        el("h2", { texte: t("section_recettes") }),
+        el("ul", { class: "ingredients" }, entree.recettes.map((r) => el("li", {}, [
+          el("span", { texte: r.titre }),
+          el("span", { class: "quantite", texte: r.parts + " " + (r.parts > 1 ? t("parts") : t("part")) })
+        ])))
+      );
+    }
+    vue.append(el("h2", { texte: t("section_articles_achetes") }), el("p", { class: "aide", texte: t("aide_historique") }));
+    groupes.forEach((groupe) => {
+      vue.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
+      groupe.lignes.forEach((l) => vue.append(el("div", { class: "ligne-course" }, [
+        el("input", { type: "checkbox", disabled: true, checked: l.coche }),
+        el("span", { class: "coche-nom", texte: l.libelle }),
+        el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
+      ])));
+    });
+  },
+
   // --- Sauvegarde ---
   // Bandeau de rappel : `texte` à afficher, ou null pour le cacher
   afficherBandeau(texte) {

@@ -35,8 +35,13 @@
     </section>
 
     <section class="ecran" id="ecran-courses" data-ecran="courses" hidden>
-      <h1 data-i18n="titre_courses"></h1>
-      <div id="contenu-courses"></div>
+      <!-- Deux vues : la liste en cours et l'historique (consultation seule) -->
+      <div id="vue-courses">
+        <h1 data-i18n="titre_courses"></h1>
+        <div id="contenu-courses"></div>
+        <button class="bouton bouton-historique" data-action="historique-ouvrir" data-i18n="historique_ouvrir"></button>
+      </div>
+      <div id="vue-historique" hidden></div>
     </section>
 
     <section class="ecran" id="ecran-reglages" data-ecran="reglages" hidden>

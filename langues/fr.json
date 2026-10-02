@@ -10,6 +10,13 @@
   "titre_reglages": "Réglages",
 
   "vide_recettes": "Aucune recette pour l'instant.",
+  "historique_ouvrir": "Historique des courses",
+  "titre_historique": "Historique",
+  "historique_vide": "Aucune course terminée pour l'instant.",
+  "article": "article",
+  "articles": "articles",
+  "section_articles_achetes": "Articles",
+  "aide_historique": "Les articles cochés étaient dans le caddie.",
   "sauvegarder": "Sauvegarder",
   "restaurer": "Restaurer une sauvegarde",
   "section_sauvegarde": "Sauvegarde",

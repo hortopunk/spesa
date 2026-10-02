@@ -119,7 +119,7 @@ Précisions (étape 5) : `decoches` contient des clés normalisées (ex. `huile 
   "lignes": [{ "libelle": "Lait", "rayon": "cremerie", "quantites": [{ "quantite": 500, "unite": "ml" }], "coche": true }]
 }
 ```
-L'archivage est fait par « Terminer les courses » (étape 6). L'écran de consultation vient à l'étape 7.
+L'archivage est fait par « Terminer les courses » (étape 6). L'écran de consultation (étape 7) s'ouvre par le bouton « Historique des courses » de l'onglet Courses : liste des courses terminées (la plus récente en premier), puis détail d'une liste (recettes, articles par rayon, cochés = étaient dans le caddie). Aucune modification ni suppression possible.
 
 **Réglages** (`spesa_reglages`) : langue, date de dernière sauvegarde, version du schéma.
 
