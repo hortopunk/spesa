@@ -10,6 +10,12 @@
 <body>
   <!-- Zone qui affiche l'écran courant -->
   <main id="ecrans">
+    <!-- Rappel discret : visible seulement si la dernière sauvegarde est ancienne -->
+    <div id="bandeau-sauvegarde" hidden>
+      <span id="bandeau-texte"></span>
+      <button class="bouton" data-action="sauvegarder" data-i18n="sauvegarder"></button>
+    </div>
+
     <section class="ecran" id="ecran-recettes" data-ecran="recettes">
       <!-- Trois vues : liste, détail, formulaire (une seule visible à la fois) -->
       <div id="vue-liste">
@@ -35,9 +41,14 @@
 
     <section class="ecran" id="ecran-reglages" data-ecran="reglages" hidden>
       <h1 data-i18n="titre_reglages"></h1>
-      <p class="vide" data-i18n="vide_reglages"></p>
+      <div id="contenu-reglages"></div>
+      <!-- Sélecteur de fichier caché : ouvert par le bouton « Restaurer » -->
+      <input type="file" id="fichier-restauration" accept=".json,application/json" hidden>
     </section>
   </main>
+
+  <!-- Bouton flottant, toujours visible, au-dessus de la navigation -->
+  <button id="bouton-sauvegarde" data-action="sauvegarder" data-i18n="sauvegarder"></button>
 
   <!-- Navigation en bas, à portée du pouce -->
   <nav id="navigation">
@@ -63,6 +74,7 @@
   <script src="js/langue.js"></script>
   <script src="js/db.js"></script>
   <script src="js/logic.js"></script>
+  <script src="js/backup.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
 </body>

@@ -180,6 +180,8 @@ Le prompt exigera : unités parmi une liste fermée (`g`, `kg`, `ml`, `l`, `cs`,
 - Rappel : bandeau discret si la dernière sauvegarde date de plus de 7 jours. Proposition de sauvegarde aussi à la fin des courses.
 - La date de dernière sauvegarde est enregistrée dans les réglages.
 
+Mise en œuvre (étape 8) : le fichier contient `format: "spesa-sauvegarde-v1"`, `date`, `version_schema`, puis `recettes`, `dico`, `historique`, `reglages`. La liste en cours n'est pas sauvegardée. À la restauration, le fichier est vérifié (format, version, contenu) avant toute modification des données. Le bouton « Restaurer » est dans l'écran Réglages, avec le bouton « Sauvegarder » et la date de dernière sauvegarde. Le bandeau de rappel n'apparaît que si l'appli contient des données. Une proposition de sauvegarde suit « Terminer les courses ».
+
 Limite assumée : la sauvegarde est manuelle (deux appuis environ). Évolution possible (v2) : envoi automatique vers Google Drive via l'API Drive. `backup.js` est isolé pour pouvoir être remplacé sans toucher au reste.
 
 ## 10. Design

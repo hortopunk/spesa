@@ -325,6 +325,36 @@ const UI = {
     ]));
   },
 
+  // --- Sauvegarde ---
+  // Bandeau de rappel : `texte` à afficher, ou null pour le cacher
+  afficherBandeau(texte) {
+    document.getElementById("bandeau-sauvegarde").hidden = texte === null;
+    if (texte !== null) document.getElementById("bandeau-texte").textContent = texte;
+  },
+
+  // Écran Réglages : `texteDate` = phrase sur la dernière sauvegarde
+  rendreReglages(texteDate) {
+    document.getElementById("contenu-reglages").replaceChildren(
+      el("h2", { texte: t("section_sauvegarde") }),
+      el("p", { texte: texteDate }),
+      el("p", { class: "aide", texte: t("aide_sauvegarde") }),
+      el("div", { class: "actions" }, [
+        el("button", { class: "bouton principal", "data-action": "sauvegarder", texte: t("sauvegarder") }),
+        el("button", { class: "bouton", "data-action": "restaurer", texte: t("restaurer") })
+      ]),
+      el("p", { id: "message-reglages", hidden: true })
+    );
+  },
+
+  // Message sous les boutons (réussite ou erreur)
+  messageReglages(texte, erreur) {
+    const p = document.getElementById("message-reglages");
+    if (!p) return;
+    p.textContent = texte;
+    p.className = erreur ? "erreur" : "succes";
+    p.hidden = false;
+  },
+
   // Met à jour « 3 / 12 » sans tout redessiner
   majCompteur(coches, total) {
     const p = document.getElementById("compteur-courses");

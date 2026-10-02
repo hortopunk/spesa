@@ -44,6 +44,7 @@ function enregistrer() {
   if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur));
   DB.enregistrerRecette(resultat.recette);
   DB.enregistrerDico(Logic.mettreAJourDico(DB.dico(), resultat.rayons));
+  rafraichirBandeau();
   ouvrirRecette(id);
 }
 
@@ -124,6 +125,10 @@ function gererClic(evenement) {
       break;
     }
     case "terminer-courses": terminerCourses(); break;
+
+    // Sauvegarde
+    case "sauvegarder": sauvegarder(); break;
+    case "restaurer": document.getElementById("fichier-restauration").click(); break;
     case "basculer": {
       // Décocher = « je l'ai déjà » : la clé est mémorisée dans `decoches`
       const liste = DB.liste();
@@ -180,6 +185,56 @@ function afficherEcranCourses() {
   UI.majCompteur(compte.coches, compte.total);
 }
 
+// --- Sauvegarde et restauration (le travail est dans backup.js) ---
+
+function textePhraseSauvegarde() {
+  const date = DB.reglages().derniere_sauvegarde;
+  if (!date) return t("derniere_sauvegarde_jamais");
+  const lisible = new Date(date).toLocaleDateString(Langue.courante, { day: "numeric", month: "long", year: "numeric" });
+  return t("derniere_sauvegarde").replace("{date}", lisible);
+}
+
+function afficherReglages() {
+  UI.rendreReglages(textePhraseSauvegarde());
+}
+
+// Affiche ou cache le bandeau « pense à sauvegarder »
+function rafraichirBandeau() {
+  const aDesDonnees = DB.recettes().length > 0 || DB.historique().length > 0;
+  const rappel = Backup.rappel(DB.reglages().derniere_sauvegarde, new Date(), aDesDonnees);
+  if (rappel === null) return UI.afficherBandeau(null);
+  UI.afficherBandeau(rappel.jamais ? t("rappel_jamais") : t("rappel_jours").replace("{n}", rappel.jours));
+}
+
+async function sauvegarder() {
+  const date = new Date().toISOString();
+  const fichier = Backup.construire(DB.exporterTout(), date, DB.VERSION_SCHEMA);
+  const resultat = await Backup.envoyer(fichier, Backup.nomFichier(date));
+  if (resultat === "annule") return;   // menu de partage fermé : rien n'a été sauvegardé
+  DB.marquerSauvegarde(date);
+  rafraichirBandeau();
+  afficherReglages();
+  UI.messageReglages(t(resultat === "partage" ? "sauvegarde_envoyee" : "sauvegarde_telechargee"), false);
+}
+
+async function restaurer(fichier) {
+  const resultat = Backup.analyser(await fichier.text(), DB.VERSION_SCHEMA);
+  if (resultat.erreur) return UI.messageReglages(t(resultat.erreur), true);
+  const s = resultat.sauvegarde;
+  if (!confirm(t("confirmer_restauration").replace("{n}", s.recettes.length))) return;
+  // Réglages complétés si le fichier est incomplet ; la date de sauvegarde = celle du fichier
+  s.reglages.langue = s.reglages.langue || "fr";
+  s.reglages.version_schema = s.reglages.version_schema || DB.VERSION_SCHEMA;
+  s.reglages.derniere_sauvegarde = isNaN(new Date(s.date)) ? null : s.date;
+  DB.remplacerTout(s);
+  afficherListe();
+  afficherEcranListe();
+  afficherEcranCourses();
+  rafraichirBandeau();
+  afficherReglages();
+  UI.messageReglages(t("sauvegarde_restauree").replace("{n}", s.recettes.length), false);
+}
+
 // Termine les courses : archive la liste dans l'historique, puis repart d'une liste vide
 function terminerCourses() {
   const liste = DB.liste();
@@ -196,6 +251,9 @@ function terminerCourses() {
   afficherEcranListe();
   afficherEcranCourses();
   UI.afficherEcran("liste");
+  rafraichirBandeau();
+  // Fin des courses : bon moment pour sauvegarder (l'historique vient de changer)
+  if (confirm(t("proposer_sauvegarde"))) sauvegarder();
 }
 
 // Applique un changement à la liste, l'enregistre et réaffiche
@@ -227,7 +285,16 @@ async function demarrer() {
       UI.afficherEcran(onglet.dataset.cible);
       if (onglet.dataset.cible === "liste") afficherEcranListe();
       if (onglet.dataset.cible === "courses") afficherEcranCourses();
+      if (onglet.dataset.cible === "reglages") afficherReglages();
+      rafraichirBandeau();
     });
+  });
+
+  // Restauration : fichier choisi dans le sélecteur caché
+  const champFichier = document.getElementById("fichier-restauration");
+  champFichier.addEventListener("change", () => {
+    if (champFichier.files[0]) restaurer(champFichier.files[0]);
+    champFichier.value = "";   // permet de rechoisir le même fichier ensuite
   });
 
   // Tous les clics passent par gererClic. Les boutons et lignes sont recréés à chaque
@@ -253,6 +320,8 @@ async function demarrer() {
   afficherListe();
   afficherEcranListe();
   afficherEcranCourses();
+  afficherReglages();
+  rafraichirBandeau();
 }
 
 demarrer();

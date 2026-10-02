@@ -33,6 +33,27 @@ const DB = {
     return this.lire("reglages", {});
   },
 
+  // --- Sauvegarde (utilisé par backup.js via app.js) ---
+  // Tout ce qui est sauvegardé : recettes, dictionnaire, historique, réglages
+  exporterTout() {
+    return { recettes: this.recettes(), dico: this.dico(), historique: this.historique(), reglages: this.reglages() };
+  },
+
+  // Remplace toutes les données par celles d'une sauvegarde (la liste en cours n'est pas touchée)
+  remplacerTout(donnees) {
+    this.ecrire("recettes", donnees.recettes);
+    this.ecrire("dico", donnees.dico);
+    this.ecrire("historique", donnees.historique);
+    this.ecrire("reglages", donnees.reglages);
+  },
+
+  // Note la date de dernière sauvegarde dans les réglages
+  marquerSauvegarde(dateISO) {
+    const reglages = this.reglages();
+    reglages.derniere_sauvegarde = dateISO;
+    this.ecrire("reglages", reglages);
+  },
+
   // --- Dictionnaire des ingrédients (clé normalisée -> { libelle, rayon }) ---
   dico() {
     return this.lire("dico", {});
