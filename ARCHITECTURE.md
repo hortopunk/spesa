@@ -265,3 +265,68 @@ Ordre non négociable : 1 → 2 → 4 → 5 → 6 sont le cœur. 3, 7, 8 peuvent
 - Liste des rayons et leur ordre exact (à caler sur ton magasin habituel).
 - Choix de la couleur d'accent et de l'icône de l'appli.
 - Décision v2 : passer à Drive automatique si la sauvegarde manuelle gêne à l'usage.
+
+---
+
+## 13. Version 1.1 : améliorations (plan du 2 octobre 2026)
+
+Origine : test de l'appli avec trois recettes réelles (un colis de livraison, un aligot, une purée). Aucun plantage, mais des défauts d'usage. Cette section est le plan de travail de la v1.1 ; elle suit les mêmes règles que la v1 (une étape à la fois, validation, un commit par étape).
+
+### 13.1 Constats à corriger
+
+| Réf. | Constat | Exemple observé |
+|---|---|---|
+| C1 | Fractions de pièces absurdes, surtout quand les parts changent | 0,5 carotte ; 4,5 gousses d'ail ; à 1 part : 0,13 carotte, 0,06 bouillon cube |
+| C2 | Variantes d'un même ingrédient non fusionnées | « pomme de terre » 1 kg et « pomme de terre à chair farineuse » 1 kg restent deux lignes |
+| C3 | Pièces mal lisibles | « gousse d'ail 4,5 pièce(s) », « paquet de lait de coco 0,5 pièce(s) » |
+| C4 | Noms affichés en minuscules | « carotte » |
+| C5 | Parts absentes à l'import : 4 par défaut, ce qui fausse les quantités des recettes calculées « par personne » | colis : quantités pour 1 personne, importées comme 4 parts |
+| C6 | Autocomplétion trop limitée : elle ne propose que ce qui a déjà été saisi (rien au départ), ne tolère ni pluriel ni faute, et rien n'empêche de créer un doublon | « tomate » / « tomates » / « tomatte » donneraient trois ingrédients |
+| C7 | Unité en centimètres inexistante (gingembre « 1 cm ») | noté « 1 pièce » : imprécis, accepté pour la v1.1 |
+
+### 13.2 Décisions proposées (à valider avant l'étape concernée)
+
+**Quantités et affichage**
+- **Affichage des fractions** : les pièces, pincées et cuillères s'affichent en fractions courantes (½, ⅓, ¼, ⅔, ¾, « 1 ½ ») quand la valeur est proche, sinon en décimales. Les g, kg, ml et l restent en décimales (« 1,5 kg »).
+- **Pièces : « × »** : « 4,5 × gousse d'ail » plutôt que « gousse d'ail 4,5 pièce(s) ». Pour les autres unités, l'affichage ne change pas.
+- **Majuscule** : première lettre du nom en majuscule à l'affichage seulement. Le texte enregistré ne change pas.
+- **Arrondi des pièces dans la liste de courses** : on additionne d'abord les quantités exactes, puis on arrondit à l'entier supérieur pour les pièces et les pincées (0,5 + 0,5 carotte = 1 ; 4,5 gousses = 5). Les cuillères, g et ml ne sont pas arrondis. La page d'une recette garde les quantités exactes. Compromis : on peut acheter un peu trop, jamais trop peu.
+- **Parts obligatoires à l'import** : si les parts sont absentes, le champ reste vide et doit être rempli avant d'enregistrer, au lieu d'un « 4 » par défaut trompeur.
+
+**Éviter les doublons (astuces simples, cumulées)**
+1. **Dictionnaire de départ** : environ 200 ingrédients courants avec leur rayon, ajoutés au premier lancement sans jamais écraser tes choix. L'autocomplétion marche dès le premier jour, et les ingrédients courants n'ont plus besoin de rayon à saisir.
+2. **Comparaison tolérante** : la clé de comparaison ignore le pluriel (« tomates » = « tomate », « oeufs » = « oeuf ») et les petits mots (« huile d'olive » = « huile olive »). Une courte liste d'exceptions évite les faux positifs (pois, riz, noix, maïs…). Cela change la clé des ingrédients : migration des données nécessaire (voir étape 14).
+3. **Autocomplétion améliorée**, partout où l'on tape un ingrédient : recettes, import et **articles libres de la liste**. Elle propose d'abord les noms qui commencent par la saisie, puis ceux qui contiennent un mot de la saisie, puis les noms proches malgré une faute de frappe. Une dernière ligne « Nouvel ingrédient : … » rend la création explicite.
+4. **« Tu voulais dire ? »** : quand un nom tapé n'existe pas mais ressemble à un existant (faute de frappe, ou nom qui contient un ingrédient connu), l'appli demande avant de créer : « Utiliser *pomme de terre* ? » avec deux boutons, « Oui » ou « Non, c'est différent ». Elle ne pose la question qu'à la création : un nom déjà connu ne redemande rien. Exemple : « oignon nouveau » déclenche la question ; la réponse « différent » règle le cas une fois pour toutes.
+5. **Badges dans l'aperçu d'import** : chaque ingrédient importé est marqué « connu » ou « nouveau », avec « proche de : … » quand c'est le cas, et un appui pour le remplacer.
+6. **Prompt d'import amélioré** : il demande le nom générique (« pomme de terre », la variété va dans les notes) et, au moment de copier, il contient la liste des noms déjà connus pour que l'assistant les réutilise tels quels.
+7. **Écran « Ingrédients »** (dans les Réglages) : liste avec recherche ; pour chaque ingrédient : renommer, changer le rayon, **fusionner dans un autre** (les recettes et la liste en cours sont réécrites), supprimer s'il n'est utilisé nulle part. Pas de nouveau champ dans le modèle : une fusion réécrit les recettes plutôt que de créer des alias.
+
+### 13.3 Plan des étapes
+
+| # | Étape | Résultat attendu |
+|---|---|---|
+| 11 | Tests de `logic.js` | Un fichier de tests lançable avec Node (aucune dépendance, non publié dans l'appli) qui vérifie normalisation, fusion, conversion, parts, lecture d'import. Il se relance avant chaque commit pour éviter les régressions (les étapes 13 à 16 touchent beaucoup la logique) |
+| 12 | Affichage des quantités | Majuscule, « × » pour les pièces, fractions ½ ¼ ¾ dans le détail des recettes, la révision et les courses (C1, C3, C4) |
+| 13 | Arrondi et parts à l'import | Pièces arrondies à l'entier supérieur dans la liste de courses ; parts obligatoires à l'import (C1, C5) |
+| 14 | Comparaison tolérante | Pluriel et petits mots ignorés dans la clé ; **migration des données** (schéma 2) avec copie de sécurité automatique avant, et fusion des clés devenues identiques (C2, C6) |
+| 15 | Dictionnaire de départ et autocomplétion | Liste d'environ 200 ingrédients que tu relis et ajustes (rayons selon ton magasin) ; autocomplétion tolérante aux fautes et ligne « Nouvel ingrédient » dans le formulaire de recette et dans les articles libres (C6) |
+| 16 | Anti-doublons à la création | Question « Tu voulais dire ? » avant de créer un nom proche d'un existant ; badges « connu / nouveau / proche de » dans l'aperçu d'import (C2, C6) |
+| 17 | Écran « Ingrédients » | Renommer, changer le rayon, fusionner, supprimer les inutilisés (C2) |
+| 18 | Prompt d'import amélioré | Noms génériques demandés, liste des noms connus ajoutée à la copie du prompt (C2, C6) |
+
+Mises en ligne par lots, à la demande : après l'étape 13, après la 16, puis après la 18. À chaque mise en ligne : changer `VERSION` du service worker, `git push`, test sur le téléphone.
+
+Ordre : 11 → 12 → 13 d'abord (corrigent ce qui est visible tout de suite, sans toucher aux données). L'étape 14 est la plus risquée (elle réécrit des clés) : elle exige une sauvegarde faite juste avant. Les étapes 15 à 18 s'appuient sur elle.
+
+### 13.4 Risques et coûts
+
+- **Étape 14** : si la règle du pluriel se trompe, deux ingrédients différents peuvent être confondus. Parades : liste d'exceptions, tests de l'étape 11, copie de sécurité avant migration, et vérification sur tes recettes réelles.
+- **Étape 15** : la liste de départ est un contenu à relire par toi (rayons selon ton magasin). Elle ne doit jamais écraser un choix déjà fait.
+- **Étape 16** : la question « Tu voulais dire ? » ajoute un appui à la création d'un ingrédient ; c'est le prix de la prévention des doublons. Elle ne s'affiche qu'en cas de ressemblance.
+- **Étape 17** : la fusion réécrit les recettes ; elle demande une confirmation et conseille une sauvegarde.
+- Aucune étape n'ajoute de dépendance externe.
+
+### 13.5 Idées en réserve (non planifiées)
+
+Écran allumé pendant les courses ; ordre des rayons réglable ; message « nouvelle version disponible » ; icône et couleur définitives ; mode sombre ; unité habituelle mémorisée par ingrédient ; ingrédients fréquents proposés en un appui dans les articles libres ; annulation de la suppression d'une recette ; suppression dans l'historique ; photo de recette (demande IndexedDB) ; sauvegarde automatique vers Drive ; corse.
