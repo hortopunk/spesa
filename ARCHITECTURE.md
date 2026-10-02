@@ -111,7 +111,15 @@ Mise en œuvre (étape 4) : chaque ligne d'ingrédient du formulaire de recette 
 
 Précisions (étape 5) : `decoches` contient des clés normalisées (ex. `huile d olive`), pas des libellés. Un décochage vaut pour toutes les lignes de l'ingrédient, quelle que soit l'unité. Un article libre (`manuels`) mémorise aussi son rayon dans le dictionnaire. Une recette supprimée disparaît de la liste à l'affichage suivant.
 
-**Historique** (`spesa_historique`, tableau) : copies figées des listes validées, avec date. Consultation seule.
+**Historique** (`spesa_historique`, tableau) : copies figées des listes validées, avec date. Consultation seule. Chaque entrée est autonome (elle ne dépend plus des recettes ni du dictionnaire) :
+```json
+{
+  "date": "2026-10-02T12:05:26.760Z",
+  "recettes": [{ "titre": "Crêpes", "parts": 4 }],
+  "lignes": [{ "libelle": "Lait", "rayon": "cremerie", "quantites": [{ "quantite": 500, "unite": "ml" }], "coche": true }]
+}
+```
+L'archivage est fait par « Terminer les courses » (étape 6). L'écran de consultation vient à l'étape 7.
 
 **Réglages** (`spesa_reglages`) : langue, date de dernière sauvegarde, version du schéma.
 

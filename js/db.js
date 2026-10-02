@@ -43,12 +43,27 @@ const DB = {
   },
 
   // --- Liste en cours ---
+  listeVide() {
+    return { recettes: [], manuels: [], decoches: [], etat: "ajouts", coches: [] };
+  },
+
   liste() {
-    return this.lire("liste", { recettes: [], manuels: [], decoches: [], etat: "ajouts", coches: [] });
+    return this.lire("liste", this.listeVide());
   },
 
   enregistrerListe(liste) {
     this.ecrire("liste", liste);
+  },
+
+  // --- Historique : listes terminées, copies figées (consultation seule) ---
+  historique() {
+    return this.lire("historique", []);
+  },
+
+  ajouterHistorique(entree) {
+    const historique = this.historique();
+    historique.push(entree);
+    this.ecrire("historique", historique);
   },
 
   // --- Recettes ---

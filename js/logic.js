@@ -196,6 +196,30 @@ const Logic = {
       .filter((groupe) => groupe.lignes.length > 0);
   },
 
+  // Nombre d'articles de la liste finale et nombre d'articles cochés
+  compterCoches(groupes, coches) {
+    const cles = groupes.flatMap((g) => g.lignes.map((l) => l.cle));
+    return { total: cles.length, coches: cles.filter((cle) => coches.includes(cle)).length };
+  },
+
+  // Copie figée d'une liste terminée, pour l'historique : elle ne dépend plus des
+  // recettes ni du dictionnaire, qui peuvent changer ensuite.
+  construireArchive(liste, recettes, groupes, dateISO) {
+    return {
+      date: dateISO,
+      recettes: liste.recettes
+        .map((choix) => ({ choix, recette: recettes.find((r) => r.id === choix.id) }))
+        .filter((x) => x.recette)
+        .map((x) => ({ titre: x.recette.titre, parts: x.choix.parts })),
+      lignes: groupes.flatMap((g) => g.lignes.map((l) => ({
+        libelle: l.libelle,
+        rayon: l.rayon,
+        quantites: l.quantites,
+        coche: liste.coches.includes(l.cle)
+      })))
+    };
+  },
+
   // Transforme la saisie du formulaire (du texte) en recette propre.
   // Renvoie { recette, rayons } si tout va bien (rayons = [{ nom, rayon }] à mémoriser
   // dans le dictionnaire), sinon { erreur: "cle_de_texte" }.

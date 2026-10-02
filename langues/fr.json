@@ -36,6 +36,10 @@
   "modifier_liste": "Modifier la liste",
   "courses_pas_prete": "Aucune liste validée. Prépare-la dans l'onglet Liste.",
   "courses_liste_vide": "Rien à acheter : tout est déjà à la maison.",
+  "terminer_courses": "Terminer les courses",
+  "articles_coches": "articles dans le caddie",
+  "confirmer_terminer": "Terminer les courses ? La liste sera archivée.",
+  "confirmer_terminer_reste": "Il reste {n} article(s) non coché(s). Terminer quand même ? La liste sera archivée.",
   "retirer": "Retirer",
   "fermer": "Fermer",
 

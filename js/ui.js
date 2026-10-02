@@ -304,17 +304,30 @@ const UI = {
   },
 
   // --- Onglet Courses : liste finale rangée par rayon ---
-  rendreCourses(groupes, listeValidee) {
+  // Mode courses : une ligne = une grande zone tactile qui coche l'article.
+  // `coches` = clés des articles déjà dans le caddie.
+  rendreCourses(groupes, listeValidee, coches) {
     const c = document.getElementById("contenu-courses");
     c.replaceChildren();
     if (!listeValidee) return c.append(el("p", { class: "vide", texte: t("courses_pas_prete") }));
-    if (groupes.length === 0) return c.append(el("p", { class: "vide", texte: t("courses_liste_vide") }));
+    if (groupes.length > 0) c.append(el("p", { id: "compteur-courses", class: "aide" }));
+    if (groupes.length === 0) c.append(el("p", { class: "vide", texte: t("courses_liste_vide") }));
     groupes.forEach((groupe) => {
       c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
-      groupe.lignes.forEach((l) => c.append(el("div", { class: "ligne-course" }, [
+      groupe.lignes.forEach((l) => c.append(el("label", { class: "ligne-course" }, [
+        el("input", { type: "checkbox", "data-action": "cocher", "data-cle": l.cle, checked: coches.includes(l.cle) }),
         el("span", { class: "coche-nom", texte: l.libelle }),
         el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
       ])));
     });
+    c.append(el("div", { class: "actions" }, [
+      el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") })
+    ]));
+  },
+
+  // Met à jour « 3 / 12 » sans tout redessiner
+  majCompteur(coches, total) {
+    const p = document.getElementById("compteur-courses");
+    if (p) p.textContent = coches + " / " + total + " " + t("articles_coches");
   }
 };

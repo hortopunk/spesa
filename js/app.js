@@ -113,6 +113,17 @@ function gererClic(evenement) {
       UI.afficherEcran("courses");
       break;
     case "liste-modifier": modifierListe((l) => { l.etat = "revision"; }); break;
+    case "cocher": {
+      // Mode courses : article dans le caddie ou non (pas de nouveau dessin, pour ne pas faire sauter l'écran)
+      const liste = DB.liste();
+      liste.coches = liste.coches.filter((cle) => cle !== bouton.dataset.cle);
+      if (bouton.checked) liste.coches.push(bouton.dataset.cle);
+      DB.enregistrerListe(liste);
+      const compte = Logic.compterCoches(groupesDeLaListe(liste, true), liste.coches);
+      UI.majCompteur(compte.coches, compte.total);
+      break;
+    }
+    case "terminer-courses": terminerCourses(); break;
     case "basculer": {
       // Décocher = « je l'ai déjà » : la clé est mémorisée dans `decoches`
       const liste = DB.liste();
@@ -163,7 +174,28 @@ function afficherEcranListe() {
 // Affiche l'onglet Courses : liste finale rangée par rayon
 function afficherEcranCourses() {
   const liste = DB.liste();
-  UI.rendreCourses(groupesDeLaListe(liste, true), liste.etat === "courses");
+  const groupes = groupesDeLaListe(liste, true);
+  UI.rendreCourses(groupes, liste.etat === "courses", liste.coches);
+  const compte = Logic.compterCoches(groupes, liste.coches);
+  UI.majCompteur(compte.coches, compte.total);
+}
+
+// Termine les courses : archive la liste dans l'historique, puis repart d'une liste vide
+function terminerCourses() {
+  const liste = DB.liste();
+  const groupes = groupesDeLaListe(liste, true);
+  const compte = Logic.compterCoches(groupes, liste.coches);
+  const reste = compte.total - compte.coches;
+  const question = reste > 0
+    ? t("confirmer_terminer_reste").replace("{n}", reste)
+    : t("confirmer_terminer");
+  if (!confirm(question)) return;
+  DB.ajouterHistorique(Logic.construireArchive(liste, DB.recettes(), groupes, new Date().toISOString()));
+  DB.enregistrerListe(DB.listeVide());
+  etat.choixRecette = false;
+  afficherEcranListe();
+  afficherEcranCourses();
+  UI.afficherEcran("liste");
 }
 
 // Applique un changement à la liste, l'enregistre et réaffiche
