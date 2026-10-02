@@ -69,3 +69,84 @@ h1 { font-size: 1.5rem; margin: 0 0 16px; }
 }
 
 .onglet.actif { color: var(--accent); font-weight: 600; }
+
+/* ---------- Boutons ---------- */
+.bouton {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+.bouton.principal { background: var(--accent); color: #ffffff; }
+.bouton.danger { border-color: #b3261e; color: #b3261e; }
+.bouton.lien { border: 0; background: none; padding-left: 0; }
+.bouton.rond { min-width: 44px; padding: 0; border-radius: 22px; }
+
+.actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+#vue-liste > .bouton.principal { width: 100%; margin-top: 16px; }
+
+/* ---------- Champs de saisie ---------- */
+input, select, textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #cfcabd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--texte);
+  font: inherit;
+}
+label { display: block; margin: 16px 0 4px; font-weight: 600; }
+h2 { font-size: 1.1rem; margin: 24px 0 8px; }
+.erreur { color: #b3261e; font-weight: 600; }
+
+/* Une ligne d'ingrédient : nom en haut, quantité + unité + retrait dessous */
+.ligne-ingredient {
+  display: grid;
+  grid-template-columns: 1fr 1fr 44px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.ligne-ingredient .i-nom { grid-column: 1 / -1; }
+
+/* ---------- Liste de recettes ---------- */
+.cartes { list-style: none; padding: 0; margin: 16px 0 0; }
+.carte {
+  width: 100%;
+  min-height: 56px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e3dfd6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--texte);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.carte-titre { font-weight: 600; }
+.carte-info { color: var(--gris); font-size: 0.85rem; white-space: nowrap; }
+
+/* ---------- Détail d'une recette ---------- */
+.parts { display: flex; align-items: center; gap: 12px; }
+.parts-nombre { min-width: 1.5em; text-align: center; font-size: 1.2rem; }
+.ingredients { list-style: none; padding: 0; margin: 0; }
+.ingredients li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e3dfd6;
+}
+.quantite { color: var(--accent); font-weight: 600; white-space: nowrap; }
+.etapes { padding-left: 1.4em; }
+.etapes li { margin-bottom: 8px; }
+.notes { color: var(--gris); }

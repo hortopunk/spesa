@@ -12,5 +12,52 @@
   "vide_recettes": "Aucune recette pour l'instant.",
   "vide_liste": "Ta liste est vide.",
   "vide_courses": "Aucune course en cours.",
-  "vide_reglages": "Rien à régler pour l'instant."
+  "vide_reglages": "Rien à régler pour l'instant.",
+  "aucun_resultat": "Aucune recette ne correspond.",
+
+  "recherche_recettes": "Rechercher une recette ou un ingrédient",
+  "nouvelle_recette": "Nouvelle recette",
+  "titre_nouvelle_recette": "Nouvelle recette",
+  "titre_modifier_recette": "Modifier la recette",
+
+  "part": "part",
+  "parts": "parts",
+  "pour": "Pour",
+  "diminuer_parts": "Moins de parts",
+  "augmenter_parts": "Plus de parts",
+
+  "retour": "Retour",
+  "modifier": "Modifier",
+  "supprimer": "Supprimer",
+  "enregistrer": "Enregistrer",
+  "annuler": "Annuler",
+  "confirmer_suppression": "Supprimer cette recette ? Cette action est définitive.",
+
+  "section_ingredients": "Ingrédients",
+  "section_etapes": "Étapes",
+  "section_notes": "Notes",
+
+  "champ_titre": "Titre",
+  "champ_parts": "Nombre de parts",
+  "champ_nom_ingredient": "Ingrédient",
+  "champ_quantite": "Quantité",
+  "champ_etapes": "Étapes (une par ligne)",
+  "champ_notes": "Notes",
+  "ajouter_ingredient": "Ajouter un ingrédient",
+  "retirer_ingredient": "Retirer cet ingrédient",
+
+  "erreur_titre": "Donne un titre à la recette.",
+  "erreur_parts": "Le nombre de parts doit être un entier, 1 au minimum.",
+  "erreur_ingredient_nom": "Un ingrédient a une quantité mais pas de nom.",
+  "erreur_quantite": "Une quantité n'est pas un nombre valide (exemple : 1,5).",
+  "erreur_ingredient_vide": "Ajoute au moins un ingrédient.",
+
+  "unite_g": "g",
+  "unite_kg": "kg",
+  "unite_ml": "ml",
+  "unite_l": "l",
+  "unite_cs": "c. à soupe",
+  "unite_cc": "c. à café",
+  "unite_piece": "pièce(s)",
+  "unite_pincee": "pincée(s)"
 }

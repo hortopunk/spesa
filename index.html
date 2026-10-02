@@ -11,8 +11,16 @@
   <!-- Zone qui affiche l'écran courant -->
   <main id="ecrans">
     <section class="ecran" id="ecran-recettes" data-ecran="recettes">
-      <h1 data-i18n="titre_recettes"></h1>
-      <p class="vide" data-i18n="vide_recettes"></p>
+      <!-- Trois vues : liste, détail, formulaire (une seule visible à la fois) -->
+      <div id="vue-liste">
+        <h1 data-i18n="titre_recettes"></h1>
+        <input type="search" id="recherche" data-i18n-placeholder="recherche_recettes">
+        <ul id="liste-recettes" class="cartes"></ul>
+        <p class="vide" id="vide-recettes"></p>
+        <button class="bouton principal" data-action="nouvelle" data-i18n="nouvelle_recette"></button>
+      </div>
+      <div id="vue-detail" hidden></div>
+      <div id="vue-form" hidden></div>
     </section>
 
     <section class="ecran" id="ecran-liste" data-ecran="liste" hidden>
@@ -53,6 +61,8 @@
 
   <!-- Ordre important : langue avant ui, app en dernier -->
   <script src="js/langue.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/logic.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
 </body>

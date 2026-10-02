@@ -87,6 +87,8 @@ Tout est stocké en JSON sous quelques clés LocalStorage, préfixées `spesa_`.
 }
 ```
 
+Un ingrédient sans quantité (ex. « sel ») est autorisé : `"quantite": null, "unite": ""`. Unités v1 provisoires : `g`, `kg`, `ml`, `l`, `cs`, `cc`, `piece`, `pincee`. Les identifiants de recettes sont de la forme `r_` + code unique.
+
 **Dictionnaire** (`spesa_dico`, objet) : clé normalisée → fiche
 ```json
 { "aubergine": { "libelle": "aubergine", "rayon": "fruits_legumes" } }
