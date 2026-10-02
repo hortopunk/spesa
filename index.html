@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Adapte la page à la largeur du téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SPESA</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Zone qui affiche l'écran courant -->
+  <main id="ecrans">
+    <section class="ecran" id="ecran-recettes" data-ecran="recettes">
+      <h1 data-i18n="titre_recettes"></h1>
+      <p class="vide" data-i18n="vide_recettes"></p>
+    </section>
+
+    <section class="ecran" id="ecran-liste" data-ecran="liste" hidden>
+      <h1 data-i18n="titre_liste"></h1>
+      <p class="vide" data-i18n="vide_liste"></p>
+    </section>
+
+    <section class="ecran" id="ecran-courses" data-ecran="courses" hidden>
+      <h1 data-i18n="titre_courses"></h1>
+      <p class="vide" data-i18n="vide_courses"></p>
+    </section>
+
+    <section class="ecran" id="ecran-reglages" data-ecran="reglages" hidden>
+      <h1 data-i18n="titre_reglages"></h1>
+      <p class="vide" data-i18n="vide_reglages"></p>
+    </section>
+  </main>
+
+  <!-- Navigation en bas, à portée du pouce -->
+  <nav id="navigation">
+    <button class="onglet actif" data-cible="recettes">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2zM8 7h6M8 11h6"/></svg>
+      <span data-i18n="nav_recettes"></span>
+    </button>
+    <button class="onglet" data-cible="liste">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+      <span data-i18n="nav_liste"></span>
+    </button>
+    <button class="onglet" data-cible="courses">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h10l2-8H6.5M9 20h.01M17 20h.01"/></svg>
+      <span data-i18n="nav_courses"></span>
+    </button>
+    <button class="onglet" data-cible="reglages">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 5v4M6 15v4"/></svg>
+      <span data-i18n="nav_reglages"></span>
+    </button>
+  </nav>
+
+  <!-- Ordre important : langue avant ui, app en dernier -->
+  <script src="js/langue.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

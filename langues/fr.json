@@ -1,0 +1,16 @@
+{
+  "nav_recettes": "Recettes",
+  "nav_liste": "Liste",
+  "nav_courses": "Courses",
+  "nav_reglages": "Réglages",
+
+  "titre_recettes": "Recettes",
+  "titre_liste": "Liste",
+  "titre_courses": "Courses",
+  "titre_reglages": "Réglages",
+
+  "vide_recettes": "Aucune recette pour l'instant.",
+  "vide_liste": "Ta liste est vide.",
+  "vide_courses": "Aucune course en cours.",
+  "vide_reglages": "Rien à régler pour l'instant."
+}
