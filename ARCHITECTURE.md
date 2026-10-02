@@ -35,6 +35,13 @@ Version : 1.0 — 2 octobre 2026
 | Hébergement | GitHub Pages (gratuit) | Simple |
 | Développement | Assistant de code IA, par petites étapes, une validation par étape | Voir section 11 |
 
+Mise en œuvre PWA (étape 9) :
+- `manifest.json` (nom SPESA, affichage plein écran, couleur d'accent `#2e7d4f`, icônes 192 et 512 px). Les icônes sont provisoires : coche blanche sur fond vert, à remplacer quand l'icône définitive sera choisie.
+- `service-worker.js` : cache « d'abord le cache, puis le réseau ». Tous les fichiers de l'appli sont mis en cache à l'installation, en bloc (tout ou rien), ce qui évite de mélanger deux versions.
+- **Règle de mise à jour : à chaque modification d'un fichier de l'appli, changer `VERSION` dans `service-worker.js`** (ex. `spesa-v2`). Sinon les téléphones gardent l'ancienne version. Tout nouveau fichier de l'appli doit aussi être ajouté à la liste `FICHIERS`.
+- Sur `localhost`, le service worker est désactivé pour voir chaque modification tout de suite. Pour tester le hors-ligne en local : `http://localhost:8080/?sw`.
+- `navigator.storage.persist()` est appelé à chaque démarrage (sans effet s'il est déjà accordé) : Chrome peut le refuser avant l'installation sur l'écran d'accueil et l'accorder après.
+
 Hors périmètre v1 : synchronisation PC/téléphone, comptes, serveur, prix et budget, stock permanent, OCR intégré, partage de listes.
 
 ## 3. Structure des fichiers

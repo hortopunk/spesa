@@ -347,7 +347,26 @@ function ajouterArticle() {
   modifierListe((l) => l.manuels.push({ ...resultat.ingredient, rayon: resultat.rayon.rayon }));
 }
 
+// Hors-ligne et stockage durable (voir service-worker.js)
+function demarrerPWA() {
+  // Demande au navigateur de ne pas vider nos données quand il manque de place
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+  if (!("serviceWorker" in navigator)) return;
+  // Sur ton PC (localhost), pas de cache : tu vois chaque modification tout de suite.
+  // Pour tester le hors-ligne en local, ouvrir http://localhost:8080/?sw
+  const enLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+  if (enLocal && !location.search.includes("sw")) {
+    navigator.serviceWorker.getRegistrations().then((liste) => liste.forEach((r) => r.unregister()));
+    caches.keys().then((noms) => noms.forEach((n) => caches.delete(n)));
+    return;
+  }
+  navigator.serviceWorker.register("service-worker.js")
+    .catch((erreur) => console.warn("Hors-ligne indisponible :", erreur));
+}
+
 async function demarrer() {
+  demarrerPWA();
   DB.init();
   await Langue.init(DB.reglages().langue);
   Langue.appliquer();
