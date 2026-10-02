@@ -315,6 +315,8 @@ Origine : test de l'appli avec trois recettes réelles (un colis de livraison, u
 | 17 | Écran « Ingrédients » | Renommer, changer le rayon, fusionner, supprimer les inutilisés (C2) |
 | 18 | Prompt d'import amélioré | Noms génériques demandés, liste des noms connus ajoutée à la copie du prompt (C2, C6) |
 
+Mise en œuvre (étape 11) : dossier `tests/`, deux fichiers. `logic.test.js` couvre la logique (`logic.js`) et la sauvegarde (`backup.js`). `fichiers.test.js` vérifie la cohérence des fichiers : liste du cache hors-ligne complète, textes `fr.json` tous présents, aucun texte en dur dans `index.html`. Commande, depuis le dossier du projet : `node --test` (aucune installation, Node suffit). **À lancer avant chaque commit**, et à compléter à chaque nouvelle règle de logique. Les tests décrivent le comportement voulu : quand une étape change une règle (ex. arrondi des pièces), le test concerné est modifié dans la même étape.
+
 Mises en ligne par lots, à la demande : après l'étape 13, après la 16, puis après la 18. À chaque mise en ligne : changer `VERSION` du service worker, `git push`, test sur le téléphone.
 
 Ordre : 11 → 12 → 13 d'abord (corrigent ce qui est visible tout de suite, sans toucher aux données). L'étape 14 est la plus risquée (elle réécrit des clés) : elle exige une sauvegarde faite juste avant. Les étapes 15 à 18 s'appuient sur elle.
