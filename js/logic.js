@@ -161,10 +161,16 @@ const Logic = {
     return { famille: unite, valeur: quantite };
   },
 
-  // Affiche un total dans l'unité la plus lisible : 1500 g devient 1,5 kg
+  // Total d'une ligne de la liste de courses, dans l'unité la plus lisible :
+  // 1500 g devient 1,5 kg. Les pièces et les pincées sont arrondies à l'entier supérieur
+  // (on n'achète pas une demi-carotte : 0,5 + 0,5 = 1 ; 4,5 gousses = 5).
+  // Les autres unités gardent leurs décimales.
   lisible(total, famille) {
     if (famille === "g" && total >= 1000) return { quantite: this.arrondir(total / 1000), unite: "kg" };
     if (famille === "ml" && total >= 1000) return { quantite: this.arrondir(total / 1000), unite: "l" };
+    if (famille === "piece" || famille === "pincee") {
+      return { quantite: Math.ceil(this.arrondir(total) - 1e-9), unite: famille };
+    }
     return { quantite: this.arrondir(total), unite: famille };
   },
 
@@ -242,7 +248,9 @@ const Logic = {
   FORMAT_IMPORT: "spesa-recette-v1",
 
   // Lit le texte d'un import (fichier ou texte collé) et le vérifie.
-  // Renvoie { erreur, detail? } ou { recette, avertissements, partsParDefaut }.
+  // Renvoie { erreur, detail? } ou { recette, avertissements, partsAbsentes }.
+  // Si la page ne dit pas pour combien de personnes les quantités sont écrites,
+  // `recette.parts` vaut null : l'utilisateur devra le renseigner avant d'enregistrer.
   // `recette` n'a pas d'id : elle sera validée et enregistrée comme une saisie normale.
   lireRecetteImportee(texte) {
     // L'IA peut entourer le JSON de texte ou de ``` : on garde de la première { à la dernière }
@@ -260,9 +268,9 @@ const Logic = {
     const titre = typeof donnees.titre === "string" ? donnees.titre.trim() : "";
     if (titre === "") return { erreur: "erreur_import_titre" };
 
-    // Parts absentes ou invalides : 4 par défaut, signalé dans l'aperçu
+    // Parts absentes ou invalides : on n'invente pas de valeur, le champ restera vide
     const partsValides = Number.isInteger(donnees.parts) && donnees.parts >= 1;
-    const parts = partsValides ? donnees.parts : 4;
+    const parts = partsValides ? donnees.parts : null;
 
     if (!Array.isArray(donnees.ingredients) || donnees.ingredients.length === 0) {
       return { erreur: "erreur_import_ingredients" };
@@ -294,7 +302,7 @@ const Logic = {
         notes: typeof donnees.notes === "string" ? donnees.notes.trim() : ""
       },
       avertissements: textes(donnees.avertissements),
-      partsParDefaut: !partsValides
+      partsAbsentes: !partsValides
     };
   },
 

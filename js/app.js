@@ -72,7 +72,7 @@ function analyserImport(texte) {
   if (resultat.erreur) {
     return UI.messageImport(t(resultat.erreur).replace("{detail}", resultat.detail || ""), true);
   }
-  const avertissements = resultat.partsParDefaut
+  const avertissements = resultat.partsAbsentes
     ? [t("avertissement_parts"), ...resultat.avertissements]
     : resultat.avertissements;
   etat.editionId = null;   // c'est une nouvelle recette

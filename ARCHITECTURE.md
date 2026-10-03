@@ -144,6 +144,7 @@ Chaque jeu de données porte un numéro de version de schéma, pour migrer propr
 - Conversion automatique : g ↔ kg, ml ↔ l. Résultat affiché dans l'unité la plus lisible (1 500 g devient 1,5 kg).
 - Unités non convertibles (pièce, pincée, cuillère à soupe, etc.) : fusion seulement entre unités identiques. Sinon, deux lignes distinctes.
 - Pas de conversion entre masse et volume.
+- Arrondi (étape 13) : une fois les quantités additionnées, les pièces et les pincées sont arrondies à l'entier supérieur dans la liste de courses (0,5 + 0,5 carotte = 1 ; 4,5 gousses = 5). Les autres unités gardent leurs décimales. La page d'une recette garde les quantités exactes.
 
 **Rayons** (liste fixe, ordre modifiable plus tard dans le code) : fruits et légumes, boulangerie, boucherie-poissonnerie, crèmerie, épicerie salée, épicerie sucrée, surgelés, boissons, hygiène et entretien, autre. Cette liste est une proposition à ajuster à l'ordre de ton magasin habituel.
 
@@ -180,7 +181,7 @@ Le prompt standard est stocké dans l'appli (bouton « Copier le prompt »). Le 
 Mise en œuvre (étape 3) :
 - Le JSON accepte une clé facultative `avertissements` (liste de phrases) où l'assistant signale ses doutes. Elle s'affiche dans l'aperçu et n'est pas enregistrée dans la recette.
 - Le texte est lu même s'il est entouré de blabla ou de ``` (on garde de la première `{` à la dernière `}`). Format, titre, ingrédients, quantités et unités sont vérifiés avant tout aperçu.
-- Parts absentes : 4 par défaut, signalé dans l'aperçu.
+- Parts absentes : le champ reste vide et doit être rempli avant d'enregistrer (étape 13). Une recette de colis donne souvent des quantités pour 1 personne sans le dire : mettre 4 par défaut faussait tous les calculs.
 - L'aperçu à valider est le formulaire de recette lui-même, prérempli : on relit, on corrige, on choisit le rayon des ingrédients inconnus, puis on enregistre. Rien n'est enregistré avant.
 - Liste fermée des unités (confirmée) : `g`, `kg`, `ml`, `l`, `cs`, `cc`, `piece`, `pincee`. Les éléments comptés (gousse, tranche, boîte, botte...) passent en `piece`, le type étant dans le nom (« gousse d'ail »).
 - Le prompt est stocké dans `langues/fr.json` (clé `prompt_import`). Texte actuel :
@@ -318,6 +319,8 @@ Origine : test de l'appli avec trois recettes réelles (un colis de livraison, u
 Mise en œuvre (étape 11) : dossier `tests/`, deux fichiers. `logic.test.js` couvre la logique (`logic.js`) et la sauvegarde (`backup.js`). `fichiers.test.js` vérifie la cohérence des fichiers : liste du cache hors-ligne complète, textes `fr.json` tous présents, aucun texte en dur dans `index.html`. Commande, depuis le dossier du projet : `node --test` (aucune installation, Node suffit). **À lancer avant chaque commit**, et à compléter à chaque nouvelle règle de logique. Les tests décrivent le comportement voulu : quand une étape change une règle (ex. arrondi des pièces), le test concerné est modifié dans la même étape.
 
 Mise en œuvre (étape 12) : l'affichage passe par `Logic.formaterNombre(quantité, unité)` (fractions ½ ⅓ ¼ ⅔ ¾ pour pièce, pincée, c. à soupe, c. à café ; une valeur sans fraction courante, comme 0,13, reste décimale) et `Logic.majuscule`. S'applique au détail d'une recette, à la liste (articles libres, révision), aux courses et à l'historique. Aucune donnée enregistrée ne change.
+
+Mise en œuvre (étape 13) : arrondi dans `Logic.lisible` (donc dans la révision, les courses et l'historique) ; à l'import, `parts` vaut `null` si la page ne le dit pas, avec explication sous le champ « Nombre de parts » du formulaire. Le bouton flottant « Sauvegarder » est masqué sur l'onglet Courses, où il cachait des quantités ; le bandeau de rappel, les Réglages et la proposition de fin de courses restent.
 
 Mises en ligne par lots, à la demande : après l'étape 13, après la 16, puis après la 18. À chaque mise en ligne : changer `VERSION` du service worker, `git push`, test sur le téléphone.
 

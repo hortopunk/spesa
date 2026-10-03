@@ -183,6 +183,28 @@ test("lisible : bascule en kg et en l à partir de 1000", () => {
   assert.deepEqual(Logic.lisible(3, "piece"), { quantite: 3, unite: "piece" });
 });
 
+test("lisible : pièces et pincées arrondies à l'entier supérieur, le reste garde ses décimales", () => {
+  assert.equal(Logic.lisible(4.5, "piece").quantite, 5);
+  assert.equal(Logic.lisible(0.25, "piece").quantite, 1);
+  assert.equal(Logic.lisible(0.13, "piece").quantite, 1);
+  assert.equal(Logic.lisible(1, "piece").quantite, 1);          // déjà entier : inchangé
+  assert.equal(Logic.lisible(3.004, "piece").quantite, 3);      // bruit de calcul : pas d'arrondi vers le haut
+  assert.equal(Logic.lisible(0.5, "pincee").quantite, 1);
+  assert.equal(Logic.lisible(1.5, "cs").quantite, 1.5);         // cuillères : décimales conservées
+  assert.equal(Logic.lisible(0.5, "cc").quantite, 0.5);
+  assert.equal(Logic.lisible(250.5, "g").quantite, 250.5);
+});
+
+test("fusionner : 0,5 + 0,5 carotte = 1 ; 4,5 gousses = 5 ; l'arrondi vient après la somme", () => {
+  const carottes = Logic.fusionner([ing("carotte", 0.5, "piece"), ing("Carotte", 0.5, "piece")], {});
+  assert.deepEqual(carottes[0].quantites, [{ quantite: 1, unite: "piece" }]);
+  const ail = Logic.fusionner([ing("gousse d'ail", 0.5, "piece"), ing("gousse d'ail", 4, "piece")], {});
+  assert.deepEqual(ail[0].quantites, [{ quantite: 5, unite: "piece" }]);
+  // 0,3 + 0,3 = 0,6 : arrondi une seule fois (1), pas une fois par ligne (2)
+  const petit = Logic.fusionner([ing("x", 0.3, "piece"), ing("x", 0.3, "piece")], {});
+  assert.deepEqual(petit[0].quantites, [{ quantite: 1, unite: "piece" }]);
+});
+
 test("fusionner : g + kg, accents et majuscules", () => {
   const res = Logic.fusionner([ing("Farine", 800, "g"), ing("farine", 0.7, "kg")], DICO);
   assert.equal(res.length, 1);
@@ -287,7 +309,8 @@ test("lireRecetteImportee : recette correcte, texte entouré de blabla accepté"
   assert.equal(ok.recette.titre, "Ratatouille");
   assert.equal(ok.recette.ingredients.length, 3);
   assert.deepEqual(ok.avertissements, ["Quantité de sel illisible"]);
-  assert.equal(ok.partsParDefaut, false);
+  assert.equal(ok.partsAbsentes, false);
+  assert.equal(ok.recette.parts, 4);
   const entoure = Logic.lireRecetteImportee("Voici :\n```json\n" + JSON.stringify(IMPORT) + "\n```\nBon appétit");
   assert.equal(entoure.recette.titre, "Ratatouille");
 });
@@ -305,9 +328,15 @@ test("lireRecetteImportee : erreurs claires", () => {
   assert.equal(unite.detail, "riz (tasse)");
 });
 
-test("lireRecetteImportee : parts absentes signalées, quantité en texte acceptée", () => {
-  const sansParts = Logic.lireRecetteImportee(JSON.stringify({ ...IMPORT, parts: null }));
-  assert.equal(sansParts.partsParDefaut, true);
+test("lireRecetteImportee : parts absentes ou invalides = null (jamais de valeur inventée)", () => {
+  for (const parts of [null, 0, 1.5, "quatre", undefined]) {
+    const res = Logic.lireRecetteImportee(JSON.stringify({ ...IMPORT, parts }));
+    assert.equal(res.partsAbsentes, true, "parts = " + parts);
+    assert.equal(res.recette.parts, null, "parts = " + parts);
+  }
+});
+
+test("lireRecetteImportee : quantité en texte acceptée, champs facultatifs absents", () => {
   const texte = Logic.lireRecetteImportee(JSON.stringify({ ...IMPORT, ingredients: [ing("riz", "1,5", "kg")] }));
   assert.equal(texte.recette.ingredients[0].quantite, 1.5);
   const minimale = Logic.lireRecetteImportee(JSON.stringify({ ...IMPORT, etapes: undefined, avertissements: undefined }));

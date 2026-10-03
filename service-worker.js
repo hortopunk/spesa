@@ -3,7 +3,7 @@
 // ⚠ À CHAQUE MODIFICATION d'un fichier de l'appli, changer le numéro de VERSION
 // ci-dessous. Sinon les téléphones gardent l'ancienne version en cache.
 
-const VERSION = "spesa-v2";
+const VERSION = "spesa-v3";
 
 // Tous les fichiers nécessaires pour fonctionner hors-ligne
 const FICHIERS = [

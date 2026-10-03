@@ -23,6 +23,9 @@ const UI = {
     document.querySelectorAll(".onglet").forEach((onglet) => {
       onglet.classList.toggle("actif", onglet.dataset.cible === nom);
     });
+    // En mode courses, le bouton flottant masquerait des quantités : on le cache
+    // (le bandeau de rappel et les Réglages permettent de sauvegarder)
+    document.getElementById("bouton-sauvegarde").hidden = nom === "courses";
   },
 
   // Dans l'écran Recettes : "liste", "detail", "form" ou "import"
@@ -139,7 +142,11 @@ const UI = {
       el("label", { "for": "f-titre", texte: t("champ_titre") }),
       el("input", { id: "f-titre", type: "text", value: recette ? recette.titre : "" }),
       el("label", { "for": "f-parts", texte: t("champ_parts") }),
-      el("input", { id: "f-parts", type: "text", inputmode: "numeric", value: recette ? recette.parts : 4 }),
+      el("input", {
+        id: "f-parts", type: "text", inputmode: "numeric", placeholder: t("parts_obligatoire"),
+        value: recette ? recette.parts : 4   // import sans parts : null, le champ reste vide
+      }),
+      el("p", { class: "aide aide-champ", texte: t("aide_parts") }),
       el("h2", { texte: t("section_ingredients") }),
       el("div", { id: "f-ingredients" }),
       el("button", { class: "bouton", "data-action": "ajouter-ingredient", texte: "+ " + t("ajouter_ingredient") }),

@@ -85,6 +85,8 @@
 
   "champ_titre": "Titre",
   "champ_parts": "Nombre de parts",
+  "parts_obligatoire": "Obligatoire",
+  "aide_parts": "Pour combien de personnes les quantités sont écrites. Tu choisiras tes propres parts au moment de faire ta liste.",
   "champ_nom_ingredient": "Ingrédient",
   "champ_quantite": "Quantité",
   "champ_etapes": "Étapes (une par ligne)",
@@ -133,7 +135,7 @@
   "choisir_fichier": "Choisir un fichier",
   "titre_apercu_import": "Aperçu de la recette importée",
   "avertissements_import": "Points à vérifier avant d'enregistrer :",
-  "avertissement_parts": "Le nombre de parts était absent : 4 par défaut. Corrige-le si besoin.",
+  "avertissement_parts": "Le nombre de personnes n'était pas indiqué sur la page. Renseigne-le ci-dessous : c'est pour combien de personnes les quantités sont écrites.",
   "erreur_import_illisible": "Ce texte ne contient pas de JSON lisible.",
   "erreur_import_format": "Ce texte n'est pas une recette au format SPESA.",
   "erreur_import_titre": "La recette n'a pas de titre.",

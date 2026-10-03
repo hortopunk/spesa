@@ -271,3 +271,6 @@ textarea[readonly] { font-size: 0.8rem; color: var(--gris); }
 }
 .avertissements p { margin: 0 0 4px; font-weight: 600; }
 .avertissements ul { margin: 0; padding-left: 1.2em; }
+
+/* Petite explication sous un champ */
+.aide-champ { margin: 4px 0 0; font-size: 0.85rem; }
