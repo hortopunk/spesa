@@ -288,7 +288,7 @@ Origine : test de l'appli avec trois recettes réelles (un colis de livraison, u
 
 **Quantités et affichage**
 - **Affichage des fractions** : les pièces, pincées et cuillères s'affichent en fractions courantes (½, ⅓, ¼, ⅔, ¾, « 1 ½ ») quand la valeur est proche, sinon en décimales. Les g, kg, ml et l restent en décimales (« 1,5 kg »).
-- **Pièces : « × »** : « 4,5 × gousse d'ail » plutôt que « gousse d'ail 4,5 pièce(s) ». Pour les autres unités, l'affichage ne change pas.
+- **Pièces : « × »** : la quantité d'une pièce s'écrit « × 4,5 » à droite du nom (« Gousse d'ail … × 4,5 ») plutôt que « 4,5 pièce(s) ». Pour les autres unités, l'affichage ne change pas.
 - **Majuscule** : première lettre du nom en majuscule à l'affichage seulement. Le texte enregistré ne change pas.
 - **Arrondi des pièces dans la liste de courses** : on additionne d'abord les quantités exactes, puis on arrondit à l'entier supérieur pour les pièces et les pincées (0,5 + 0,5 carotte = 1 ; 4,5 gousses = 5). Les cuillères, g et ml ne sont pas arrondis. La page d'une recette garde les quantités exactes. Compromis : on peut acheter un peu trop, jamais trop peu.
 - **Parts obligatoires à l'import** : si les parts sont absentes, le champ reste vide et doit être rempli avant d'enregistrer, au lieu d'un « 4 » par défaut trompeur.
@@ -316,6 +316,8 @@ Origine : test de l'appli avec trois recettes réelles (un colis de livraison, u
 | 18 | Prompt d'import amélioré | Noms génériques demandés, liste des noms connus ajoutée à la copie du prompt (C2, C6) |
 
 Mise en œuvre (étape 11) : dossier `tests/`, deux fichiers. `logic.test.js` couvre la logique (`logic.js`) et la sauvegarde (`backup.js`). `fichiers.test.js` vérifie la cohérence des fichiers : liste du cache hors-ligne complète, textes `fr.json` tous présents, aucun texte en dur dans `index.html`. Commande, depuis le dossier du projet : `node --test` (aucune installation, Node suffit). **À lancer avant chaque commit**, et à compléter à chaque nouvelle règle de logique. Les tests décrivent le comportement voulu : quand une étape change une règle (ex. arrondi des pièces), le test concerné est modifié dans la même étape.
+
+Mise en œuvre (étape 12) : l'affichage passe par `Logic.formaterNombre(quantité, unité)` (fractions ½ ⅓ ¼ ⅔ ¾ pour pièce, pincée, c. à soupe, c. à café ; une valeur sans fraction courante, comme 0,13, reste décimale) et `Logic.majuscule`. S'applique au détail d'une recette, à la liste (articles libres, révision), aux courses et à l'historique. Aucune donnée enregistrée ne change.
 
 Mises en ligne par lots, à la demande : après l'étape 13, après la 16, puis après la 18. À chaque mise en ligne : changer `VERSION` du service worker, `git push`, test sur le téléphone.
 

@@ -37,9 +37,27 @@ const Logic = {
     return Math.round(n * 100) / 100;
   },
 
-  // Affichage à la française : 1.25 devient "1,25"
-  formaterNombre(n) {
-    return String(this.arrondir(n)).replace(".", ",");
+  // Unités qui s'affichent en fractions (½, ¼...) : une demi-pièce, une demi-cuillère.
+  // Les poids et volumes restent en décimales (1,5 kg).
+  UNITES_FRACTIONS: ["piece", "pincee", "cs", "cc"],
+  FRACTIONS: [[0.25, "¼"], [1 / 3, "⅓"], [0.5, "½"], [2 / 3, "⅔"], [0.75, "¾"]],
+
+  // Affichage à la française : 1.25 devient "1,25". Avec une unité à fractions
+  // (`unite`), 1.5 devient "1 ½" ; une valeur sans fraction courante (0,13) reste décimale.
+  formaterNombre(n, unite) {
+    if (!this.UNITES_FRACTIONS.includes(unite)) return String(this.arrondir(n)).replace(".", ",");
+    const entier = Math.floor(n);
+    const reste = n - entier;
+    if (reste < 0.02) return String(entier);
+    if (reste > 0.98) return String(entier + 1);
+    const fraction = this.FRACTIONS.find(([valeur]) => Math.abs(reste - valeur) < 0.02);
+    if (!fraction) return String(this.arrondir(n)).replace(".", ",");
+    return (entier > 0 ? entier + " " : "") + fraction[1];
+  },
+
+  // Première lettre en majuscule, pour l'affichage seulement (le texte enregistré ne change pas)
+  majuscule(texte) {
+    return texte.charAt(0).toUpperCase() + texte.slice(1);
   },
 
   // Calculateur de parts : quantité × (parts voulues ÷ parts de la recette)

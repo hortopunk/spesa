@@ -51,6 +51,33 @@ test("formaterNombre : jamais 1,2500001", () => {
   assert.equal(Logic.formaterNombre(2), "2");
 });
 
+test("formaterNombre avec unité : fractions pour pièces, pincées et cuillères", () => {
+  const cas = [
+    [0.5, "piece", "½"], [1.5, "piece", "1 ½"], [4.5, "piece", "4 ½"],
+    [0.25, "cs", "¼"], [0.33, "piece", "⅓"], [0.67, "cc", "⅔"], [2.75, "piece", "2 ¾"],
+    [3, "piece", "3"], [2.999, "piece", "3"], [1.001, "pincee", "1"],
+    [0.13, "piece", "0,13"], [0.06, "piece", "0,06"]   // pas de fraction courante : décimale
+  ];
+  for (const [valeur, unite, attendu] of cas) {
+    assert.equal(Logic.formaterNombre(valeur, unite), attendu, valeur + " " + unite);
+  }
+});
+
+test("formaterNombre avec unité : poids et volumes restent en décimales", () => {
+  assert.equal(Logic.formaterNombre(1.5, "kg"), "1,5");
+  assert.equal(Logic.formaterNombre(0.5, "g"), "0,5");
+  assert.equal(Logic.formaterNombre(1.25, "l"), "1,25");
+  assert.equal(Logic.formaterNombre(1.5), "1,5");   // sans unité : décimales
+});
+
+test("majuscule : première lettre seulement, texte enregistré inchangé", () => {
+  assert.equal(Logic.majuscule("carotte"), "Carotte");
+  assert.equal(Logic.majuscule("œuf"), "Œuf");
+  assert.equal(Logic.majuscule("pomme de terre"), "Pomme de terre");
+  assert.equal(Logic.majuscule("Déjà"), "Déjà");
+  assert.equal(Logic.majuscule(""), "");
+});
+
 // ---------- Parts ----------
 
 test("quantiteAjustee : quantité × parts voulues ÷ parts de la recette", () => {

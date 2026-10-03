@@ -67,13 +67,9 @@ const UI = {
       ]),
       el("h2", { texte: t("section_ingredients") }),
       el("ul", { class: "ingredients" }, lignes.map((l) => {
-        let quantite = "";
-        if (l.quantite !== null) {
-          quantite = Logic.formaterNombre(l.quantite) + " " + t("unite_" + l.unite);
-        }
         return el("li", {}, [
-          el("span", { texte: l.nom }),
-          el("span", { class: "quantite", texte: quantite })
+          el("span", { texte: Logic.majuscule(l.nom) }),
+          el("span", { class: "quantite", texte: l.quantite === null ? "" : UI.texteQuantite(l) })
         ]);
       }))
     );
@@ -253,7 +249,13 @@ const UI = {
 
   // --- Liste : texte d'une ou plusieurs quantités, ex. "1,5 kg + 2 pièce(s)" ---
   texteQuantites(quantites) {
-    return quantites.map((q) => Logic.formaterNombre(q.quantite) + " " + t("unite_" + q.unite)).join(" + ");
+    return quantites.map((q) => this.texteQuantite(q)).join(" + ");
+  },
+
+  // Une quantité : "500 ml", "½ c. à soupe" ; les pièces s'écrivent "× 4,5"
+  texteQuantite(q) {
+    const nombre = Logic.formaterNombre(q.quantite, q.unite);
+    return q.unite === "piece" ? "× " + nombre : nombre + " " + t("unite_" + q.unite);
   },
 
   // --- Liste, étape « ajouts » ---
@@ -290,7 +292,7 @@ const UI = {
 
     c.append(el("h2", { texte: t("section_articles") }));
     manuels.forEach((m, index) => c.append(el("div", { class: "ligne-liste" }, [
-      el("span", { class: "ligne-titre", texte: m.nom }),
+      el("span", { class: "ligne-titre", texte: Logic.majuscule(m.nom) }),
       el("span", { class: "quantite", texte: m.quantite === null ? "" : this.texteQuantites([m]) }),
       el("button", { class: "bouton rond retrait", "data-action": "liste-retirer-article", "data-index": index, "aria-label": t("retirer"), texte: "✕" })
     ])));
@@ -326,7 +328,7 @@ const UI = {
       c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
       groupe.lignes.forEach((l) => c.append(el("label", { class: "coche-ligne" }, [
         el("input", { type: "checkbox", "data-action": "basculer", "data-cle": l.cle, checked: !decoches.includes(l.cle) }),
-        el("span", { class: "coche-nom", texte: l.libelle }),
+        el("span", { class: "coche-nom", texte: Logic.majuscule(l.libelle) }),
         el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
       ])));
     });
@@ -358,7 +360,7 @@ const UI = {
       c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
       groupe.lignes.forEach((l) => c.append(el("label", { class: "ligne-course" }, [
         el("input", { type: "checkbox", "data-action": "cocher", "data-cle": l.cle, checked: coches.includes(l.cle) }),
-        el("span", { class: "coche-nom", texte: l.libelle }),
+        el("span", { class: "coche-nom", texte: Logic.majuscule(l.libelle) }),
         el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
       ])));
     });
@@ -412,7 +414,7 @@ const UI = {
       vue.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
       groupe.lignes.forEach((l) => vue.append(el("div", { class: "ligne-course" }, [
         el("input", { type: "checkbox", disabled: true, checked: l.coche }),
-        el("span", { class: "coche-nom", texte: l.libelle }),
+        el("span", { class: "coche-nom", texte: Logic.majuscule(l.libelle) }),
         el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
       ])));
     });
