@@ -260,6 +260,7 @@ input[type="checkbox"] {
 
 /* Mode courses : lignes plus hautes, article coché grisé et barré */
 .ligne-course { min-height: 60px; }
+.ligne-course .coche-nom { transition: color 150ms var(--ease-out); }  /* le texte passe au gris en douceur */
 .ligne-course input:checked ~ span { color: var(--gris); text-decoration: line-through; }
 
 /* ---------- Sauvegarde ---------- */
