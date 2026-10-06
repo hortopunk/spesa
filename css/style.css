@@ -26,6 +26,25 @@ body {
   margin: 0 auto;
 }
 
+/* Repère visible quand on navigue au clavier ou avec un lecteur d'écran */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Retour immédiat à l'appui : l'élément réagit dès que le doigt touche */
+:root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); }  /* ease-out plus tonique que le « ease-out » standard */
+.bouton, .carte, .onglet, .suggestion, .coche-ligne, .ligne-course, #bouton-sauvegarde {
+  transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out);
+}
+.bouton:active, .carte:active, #bouton-sauvegarde:active { transform: scale(0.97); }
+.bouton:active, .carte:active { background-color: #eef3ee; }
+.bouton.principal:active, .ajout-rapide.ajoute:active, #bouton-sauvegarde:active { background-color: #256a41; }
+.onglet:active { transform: scale(0.95); }
+.suggestion:active, .coche-ligne:active, .ligne-course:active { background-color: #eef3ee; }
+
+/* Mouvement réduit : plus de déplacement, la couleur reste pour confirmer l'appui */
+@media (prefers-reduced-motion: reduce) {
+  .bouton:active, .carte:active, .onglet:active, #bouton-sauvegarde:active { transform: none; }
+}
+
 /* L'attribut hidden doit toujours gagner */
 [hidden] { display: none !important; }
 

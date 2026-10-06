@@ -21,7 +21,11 @@ const UI = {
       ecran.hidden = ecran.dataset.ecran !== nom;
     });
     document.querySelectorAll(".onglet").forEach((onglet) => {
-      onglet.classList.toggle("actif", onglet.dataset.cible === nom);
+      const actif = onglet.dataset.cible === nom;
+      onglet.classList.toggle("actif", actif);
+      // Indique à un lecteur d'écran quel onglet est ouvert
+      if (actif) onglet.setAttribute("aria-current", "page");
+      else onglet.removeAttribute("aria-current");
     });
     this.ecranCourant = nom;
     this.majBoutonSauvegarde();
@@ -153,6 +157,8 @@ const UI = {
     const p = document.getElementById("import-message");
     p.textContent = texte;
     p.className = erreur ? "erreur" : "succes";
+    // Une erreur est annoncée tout de suite, un succès poliment
+    p.setAttribute("role", erreur ? "alert" : "status");
     p.hidden = false;
   },
 
@@ -521,6 +527,7 @@ const UI = {
     if (!p) return;
     p.textContent = texte;
     p.className = erreur ? "erreur" : "succes";
+    p.setAttribute("role", erreur ? "alert" : "status");
     p.hidden = false;
   },
 
