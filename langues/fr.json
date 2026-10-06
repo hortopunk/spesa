@@ -140,6 +140,7 @@
   "erreur_import_ingredient_nom": "Un ingrédient n'a pas de nom.",
   "erreur_import_quantite": "La quantité de « {detail} » n'est pas un nombre valide.",
   "erreur_import_unite": "Unité inconnue : {detail}.",
+  "alerte_mode_dev": "Mode développement : données chargées depuis dev/donnees.json. Tes modifications ne sont pas conservées au rechargement.",
   "avertissement_doublon": "Une recette porte déjà ce titre. Si c'est la même, n'enregistre pas : tu aurais un doublon.",
   "erreur_stockage": "Impossible d'enregistrer : le stockage du téléphone est plein. Rien n'a été modifié. Fais une sauvegarde, puis libère de la place.",
   "erreur_inattendue": "Une erreur est survenue. Rien n'a été perdu : réessaie.",

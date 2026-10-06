@@ -104,3 +104,17 @@ test("remplacerTout : stockage plein = aucune donnée modifiée (pas de mélange
   assert.throws(() => DB.remplacerTout({ recettes: gros, dico: {}, historique: [], reglages: {} }), { name: "QuotaExceededError" });
   assert.deepEqual(DB.recettes().map((r) => r.id), ["avant"]);
 });
+
+test("chargerDonneesDev : remplace tout, liste en cours comprise (ou liste vide si elle est absente ou mal formée)", () => {
+  const DB = chargerDB(fauxStockage());
+  DB.enregistrerRecette(recette("ancienne"), {});
+  const donnees = { recettes: [recette("fichier")], dico: {}, historique: [], reglages: {} };
+  DB.chargerDonneesDev({ ...donnees, liste: { recettes: [{ id: "fichier", parts: 2 }], manuels: [], decoches: [], coches: [], etat: "courses" } });
+  assert.deepEqual(DB.recettes().map((r) => r.id), ["fichier"]);
+  assert.equal(DB.liste().etat, "courses");
+  assert.equal(DB.reglages().langue, "fr");                  // réglages complétés
+  DB.chargerDonneesDev({ ...donnees, liste: { etat: "n'importe quoi" } });
+  assert.deepEqual(DB.liste(), DB.listeVide());
+  DB.chargerDonneesDev(donnees);
+  assert.deepEqual(DB.liste(), DB.listeVide());
+});

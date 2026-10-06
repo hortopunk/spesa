@@ -89,6 +89,24 @@ const DB = {
     ]);
   },
 
+  // Mode développement (PC seulement, voir app.js) : remplace tout par le contenu du fichier de données,
+  // liste en cours comprise (`donnees.liste` si elle est présente et bien formée, sinon une liste vide).
+  chargerDonneesDev(donnees) {
+    const reglages = { ...donnees.reglages };
+    reglages.langue = reglages.langue || "fr";
+    reglages.version_schema = reglages.version_schema || this.VERSION_SCHEMA;
+    const l = donnees.liste;
+    const listeValide = l && typeof l === "object" && Array.isArray(l.recettes) && Array.isArray(l.manuels) &&
+      Array.isArray(l.decoches) && Array.isArray(l.coches) && ["ajouts", "revision", "courses"].includes(l.etat);
+    this.ecrireLot([
+      ["recettes", donnees.recettes],
+      ["dico", donnees.dico],
+      ["historique", donnees.historique],
+      ["reglages", reglages],
+      ["liste", listeValide ? l : this.listeVide()]
+    ]);
+  },
+
   // --- Copie de secours avant une restauration ---
   // Les données actuelles sont gardées dans `spesa_avant_restauration` pour pouvoir annuler.
   // Écrit une seule copie (la précédente est remplacée).

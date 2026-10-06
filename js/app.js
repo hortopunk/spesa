@@ -428,8 +428,34 @@ function demarrerPWA() {
     .catch((erreur) => console.warn("Hors-ligne indisponible :", erreur));
 }
 
+// Mode développement : sur le PC (localhost), si le fichier dev/donnees.json existe, il remplace les
+// données du navigateur à chaque chargement de la page. Ce fichier n'est jamais publié (voir .git/info/exclude),
+// donc le téléphone et GitHub Pages ne le voient pas. `?sans-dev` dans l'adresse = on garde les données du navigateur.
+// Renvoie true si les données ont été chargées.
+async function chargerDonneesDev() {
+  const enLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+  if (!enLocal || location.search.includes("sans-dev")) return false;
+  try {
+    const reponse = await fetch("dev/donnees.json", { cache: "no-store" });
+    if (!reponse.ok) return false;
+    const brut = await reponse.text();
+    const resultat = Backup.analyser(brut, DB.VERSION_SCHEMA);
+    if (resultat.erreur) {
+      console.warn("dev/donnees.json refusé :", resultat.erreur);
+      return false;
+    }
+    // La liste en cours (facultative) n'est pas vérifiée par Backup : db.js s'en charge
+    DB.chargerDonneesDev({ ...resultat.sauvegarde, liste: JSON.parse(brut).liste });
+    return true;
+  } catch (erreur) {
+    console.warn("dev/donnees.json illisible :", erreur);
+    return false;
+  }
+}
+
 async function demarrer() {
   demarrerPWA();
+  const donneesDev = await chargerDonneesDev();
   DB.init();
   await Langue.init(DB.reglages().langue);
   Langue.appliquer();
@@ -488,6 +514,7 @@ async function demarrer() {
   rafraichirBandeau();
   // Des données illisibles ont été mises de côté pendant le démarrage : on le dit
   if (DB.anomalies.length > 0) UI.afficherAlerte(t("alerte_donnees_abimees"));
+  if (donneesDev) UI.afficherAlerte(t("alerte_mode_dev"));
 }
 
 demarrer();
