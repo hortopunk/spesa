@@ -48,7 +48,6 @@
   "ajouter_article": "Ajouter l'article",
   "passer_revision": "Passer à la révision",
   "tout_effacer": "Tout effacer",
-  "confirmer_effacer_liste": "Effacer toute la liste ?",
   "erreur_article_vide": "Saisis le nom de l'article.",
   "retour_ajouts": "Retour aux ajouts",
   "titre_revision": "Révision",
@@ -74,7 +73,8 @@
   "supprimer": "Supprimer",
   "enregistrer": "Enregistrer",
   "annuler": "Annuler",
-  "confirmer_suppression": "Supprimer cette recette ? Cette action est définitive.",
+  "recette_supprimee": "Recette supprimée.",
+  "liste_effacee": "Liste effacée.",
 
   "section_ingredients": "Ingrédients",
   "section_etapes": "Étapes",

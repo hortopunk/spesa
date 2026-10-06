@@ -108,6 +108,31 @@ function signalerErreur(erreur) {
   UI.afficherAlerte(t(plein ? "erreur_stockage" : "erreur_inattendue"));
 }
 
+// --- Annuler une suppression ---
+// Après une suppression, un message propose « Annuler » pendant 6 secondes.
+// Une seule annulation possible à la fois : la dernière suppression.
+let actionDefaire = null;
+let minuteurDefaire = null;
+
+function proposerAnnulation(texte, retablir) {
+  clearTimeout(minuteurDefaire);
+  actionDefaire = retablir;
+  UI.afficherAnnulation(texte);
+  minuteurDefaire = setTimeout(oublierAnnulation, 6000);
+}
+
+function oublierAnnulation() {
+  clearTimeout(minuteurDefaire);
+  actionDefaire = null;
+  UI.cacherAnnulation();
+}
+
+function defaire() {
+  const retablir = actionDefaire;
+  oublierAnnulation();
+  if (retablir) retablir();
+}
+
 // Tous les clics passent par ici (un bouton = un data-action). Une erreur ne doit jamais
 // laisser l'écran figé sans explication.
 function gererClic(evenement) {
@@ -143,12 +168,18 @@ function executerAction(bouton) {
       break;
     case "parts-plus": etat.partsVoulues++; afficherDetail(etat.ouverteId); break;
     case "modifier": afficherFormulaire(etat.ouverteId); break;
-    case "supprimer":
-      if (confirm(t("confirmer_suppression"))) {
-        DB.supprimerRecette(etat.ouverteId);
-        afficherListe();
-      }
+    case "supprimer": {
+      // Pas de question : on supprime tout de suite et on laisse 6 secondes pour annuler
+      const recette = DB.recette(etat.ouverteId);
+      if (!recette) break;
+      DB.supprimerRecette(recette.id);
+      afficherListe();
+      proposerAnnulation(t("recette_supprimee"), () => {
+        DB.enregistrerRecette(recette, DB.dico());
+        redessinerRecettes();
+      });
       break;
+    }
     case "ajouter-ingredient": UI.ajouterLigneIngredient(document.getElementById("f-ingredients")); break;
     case "retirer-ingredient": UI.retirerLigneIngredient(bouton); break;
     case "choisir-suggestion": {
@@ -175,12 +206,17 @@ function executerAction(bouton) {
     case "liste-ajouter-article": ajouterArticle("m-ligne", "m-erreur"); break;
     case "courses-ajouter-article": ajouterArticle("c-ligne", "c-erreur"); break;
     case "liste-retirer-article": modifierListe((l) => l.manuels.splice(Number(bouton.dataset.index), 1)); break;
-    case "liste-effacer":
-      if (confirm(t("confirmer_effacer_liste"))) {
-        etat.choixRecette = false;
-        modifierListe((l) => { l.recettes = []; l.manuels = []; l.decoches = []; });
-      }
+    case "liste-effacer": {
+      const avant = DB.liste();
+      etat.choixRecette = false;
+      modifierListe((l) => { l.recettes = []; l.manuels = []; l.decoches = []; });
+      proposerAnnulation(t("liste_effacee"), () => {
+        DB.enregistrerListe(avant);
+        redessinerListe();
+      });
       break;
+    }
+    case "defaire": defaire(); break;
     case "liste-reviser": modifierListe((l) => { l.etat = "revision"; }); break;
     case "revision-retour": modifierListe((l) => { l.etat = "ajouts"; }); break;
     case "revision-valider":

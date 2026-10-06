@@ -65,9 +65,15 @@
   <!-- Bouton flottant, toujours visible, au-dessus de la navigation -->
   <button id="bouton-sauvegarde" data-action="sauvegarder" data-i18n="sauvegarder"></button>
 
+  <!-- Message temporaire avec « Annuler » après une suppression -->
+  <div id="annulation" role="status" hidden>
+    <span id="annulation-texte"></span>
+    <button data-action="defaire" data-i18n="annuler"></button>
+  </div>
+
   <!-- Navigation en bas, à portée du pouce -->
   <nav id="navigation">
-    <button class="onglet actif" data-cible="recettes">
+    <button class="onglet actif" data-cible="recettes" aria-current="page">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2zM8 7h6M8 11h6"/></svg>
       <span data-i18n="nav_recettes"></span>
     </button>

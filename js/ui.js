@@ -289,6 +289,16 @@ const UI = {
     document.getElementById("alerte").hidden = true;
   },
 
+  // Message temporaire avec un bouton « Annuler » (après une suppression)
+  afficherAnnulation(texte) {
+    document.getElementById("annulation-texte").textContent = texte;
+    document.getElementById("annulation").hidden = false;
+  },
+
+  cacherAnnulation() {
+    document.getElementById("annulation").hidden = true;
+  },
+
   // Lit une ligne d'ingrédient (texte brut)
   lireLigne(ligne) {
     return {

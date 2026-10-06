@@ -4,7 +4,7 @@
   --fond: #faf8f4;
   --texte: #222222;
   --accent: #2e7d4f;
-  --gris: #6b6b6b;       /* texte secondaire (contraste 5 sur 1, lisible en plein soleil) */
+  --gris: #5c5c5c;       /* texte secondaire (contraste d'environ 6 sur 1, lisible en plein soleil) */
   --nav-hauteur: 64px;
 }
 
@@ -44,6 +44,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .bouton:active, .carte:active, .onglet:active, #bouton-sauvegarde:active { transform: none; }
 }
+
+/* Changement d'écran ou de vue : fondu rapide (opacité seulement, donc compatible « mouvement réduit ») */
+@keyframes apparition { from { opacity: 0; } to { opacity: 1; } }
+.ecran:not([hidden]), [id^="vue-"]:not([hidden]) { animation: apparition 150ms var(--ease-out); }
 
 /* L'attribut hidden doit toujours gagner */
 [hidden] { display: none !important; }
@@ -201,7 +205,7 @@ h2 { font-size: 1.1rem; margin: 24px 0 8px; }
   stroke-linejoin: round;
 }
 .ajout-rapide.ajoute { background: var(--accent); color: #ffffff; }
-.carte-info { color: var(--gris); font-size: 0.85rem; white-space: nowrap; }
+.carte-info { color: var(--gris); font-size: 0.9rem; white-space: nowrap; }
 
 /* ---------- Détail d'une recette ---------- */
 .parts { display: flex; align-items: center; gap: 12px; }
@@ -317,7 +321,7 @@ textarea[readonly] { font-size: 0.8rem; color: var(--gris); }
 .avertissements ul { margin: 0; padding-left: 1.2em; }
 
 /* Petite explication sous un champ */
-.aide-champ { margin: 4px 0 0; font-size: 0.85rem; }
+.aide-champ { margin: 4px 0 0; font-size: 0.9rem; }
 
 /* Alerte fixée en haut : stockage plein, données abîmées */
 #alerte {
@@ -333,6 +337,41 @@ textarea[readonly] { font-size: 0.8rem; color: var(--gris); }
   border-bottom: 2px solid #b3261e;
   color: #7a1712;
   font-size: 0.95rem;
+}
+
+/* Message « Recette supprimée. [Annuler] » : au-dessus du bouton de sauvegarde, 6 secondes */
+#annulation {
+  position: fixed;
+  left: 16px; right: 16px;
+  bottom: calc(var(--nav-hauteur) + 68px);
+  z-index: 5;
+  max-width: 568px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 8px 4px 16px;
+  border-radius: 8px;
+  background: var(--texte);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+  @starting-style { opacity: 0; transform: translateY(8px); }
+}
+#annulation button {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+  #annulation { @starting-style { transform: none; } }
 }
 
 /* Article oublié (onglet Courses) et copie de secours (Réglages) */
