@@ -238,7 +238,7 @@ Limite assumée : la sauvegarde est manuelle (deux appuis environ). Évolution p
 Petit projet, besoin esthétique modéré, mais soigné et lisible.
 - Minimaliste, clair. 2 ou 3 couleurs (fond, texte, une couleur d'accent). Mode sombre non prévu en v1.
 - Police système (aucun chargement externe). Une seule police embarquée est possible plus tard.
-- Zones tactiles : 44 px minimum. Navigation en bas de l'écran (à portée du pouce) : Recettes, Courses, Réglages. L'onglet Courses regroupe la préparation de la liste (ajouts, révision) et le mode courses (cochage), selon l'étape en cours (`etat`) ; l'historique s'ouvre depuis le même onglet.
+- Zones tactiles : 44 px minimum. Navigation en bas de l'écran (à portée du pouce) : Recettes, Courses, Réglages. L'onglet Courses regroupe la préparation de la liste (ajouts, révision) et le mode courses (cochage), selon l'étape en cours (`etat`) ; l'historique s'ouvre depuis le même onglet. Dans la liste des recettes, un bouton « panier + » à droite de chaque recette l'ajoute à la liste avec ses parts (✓ si elle y est déjà).
 - Icônes : quelques SVG en ligne, sans bibliothèque.
 - Aucune dépendance externe : tout fonctionne sans réseau.
 

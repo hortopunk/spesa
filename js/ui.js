@@ -55,21 +55,39 @@ const UI = {
   },
 
   // --- Liste des recettes ---
-  rendreListe(recettes, rechercheActive) {
+  // `dansLaListe` : identifiants des recettes déjà dans la liste de courses (le bouton affiche alors ✓)
+  rendreListe(recettes, rechercheActive, dansLaListe) {
     const ul = document.getElementById("liste-recettes");
     ul.replaceChildren();
     recettes.forEach((r) => {
-      const unite = r.parts > 1 ? t("parts") : t("part");
+      const dejaLa = dansLaListe.includes(r.id);
       ul.append(el("li", {}, [
         el("button", { class: "carte", "data-action": "ouvrir", "data-id": r.id }, [
-          el("span", { class: "carte-titre", texte: r.titre }),
-          el("span", { class: "carte-info", texte: r.parts + " " + unite })
-        ])
+          el("span", { class: "carte-titre", texte: r.titre })
+        ]),
+        // Ajout rapide à la liste de courses, avec les parts de la recette
+        el("button", {
+          class: "bouton ajout-rapide" + (dejaLa ? " ajoute" : ""),
+          "data-action": "ajout-rapide", "data-id": r.id,
+          "aria-label": t(dejaLa ? "deja_dans_la_liste" : "ajouter_a_la_liste") + " : " + r.titre
+        }, [this.iconePanier(dejaLa)])
       ]));
     });
     const vide = document.getElementById("vide-recettes");
     vide.hidden = recettes.length > 0;
     vide.textContent = rechercheActive ? t("aucun_resultat") : t("vide_recettes");
+  },
+
+  // Icône panier « + » (ou panier « ✓ » une fois ajouté), dessinée en SVG sans bibliothèque
+  iconePanier(coche) {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const chemin = document.createElementNS(ns, "path");
+    chemin.setAttribute("d", "M3 4h2l2.5 11h10l2-8H6.5M9 20h.01M17 20h.01" + (coche ? "M9.5 11l2.2 2.2 3.8-4" : "M12.5 8.5v5M10 11h5"));
+    svg.append(chemin);
+    return svg;
   },
 
   // --- Détail d'une recette ---

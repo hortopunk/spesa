@@ -9,9 +9,15 @@ const etat = {
   choixRecette: false  // écran Liste : le choix d'une recette à ajouter est déplié
 };
 
-function afficherListe() {
+// Dessine les cartes de recettes sans changer de vue ni remonter l'écran (utile après un ajout rapide)
+function redessinerRecettes() {
   const filtrees = Logic.filtrerRecettes(DB.recettes(), etat.recherche);
-  UI.rendreListe(filtrees, etat.recherche.trim() !== "");
+  const dansLaListe = DB.liste().recettes.map((choix) => choix.id);
+  UI.rendreListe(filtrees, etat.recherche.trim() !== "", dansLaListe);
+}
+
+function afficherListe() {
+  redessinerRecettes();
   UI.afficherVueRecettes("liste");
 }
 
@@ -123,6 +129,14 @@ function executerAction(bouton) {
     case "import-fichier": document.getElementById("fichier-import").click(); break;
     case "annuler-import": afficherListe(); break;
     case "ouvrir": ouvrirRecette(bouton.dataset.id); break;
+    case "ajout-rapide": {
+      // Une recette déjà dans la liste n'est pas ajoutée deux fois
+      const recette = DB.recette(bouton.dataset.id);
+      if (!recette || DB.liste().recettes.some((choix) => choix.id === recette.id)) break;
+      modifierListe((l) => l.recettes.push({ id: recette.id, parts: recette.parts }));
+      redessinerRecettes();
+      break;
+    }
     case "retour": afficherListe(); break;
     case "parts-moins":
       if (etat.partsVoulues > 1) { etat.partsVoulues--; afficherDetail(etat.ouverteId); }
@@ -464,6 +478,7 @@ async function demarrer() {
   document.querySelectorAll(".onglet").forEach((onglet) => {
     onglet.addEventListener("click", () => {
       UI.afficherEcran(onglet.dataset.cible);
+      if (onglet.dataset.cible === "recettes") redessinerRecettes();   // les ✓ suivent la liste en cours
       if (onglet.dataset.cible === "liste") {
         UI.afficherVueListe("panier");   // on revient toujours à la liste en cours
         afficherEcranListe();

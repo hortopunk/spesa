@@ -140,7 +140,10 @@ h2 { font-size: 1.1rem; margin: 24px 0 8px; }
 
 /* ---------- Liste de recettes ---------- */
 .cartes { list-style: none; padding: 0; margin: 16px 0 0; }
+.cartes li { display: flex; align-items: flex-start; gap: 8px; }
 .carte {
+  flex: 1 1 auto;
+  min-width: 0;
   width: 100%;
   min-height: 56px;
   margin-bottom: 8px;
@@ -158,6 +161,27 @@ h2 { font-size: 1.1rem; margin: 24px 0 8px; }
   cursor: pointer;
 }
 .carte-titre { font-weight: 600; }
+
+/* Bouton « panier + » à droite d'une recette : ajout rapide à la liste de courses */
+.ajout-rapide {
+  flex: none;
+  width: 56px;
+  min-height: 56px;
+  margin-bottom: 8px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ajout-rapide svg {
+  width: 26px; height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ajout-rapide.ajoute { background: var(--accent); color: #ffffff; }
 .carte-info { color: var(--gris); font-size: 0.85rem; white-space: nowrap; }
 
 /* ---------- Détail d'une recette ---------- */
