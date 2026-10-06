@@ -25,11 +25,12 @@ const Logic = {
 
   // Lit un nombre saisi à la française ("1,5" ou "1.5").
   // Renvoie null si le texte n'est pas un nombre positif ou nul.
+  // Seuls les chiffres, une virgule ou un point sont acceptés (pas de « 1e3 » ni « 0x10 »).
   lireNombre(texte) {
     const propre = String(texte).trim().replace(",", ".");
-    if (propre === "") return null;
+    if (!/^(\d+\.?\d*|\.\d+)$/.test(propre)) return null;
     const n = Number(propre);
-    return Number.isFinite(n) && n >= 0 ? n : null;
+    return Number.isFinite(n) ? n : null;
   },
 
   // Arrondi lisible : jamais 1,2500001
@@ -61,8 +62,10 @@ const Logic = {
   },
 
   // Calculateur de parts : quantité × (parts voulues ÷ parts de la recette)
+  // Valeur exacte, non arrondie : on arrondit seulement à l'affichage, après l'addition
+  // (sinon 6 × « 1/6 de carotte » arrondi à 0,17 donnerait 2 carottes au lieu de 1).
   quantiteAjustee(quantite, partsRecette, partsVoulues) {
-    return this.arrondir(quantite * (partsVoulues / partsRecette));
+    return quantite * (partsVoulues / partsRecette);
   },
 
   // Ingrédients d'une recette recalculés pour un nombre de parts
@@ -203,6 +206,13 @@ const Logic = {
       rayon: g.rayon,
       quantites: [...g.totaux].map(([famille, total]) => this.lisible(total, famille))
     }));
+  },
+
+  // Cochages à conserver quand la liste est validée de nouveau : ceux dont l'article
+  // existe encore dans la liste finale (`groupes`).
+  garderCoches(coches, groupes) {
+    const cles = groupes.flatMap((g) => g.lignes.map((l) => l.cle));
+    return coches.filter((cle) => cles.includes(cle));
   },
 
   // Enlève les ingrédients décochés (clés normalisées) pendant la révision

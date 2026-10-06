@@ -43,6 +43,9 @@ test("lireNombre : virgule ou point, null si invalide ou négatif", () => {
   assert.equal(Logic.lireNombre("abc"), null);
   assert.equal(Logic.lireNombre("-1"), null);
   assert.equal(Logic.lireNombre("1 5"), null);
+  assert.equal(Logic.lireNombre("1e3"), null);   // notation scientifique refusée
+  assert.equal(Logic.lireNombre("0x10"), null);
+  assert.equal(Logic.lireNombre(".5"), 0.5);
 });
 
 test("formaterNombre : jamais 1,2500001", () => {
@@ -83,6 +86,13 @@ test("majuscule : première lettre seulement, texte enregistré inchangé", () =
 test("quantiteAjustee : quantité × parts voulues ÷ parts de la recette", () => {
   assert.equal(Logic.quantiteAjustee(250, 4, 6), 375);
   assert.equal(Logic.quantiteAjustee(2, 4, 1), 0.5);
+});
+
+test("quantiteAjustee : valeur exacte, l'arrondi vient après l'addition (6 × 1/6 de carotte = 1)", () => {
+  const r = recette("r1", "Test", 6, [ing("carotte", 1, "piece")]);
+  const lignes = [];
+  for (let i = 0; i < 6; i++) lignes.push(...Logic.ingredientsPourParts(r, 1));
+  assert.deepEqual(Logic.fusionner(lignes, {})[0].quantites, [{ quantite: 1, unite: "piece" }]);
 });
 
 test("ingredientsPourParts : recalcule, laisse « sans quantité » intact", () => {
@@ -275,6 +285,12 @@ test("grouperParRayon : ordre des rayons, ordre alphabétique, rayons vides igno
   assert.deepEqual(groupes[1].lignes.map((l) => l.libelle), ["Beurre", "Lait"]);
 });
 
+test("garderCoches : garde les articles encore dans la liste, oublie les autres", () => {
+  const groupes = [{ rayon: "cremerie", lignes: [{ cle: "lait" }, { cle: "oeuf" }] }];
+  assert.deepEqual(Logic.garderCoches(["lait", "beurre"], groupes), ["lait"]);
+  assert.deepEqual(Logic.garderCoches([], groupes), []);
+});
+
 test("retirerDecoches et compterCoches", () => {
   const lignes = [{ cle: "sel" }, { cle: "lait" }, { cle: "farine" }];
   assert.deepEqual(Logic.retirerDecoches(lignes, ["sel"]).map((l) => l.cle), ["lait", "farine"]);
@@ -357,6 +373,20 @@ test("Backup.analyser : accepte une sauvegarde valide, refuse le reste", () => {
   assert.equal(Backup.analyser(JSON.stringify({ ...valide, version_schema: 2 }), 1).erreur, "erreur_sauvegarde_version");
   assert.equal(Backup.analyser(JSON.stringify({ ...valide, recettes: [{ id: 1 }] }), 1).erreur, "erreur_sauvegarde_contenu");
   assert.equal(Backup.analyser(JSON.stringify({ ...valide, dico: [] }), 1).erreur, "erreur_sauvegarde_contenu");
+});
+
+test("Backup.analyser : refuse les recettes et l'historique mal formés (ils feraient planter l'affichage)", () => {
+  const base = { recettes: [recette("r1", "A", 4, [ing("lait", 1, "l")])], dico: { lait: { libelle: "Lait", rayon: "cremerie" } }, historique: [], reglages: {} };
+  const fichier = (modif) => JSON.stringify(Backup.construire({ ...base, ...modif }, "2026-10-02T10:00:00.000Z", 1));
+  const archive = { date: "2026-10-02", recettes: [{ titre: "A", parts: 4 }], lignes: [{ libelle: "Lait", rayon: "cremerie", quantites: [{ quantite: 1, unite: "l" }], coche: true }] };
+  assert.ok(Backup.analyser(fichier({ historique: [archive] }), 1).sauvegarde);
+  const mal = "erreur_sauvegarde_contenu";
+  assert.equal(Backup.analyser(fichier({ recettes: [{ id: "r1", titre: "A", parts: 4, ingredients: [] }] }), 1).erreur, mal);   // sans etapes ni notes
+  assert.equal(Backup.analyser(fichier({ recettes: [recette("r1", "A", 0, [])] }), 1).erreur, mal);
+  assert.equal(Backup.analyser(fichier({ recettes: [recette("r1", "A", 4, [{ nom: "x", quantite: "2", unite: "g" }])] }), 1).erreur, mal);
+  assert.equal(Backup.analyser(fichier({ historique: [{ date: "x" }] }), 1).erreur, mal);
+  assert.equal(Backup.analyser(fichier({ historique: [{ ...archive, lignes: [{ libelle: "Lait" }] }] }), 1).erreur, mal);
+  assert.equal(Backup.analyser(fichier({ dico: { lait: "Lait" } }), 1).erreur, mal);
 });
 
 test("Backup.rappel : rien si l'appli est vide, jamais, plus de 7 jours", () => {

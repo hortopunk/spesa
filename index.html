@@ -13,6 +13,12 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Alerte (stockage plein, données abîmées) : cachée tant qu'il n'y a rien à dire -->
+  <div id="alerte" role="alert" hidden>
+    <span id="alerte-texte"></span>
+    <button class="bouton" data-action="fermer-alerte" data-i18n="fermer"></button>
+  </div>
+
   <!-- Zone qui affiche l'écran courant -->
   <main id="ecrans">
     <!-- Rappel discret : visible seulement si la dernière sauvegarde est ancienne -->

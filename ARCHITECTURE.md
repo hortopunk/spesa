@@ -130,6 +130,12 @@ L'archivage est fait par « Terminer les courses » (étape 6). L'écran de cons
 
 **Réglages** (`spesa_reglages`) : langue, date de dernière sauvegarde, version du schéma.
 
+**Clés de sécurité** (correctifs du 6 octobre 2026 ; le format des données ci-dessus ne change pas) :
+- `spesa_avant_restauration` : copie de toutes les données (recettes, dictionnaire, historique, réglages) faite juste avant une restauration, avec sa date. Une seule copie, remplacée à chaque restauration, supprimée par « Annuler la restauration ». Non incluse dans les sauvegardes.
+- `spesa_<nom>_abime_<date>` : texte illisible d'une clé, mis de côté au lieu d'être écrasé. L'appli prévient l'utilisateur. Jamais relu ni supprimé automatiquement.
+- Écritures liées en tout-ou-rien (`DB.ecrireLot`) : recette + dictionnaire, article libre + liste, archive + liste vidée, restauration. Si le stockage est plein, rien n'est modifié et un message s'affiche.
+- Valider de nouveau la liste conserve les cochages des articles encore présents. Un article ajouté depuis l'onglet Courses (« Un oubli ? ») apparaît non coché.
+
 Chaque jeu de données porte un numéro de version de schéma, pour migrer proprement si le modèle change.
 
 ## 5. Règles métier

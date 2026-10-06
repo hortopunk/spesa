@@ -4,7 +4,7 @@
   --fond: #faf8f4;
   --texte: #222222;
   --accent: #2e7d4f;
-  --gris: #8a8a8a;       /* texte secondaire (nuance du texte) */
+  --gris: #6b6b6b;       /* texte secondaire (contraste 5 sur 1, lisible en plein soleil) */
   --nav-hauteur: 64px;
 }
 
@@ -274,3 +274,24 @@ textarea[readonly] { font-size: 0.8rem; color: var(--gris); }
 
 /* Petite explication sous un champ */
 .aide-champ { margin: 4px 0 0; font-size: 0.85rem; }
+
+/* Alerte fixée en haut : stockage plein, données abîmées */
+#alerte {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #fdecea;
+  border-bottom: 2px solid #b3261e;
+  color: #7a1712;
+  font-size: 0.95rem;
+}
+
+/* Article oublié (onglet Courses) et copie de secours (Réglages) */
+.article-oublie { margin-top: 24px; }
+.article-oublie .bouton { margin-top: 4px; }
+.secours { margin-top: 24px; }

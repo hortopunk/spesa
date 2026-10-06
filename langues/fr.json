@@ -27,7 +27,7 @@
   "rappel_jours": "Dernière sauvegarde il y a {n} jours.",
   "sauvegarde_envoyee": "Sauvegarde envoyée.",
   "sauvegarde_telechargee": "Sauvegarde téléchargée dans ton dossier Téléchargements.",
-  "confirmer_restauration": "Restaurer cette sauvegarde ({n} recette(s)) ? Tes recettes, ingrédients, historique et réglages actuels seront remplacés.",
+  "confirmer_restauration": "Restaurer cette sauvegarde ({n} recette(s)) ? Tes recettes, ingrédients, historique et réglages actuels seront remplacés (une copie est gardée pour pouvoir annuler).",
   "sauvegarde_restauree": "Sauvegarde restaurée : {n} recette(s).",
   "proposer_sauvegarde": "Courses terminées ! Sauvegarder maintenant ?",
   "erreur_sauvegarde_illisible": "Ce fichier n'est pas lisible.",
@@ -143,5 +143,14 @@
   "erreur_import_ingredient_nom": "Un ingrédient n'a pas de nom.",
   "erreur_import_quantite": "La quantité de « {detail} » n'est pas un nombre valide.",
   "erreur_import_unite": "Unité inconnue : {detail}.",
+  "avertissement_doublon": "Une recette porte déjà ce titre. Si c'est la même, n'enregistre pas : tu aurais un doublon.",
+  "erreur_stockage": "Impossible d'enregistrer : le stockage du téléphone est plein. Rien n'a été modifié. Fais une sauvegarde, puis libère de la place.",
+  "erreur_inattendue": "Une erreur est survenue. Rien n'a été perdu : réessaie.",
+  "alerte_donnees_abimees": "Des données n'ont pas pu être lues. Une copie est gardée à part. Restaure ta dernière sauvegarde dans les Réglages.",
+  "article_oublie": "Un oubli ? Ajouter un article",
+  "secours_info": "Tes données d'avant la restauration du {date} sont gardées de côté.",
+  "annuler_restauration": "Annuler la restauration",
+  "confirmer_annuler_restauration": "Revenir aux données d'avant la restauration ? Les données actuelles seront remplacées.",
+  "restauration_annulee": "Restauration annulée : tes données d'avant sont de retour.",
   "prompt_import": "Tu reçois la photo ou la capture d'écran d'une recette. Transforme-la en un fichier JSON strictement conforme au format ci-dessous. Réponds uniquement avec ce JSON, sans aucun autre texte.\n\nFormat :\n{\n  \"format\": \"spesa-recette-v1\",\n  \"titre\": \"Ratatouille\",\n  \"parts\": 4,\n  \"ingredients\": [\n    { \"nom\": \"aubergine\", \"quantite\": 2, \"unite\": \"piece\" },\n    { \"nom\": \"huile d'olive\", \"quantite\": 3, \"unite\": \"cs\" },\n    { \"nom\": \"sel\", \"quantite\": null, \"unite\": \"\" }\n  ],\n  \"etapes\": [\"Couper les légumes.\", \"Faire revenir.\"],\n  \"notes\": \"\",\n  \"avertissements\": []\n}\n\nRègles :\n- \"unite\" : une seule valeur parmi g, kg, ml, l, cs (cuillère à soupe), cc (cuillère à café), piece, pincee. Ne convertis pas les quantités : 250 g reste 250 g.\n- Pour les éléments comptés (gousse, tranche, boîte, botte, sachet, brin...), utilise \"piece\" et mets le type dans le nom : \"gousse d'ail\", quantité 2, unité \"piece\".\n- \"quantite\" : un nombre écrit avec un point (1.5, jamais \"1 1/2\" ni \"1,5\"), ou null s'il n'y a pas de quantité (sel, poivre \"à votre goût\"). Dans ce cas \"unite\" vaut \"\".\n- \"nom\" : au singulier, en minuscules, sans quantité ni indication de préparation (\"oignon\", pas \"2 oignons émincés\").\n- \"parts\" : le nombre de personnes ou de parts indiqué, en nombre entier. S'il est absent, mets null.\n- \"etapes\" : une phrase courte par étape, dans l'ordre. Liste vide si la recette n'en donne aucune.\n- \"notes\" : conseils ou remarques de la recette, sinon une chaîne vide.\n- N'invente rien. Si un mot, un nombre ou une unité est illisible ou ambigu, ne devine pas en silence : donne ton meilleur choix si tu en as un et signale le doute dans \"avertissements\" (une phrase par doute, par exemple \"Quantité de farine peu lisible : 250 g ?\"). Si tout est clair, laisse \"avertissements\" vide."
 }

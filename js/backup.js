@@ -58,14 +58,40 @@ const Backup = {
     }
     if (!s || s.format !== this.FORMAT) return { erreur: "erreur_sauvegarde_format" };
     if (!(s.version_schema <= versionSchemaApp)) return { erreur: "erreur_sauvegarde_version" };
-    const recettesValides = Array.isArray(s.recettes) && s.recettes.every((r) =>
-      r && typeof r.id === "string" && typeof r.titre === "string" &&
-      Number.isFinite(r.parts) && Array.isArray(r.ingredients));
-    const reste = s.dico && typeof s.dico === "object" && !Array.isArray(s.dico) &&
-      Array.isArray(s.historique) &&
-      s.reglages && typeof s.reglages === "object" && !Array.isArray(s.reglages);
+    const recettesValides = Array.isArray(s.recettes) && s.recettes.every((r) => this.recetteValide(r));
+    const reste = this.objet(s.dico) && Object.values(s.dico).every((f) =>
+        this.objet(f) && typeof f.libelle === "string" && typeof f.rayon === "string") &&
+      Array.isArray(s.historique) && s.historique.every((h) => this.archiveValide(h)) &&
+      this.objet(s.reglages);
     if (!recettesValides || !reste) return { erreur: "erreur_sauvegarde_contenu" };
     return { sauvegarde: s };
+  },
+
+  // --- Vérifications de forme : tout ce que l'appli lit ensuite doit exister ---
+  objet(x) {
+    return x !== null && typeof x === "object" && !Array.isArray(x);
+  },
+
+  recetteValide(r) {
+    return this.objet(r) && typeof r.id === "string" && typeof r.titre === "string" &&
+      Number.isFinite(r.parts) && r.parts >= 1 &&
+      Array.isArray(r.ingredients) && r.ingredients.every((i) =>
+        this.objet(i) && typeof i.nom === "string" && typeof i.unite === "string" &&
+        (i.quantite === null || Number.isFinite(i.quantite))) &&
+      Array.isArray(r.etapes) && r.etapes.every((e) => typeof e === "string") &&
+      typeof r.notes === "string";
+  },
+
+  // Une entrée de l'historique : date, recettes (titre, parts) et lignes figées
+  archiveValide(h) {
+    return this.objet(h) && typeof h.date === "string" &&
+      Array.isArray(h.recettes) && h.recettes.every((r) =>
+        this.objet(r) && typeof r.titre === "string" && Number.isFinite(r.parts)) &&
+      Array.isArray(h.lignes) && h.lignes.every((l) =>
+        this.objet(l) && typeof l.libelle === "string" && typeof l.rayon === "string" &&
+        typeof l.coche === "boolean" &&
+        Array.isArray(l.quantites) && l.quantites.every((q) =>
+          this.objet(q) && Number.isFinite(q.quantite) && typeof q.unite === "string"));
   },
 
   // Faut-il rappeler de sauvegarder ? Renvoie null (non), { jamais: true } ou { jours: n }.

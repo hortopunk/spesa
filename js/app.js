@@ -42,8 +42,7 @@ function enregistrer() {
   const id = etat.editionId || DB.nouvelId();
   const resultat = Logic.construireRecette(UI.lireFormulaire(), id);
   if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur));
-  DB.enregistrerRecette(resultat.recette);
-  DB.enregistrerDico(Logic.mettreAJourDico(DB.dico(), resultat.rayons));
+  DB.enregistrerRecette(resultat.recette, Logic.mettreAJourDico(DB.dico(), resultat.rayons));
   rafraichirBandeau();
   ouvrirRecette(id);
 }
@@ -72,9 +71,12 @@ function analyserImport(texte) {
   if (resultat.erreur) {
     return UI.messageImport(t(resultat.erreur).replace("{detail}", resultat.detail || ""), true);
   }
-  const avertissements = resultat.partsAbsentes
-    ? [t("avertissement_parts"), ...resultat.avertissements]
-    : resultat.avertissements;
+  const avertissements = [...resultat.avertissements];
+  if (resultat.partsAbsentes) avertissements.unshift(t("avertissement_parts"));
+  const titre = Logic.normaliser(resultat.recette.titre);
+  if (DB.recettes().some((r) => Logic.normaliser(r.titre) === titre)) {
+    avertissements.unshift(t("avertissement_doublon"));
+  }
   etat.editionId = null;   // c'est une nouvelle recette
   UI.rendreFormulaire(
     resultat.recette,
@@ -93,10 +95,26 @@ function surSaisieNom(champ) {
   UI.proposerRayon(ligne, fiche ? fiche.rayon : null);
 }
 
-// Tous les clics de l'écran Recettes passent par ici (un bouton = un data-action)
+// Message à l'écran quand une écriture échoue (stockage plein) ou qu'une erreur survient
+function signalerErreur(erreur) {
+  console.error(erreur);
+  const plein = erreur && (erreur.name === "QuotaExceededError" || erreur.name === "NS_ERROR_DOM_QUOTA_REACHED");
+  UI.afficherAlerte(t(plein ? "erreur_stockage" : "erreur_inattendue"));
+}
+
+// Tous les clics passent par ici (un bouton = un data-action). Une erreur ne doit jamais
+// laisser l'écran figé sans explication.
 function gererClic(evenement) {
   const bouton = evenement.target.closest("[data-action]");
   if (!bouton) return;
+  try {
+    executerAction(bouton);
+  } catch (erreur) {
+    signalerErreur(erreur);
+  }
+}
+
+function executerAction(bouton) {
   switch (bouton.dataset.action) {
     case "nouvelle": afficherFormulaire(null); break;
     case "importer": afficherImport(); break;
@@ -129,7 +147,7 @@ function gererClic(evenement) {
     case "annuler": etat.editionId ? afficherDetail(etat.editionId) : afficherListe(); break;
 
     // Écran Liste
-    case "liste-choix-recette": etat.choixRecette = !etat.choixRecette; afficherEcranListe(); break;
+    case "liste-choix-recette": etat.choixRecette = !etat.choixRecette; redessinerListe(); break;
     case "liste-ajouter-recette": modifierListe((l) => {
       const recette = DB.recette(bouton.dataset.id);
       if (recette) l.recettes.push({ id: recette.id, parts: recette.parts });
@@ -140,7 +158,8 @@ function gererClic(evenement) {
       if (choix.parts > 1) choix.parts--;
     }); break;
     case "liste-parts-plus": modifierListe((l) => l.recettes[Number(bouton.dataset.index)].parts++); break;
-    case "liste-ajouter-article": ajouterArticle(); break;
+    case "liste-ajouter-article": ajouterArticle("m-ligne", "m-erreur"); break;
+    case "courses-ajouter-article": ajouterArticle("c-ligne", "c-erreur"); break;
     case "liste-retirer-article": modifierListe((l) => l.manuels.splice(Number(bouton.dataset.index), 1)); break;
     case "liste-effacer":
       if (confirm(t("confirmer_effacer_liste"))) {
@@ -151,7 +170,8 @@ function gererClic(evenement) {
     case "liste-reviser": modifierListe((l) => { l.etat = "revision"; }); break;
     case "revision-retour": modifierListe((l) => { l.etat = "ajouts"; }); break;
     case "revision-valider":
-      modifierListe((l) => { l.etat = "courses"; l.coches = []; });
+      // Les articles déjà cochés restent cochés (ceux qui ont disparu de la liste sont oubliés)
+      modifierListe((l) => { l.etat = "courses"; l.coches = Logic.garderCoches(l.coches, groupesDeLaListe(l, true)); }, false);
       UI.afficherEcran("courses");
       break;
     case "liste-modifier": modifierListe((l) => { l.etat = "revision"; }); break;
@@ -175,6 +195,8 @@ function gererClic(evenement) {
 
     // Sauvegarde
     case "sauvegarder": sauvegarder(); break;
+    case "annuler-restauration": annulerRestauration(); break;
+    case "fermer-alerte": UI.fermerAlerte(); break;
     case "restaurer": document.getElementById("fichier-restauration").click(); break;
     case "basculer": {
       // Décocher = « je l'ai déjà » : la clé est mémorisée dans `decoches`
@@ -199,6 +221,7 @@ function groupesDeLaListe(liste, final) {
 // Affiche l'écran Liste selon l'étape en cours (ajouts, révision, courses)
 function afficherEcranListe() {
   const liste = DB.liste();
+  const avant = JSON.stringify(liste);
   // Une recette supprimée disparaît de la liste
   liste.recettes = liste.recettes.filter((choix) => DB.recette(choix.id));
 
@@ -207,13 +230,13 @@ function afficherEcranListe() {
     // On oublie les décochés qui ne sont plus dans la liste
     const cles = groupes.flatMap((g) => g.lignes.map((l) => l.cle));
     liste.decoches = liste.decoches.filter((cle) => cles.includes(cle));
-    DB.enregistrerListe(liste);
+    enregistrerSiChange(liste, avant);
     UI.rendreRevision(groupes, liste.decoches);
   } else if (liste.etat === "courses") {
-    DB.enregistrerListe(liste);
+    enregistrerSiChange(liste, avant);
     UI.rendreListeValidee();
   } else {
-    DB.enregistrerListe(liste);
+    enregistrerSiChange(liste, avant);
     const choisies = liste.recettes.map((choix, index) => ({
       index, titre: DB.recette(choix.id).titre, parts: choix.parts
     }));
@@ -221,6 +244,18 @@ function afficherEcranListe() {
     const disponibles = DB.recettes().filter((r) => !dejaChoisies.includes(r.id));
     UI.rendreAjouts(choisies, disponibles, liste.manuels, etat.choixRecette);
   }
+}
+
+// N'écrit dans le stockage que si la liste a vraiment changé (afficher un écran n'est pas une raison d'écrire)
+function enregistrerSiChange(liste, avant) {
+  if (JSON.stringify(liste) !== avant) DB.enregistrerListe(liste);
+}
+
+// Redessine l'écran Liste en gardant l'article libre en cours de saisie
+function redessinerListe() {
+  const brouillon = UI.lireBrouillonArticle();
+  afficherEcranListe();
+  UI.restaurerBrouillonArticle(brouillon);
 }
 
 // Affiche l'onglet Courses : liste finale rangée par rayon
@@ -268,7 +303,9 @@ function afficherArchive(index) {
 }
 
 function afficherReglages() {
-  UI.rendreReglages(textePhraseSauvegarde());
+  const secours = DB.secours();
+  const texteSecours = secours ? t("secours_info").replace("{date}", formaterDate(secours.date)) : null;
+  UI.rendreReglages(textePhraseSauvegarde(), texteSecours);
 }
 
 // Affiche ou cache le bandeau « pense à sauvegarder »
@@ -280,14 +317,27 @@ function rafraichirBandeau() {
 }
 
 async function sauvegarder() {
-  const date = new Date().toISOString();
-  const fichier = Backup.construire(DB.exporterTout(), date, DB.VERSION_SCHEMA);
-  const resultat = await Backup.envoyer(fichier, Backup.nomFichier(date));
-  if (resultat === "annule") return;   // menu de partage fermé : rien n'a été sauvegardé
-  DB.marquerSauvegarde(date);
+  try {
+    const date = new Date().toISOString();
+    const fichier = Backup.construire(DB.exporterTout(), date, DB.VERSION_SCHEMA);
+    const resultat = await Backup.envoyer(fichier, Backup.nomFichier(date));
+    if (resultat === "annule") return;   // menu de partage fermé : rien n'a été sauvegardé
+    DB.marquerSauvegarde(date);
+    rafraichirBandeau();
+    afficherReglages();
+    UI.messageReglages(t(resultat === "partage" ? "sauvegarde_envoyee" : "sauvegarde_telechargee"), false);
+  } catch (erreur) {
+    signalerErreur(erreur);
+  }
+}
+
+// Réaffiche tous les écrans après un changement massif des données
+function toutRedessiner() {
+  afficherListe();
+  afficherEcranListe();
+  afficherEcranCourses();
   rafraichirBandeau();
   afficherReglages();
-  UI.messageReglages(t(resultat === "partage" ? "sauvegarde_envoyee" : "sauvegarde_telechargee"), false);
 }
 
 async function restaurer(fichier) {
@@ -299,13 +349,24 @@ async function restaurer(fichier) {
   s.reglages.langue = s.reglages.langue || "fr";
   s.reglages.version_schema = s.reglages.version_schema || DB.VERSION_SCHEMA;
   s.reglages.derniere_sauvegarde = isNaN(new Date(s.date)) ? null : s.date;
-  DB.remplacerTout(s);
-  afficherListe();
-  afficherEcranListe();
-  afficherEcranCourses();
-  rafraichirBandeau();
-  afficherReglages();
+  try {
+    DB.garderSecours(new Date().toISOString());   // copie des données actuelles pour pouvoir annuler
+    DB.remplacerTout(s);                          // tout ou rien
+  } catch (erreur) {
+    return signalerErreur(erreur);
+  }
+  toutRedessiner();
   UI.messageReglages(t("sauvegarde_restauree").replace("{n}", s.recettes.length), false);
+}
+
+// Remet les données d'avant la dernière restauration
+function annulerRestauration() {
+  const secours = DB.secours();
+  if (!secours || !confirm(t("confirmer_annuler_restauration"))) return;
+  DB.remplacerTout(secours);
+  DB.supprimerSecours();
+  toutRedessiner();
+  UI.messageReglages(t("restauration_annulee"), false);
 }
 
 // Termine les courses : archive la liste dans l'historique, puis repart d'une liste vide
@@ -318,8 +379,7 @@ function terminerCourses() {
     ? t("confirmer_terminer_reste").replace("{n}", reste)
     : t("confirmer_terminer");
   if (!confirm(question)) return;
-  DB.ajouterHistorique(Logic.construireArchive(liste, DB.recettes(), groupes, new Date().toISOString()));
-  DB.enregistrerListe(DB.listeVide());
+  DB.terminerCourses(Logic.construireArchive(liste, DB.recettes(), groupes, new Date().toISOString()));
   etat.choixRecette = false;
   afficherEcranListe();
   afficherEcranCourses();
@@ -329,22 +389,33 @@ function terminerCourses() {
   if (confirm(t("proposer_sauvegarde"))) sauvegarder();
 }
 
-// Applique un changement à la liste, l'enregistre et réaffiche
-function modifierListe(changement) {
+// Applique un changement à la liste, l'enregistre et réaffiche.
+// `garderBrouillon` : l'article libre en cours de saisie survit au redessin.
+function modifierListe(changement, garderBrouillon = true) {
+  const brouillon = garderBrouillon ? UI.lireBrouillonArticle() : null;
   const liste = DB.liste();
   changement(liste);
   DB.enregistrerListe(liste);
   afficherEcranListe();
   afficherEcranCourses();
+  UI.restaurerBrouillonArticle(brouillon);
 }
 
-// Ajoute l'article libre saisi (nom, quantité, unité, rayon) à la liste
-function ajouterArticle() {
-  const resultat = Logic.construireLigne(UI.lireArticle());
-  if (resultat.vide) return UI.afficherErreur(t("erreur_article_vide"), "m-erreur");
-  if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur), "m-erreur");
-  DB.enregistrerDico(Logic.mettreAJourDico(DB.dico(), [resultat.rayon]));
-  modifierListe((l) => l.manuels.push({ ...resultat.ingredient, rayon: resultat.rayon.rayon }));
+// Ajoute l'article libre saisi (nom, quantité, unité, rayon) à la liste.
+// `conteneur` et `idErreur` : la ligne de saisie et son message d'erreur (écran Liste ou Courses).
+function ajouterArticle(conteneur, idErreur) {
+  const resultat = Logic.construireLigne(UI.lireArticle(conteneur));
+  if (resultat.vide) return UI.afficherErreur(t("erreur_article_vide"), idErreur);
+  if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur), idErreur);
+  const liste = DB.liste();
+  liste.manuels.push({ ...resultat.ingredient, rayon: resultat.rayon.rayon });
+  // Un article ajouté doit apparaître et être à acheter : ni décoché ni déjà dans le caddie
+  const cle = Logic.normaliser(resultat.ingredient.nom);
+  liste.decoches = liste.decoches.filter((c) => c !== cle);
+  liste.coches = liste.coches.filter((c) => c !== cle);
+  DB.enregistrerDicoEtListe(Logic.mettreAJourDico(DB.dico(), [resultat.rayon]), liste);
+  afficherEcranListe();
+  afficherEcranCourses();
 }
 
 // Hors-ligne et stockage durable (voir service-worker.js)
@@ -425,6 +496,8 @@ async function demarrer() {
   afficherEcranCourses();
   afficherReglages();
   rafraichirBandeau();
+  // Des données illisibles ont été mises de côté pendant le démarrage : on le dit
+  if (DB.anomalies.length > 0) UI.afficherAlerte(t("alerte_donnees_abimees"));
 }
 
 demarrer();

@@ -103,7 +103,7 @@ const UI = {
       ]),
       el("label", { "for": "import-texte", texte: t("champ_import") }),
       el("textarea", { id: "import-texte", rows: "8" }),
-      el("p", { id: "import-message", hidden: true }),
+      el("p", { id: "import-message", role: "alert", hidden: true }),
       el("div", { class: "actions" }, [
         el("button", { class: "bouton principal", "data-action": "import-apercu", texte: t("apercu_import") }),
         el("button", { class: "bouton", "data-action": "import-fichier", texte: t("choisir_fichier") }),
@@ -154,7 +154,7 @@ const UI = {
       el("textarea", { id: "f-etapes", rows: "5", texte: recette ? recette.etapes.join("\n") : "" }),
       el("label", { "for": "f-notes", texte: t("champ_notes") }),
       el("textarea", { id: "f-notes", rows: "3", texte: recette ? recette.notes : "" }),
-      el("p", { id: "f-erreur", class: "erreur", hidden: true }),
+      el("p", { id: "f-erreur", class: "erreur", role: "alert", hidden: true }),
       el("div", { class: "actions" }, [
         el("button", { class: "bouton principal", "data-action": "enregistrer", texte: t("enregistrer") }),
         el("button", { class: "bouton", "data-action": "annuler", texte: t("annuler") })
@@ -237,6 +237,16 @@ const UI = {
     };
   },
 
+  // Message d'alerte en haut de l'écran (stockage plein, données abîmées...), fermable
+  afficherAlerte(texte) {
+    document.getElementById("alerte-texte").textContent = texte;
+    document.getElementById("alerte").hidden = false;
+  },
+
+  fermerAlerte() {
+    document.getElementById("alerte").hidden = true;
+  },
+
   // Lit une ligne d'ingrédient (texte brut)
   lireLigne(ligne) {
     return {
@@ -307,7 +317,7 @@ const UI = {
     this.ajouterLigneIngredient(document.getElementById("m-ligne"), undefined, false);
     c.append(
       el("button", { class: "bouton", "data-action": "liste-ajouter-article", texte: "+ " + t("ajouter_article") }),
-      el("p", { id: "m-erreur", class: "erreur", hidden: true }),
+      el("p", { id: "m-erreur", class: "erreur", role: "alert", hidden: true }),
       el("div", { class: "actions" }, [
         el("button", {
           class: "bouton principal", "data-action": "liste-reviser",
@@ -318,9 +328,27 @@ const UI = {
     );
   },
 
-  // Ligne de l'article libre en cours de saisie
-  lireArticle() {
-    return this.lireLigne(document.querySelector("#m-ligne .ligne-ingredient"));
+  // Ligne de l'article libre en cours de saisie (`conteneur` : "m-ligne" dans Liste, "c-ligne" dans Courses)
+  lireArticle(conteneur = "m-ligne") {
+    return this.lireLigne(document.querySelector("#" + conteneur + " .ligne-ingredient"));
+  },
+
+  // Brouillon de l'article libre (Liste) : gardé quand l'écran est redessiné, pour ne pas perdre la saisie
+  lireBrouillonArticle() {
+    const ligne = document.querySelector("#m-ligne .ligne-ingredient");
+    if (!ligne) return null;
+    return { ...this.lireLigne(ligne), auto: ligne.querySelector(".i-rayon").dataset.auto === "1" };
+  },
+
+  restaurerBrouillonArticle(brouillon) {
+    const ligne = document.querySelector("#m-ligne .ligne-ingredient");
+    if (!brouillon || !ligne) return;
+    ligne.querySelector(".i-nom").value = brouillon.nom;
+    ligne.querySelector(".i-quantite").value = brouillon.quantite;
+    ligne.querySelector(".i-unite").value = brouillon.unite;
+    const rayon = ligne.querySelector(".i-rayon");
+    rayon.value = brouillon.rayon;
+    if (brouillon.auto) rayon.dataset.auto = "1"; else delete rayon.dataset.auto;
   },
 
   // --- Liste, étape « révision » : tout est coché, on décoche ce qu'on a déjà ---
@@ -371,6 +399,14 @@ const UI = {
         el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
       ])));
     });
+    // Article oublié : ajouté sans toucher aux cochages déjà faits
+    c.append(el("details", { class: "article-oublie" }, [
+      el("summary", { texte: t("article_oublie") }),
+      el("div", { id: "c-ligne" }),
+      el("button", { class: "bouton", "data-action": "courses-ajouter-article", texte: "+ " + t("ajouter_article") }),
+      el("p", { id: "c-erreur", class: "erreur", role: "alert", hidden: true })
+    ]));
+    this.ajouterLigneIngredient(document.getElementById("c-ligne"), undefined, false);
     c.append(el("div", { class: "actions" }, [
       el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") })
     ]));
@@ -435,7 +471,8 @@ const UI = {
   },
 
   // Écran Réglages : `texteDate` = phrase sur la dernière sauvegarde
-  rendreReglages(texteDate) {
+  // `texteSecours` : phrase sur la copie d'avant restauration, ou null s'il n'y en a pas
+  rendreReglages(texteDate, texteSecours) {
     document.getElementById("contenu-reglages").replaceChildren(
       el("h2", { texte: t("section_sauvegarde") }),
       el("p", { texte: texteDate }),
@@ -444,7 +481,11 @@ const UI = {
         el("button", { class: "bouton principal", "data-action": "sauvegarder", texte: t("sauvegarder") }),
         el("button", { class: "bouton", "data-action": "restaurer", texte: t("restaurer") })
       ]),
-      el("p", { id: "message-reglages", hidden: true })
+      ...(texteSecours === null ? [] : [el("div", { class: "secours" }, [
+        el("p", { class: "aide", texte: texteSecours }),
+        el("button", { class: "bouton danger", "data-action": "annuler-restauration", texte: t("annuler_restauration") })
+      ])]),
+      el("p", { id: "message-reglages", role: "alert", hidden: true })
     );
   },
 

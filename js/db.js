@@ -5,19 +5,58 @@ const DB = {
   PREFIXE: "spesa_",
   VERSION_SCHEMA: 1,
 
-  // Lecture générique : renvoie `defaut` si la clé n'existe pas ou est illisible
+  // Données illisibles rencontrées pendant cette session (noms de clés) : app.js prévient l'utilisateur
+  anomalies: [],
+
+  // Lecture générique : renvoie `defaut` si la clé n'existe pas ou est illisible.
+  // Un texte illisible n'est pas perdu : on le met de côté (voir mettreDeCote) avant qu'un
+  // enregistrement ne l'écrase.
   lire(nom, defaut) {
+    let brut = null;
     try {
-      const brut = localStorage.getItem(this.PREFIXE + nom);
+      brut = localStorage.getItem(this.PREFIXE + nom);
       return brut === null ? defaut : JSON.parse(brut);
     } catch (e) {
+      if (brut !== null) this.mettreDeCote(nom, brut);
       return defaut;
     }
   },
 
-  // Écriture générique
+  // Copie le texte abîmé sous `spesa_<nom>_abime_<date>`, puis libère la clé d'origine.
+  // Si la copie échoue (stockage plein), on laisse l'original en place.
+  mettreDeCote(nom, brut) {
+    try {
+      localStorage.setItem(this.PREFIXE + nom + "_abime_" + new Date().toISOString(), brut);
+      localStorage.removeItem(this.PREFIXE + nom);
+      this.anomalies.push(nom);
+    } catch (e) {
+      // rien de plus à faire ici
+    }
+  },
+
+  // Écriture générique. Peut échouer (stockage plein) : l'appelant doit prévoir l'erreur.
   ecrire(nom, valeur) {
     localStorage.setItem(this.PREFIXE + nom, JSON.stringify(valeur));
+  },
+
+  // Écrit plusieurs données liées en tout-ou-rien : si une écriture échoue, les précédentes
+  // sont annulées (anciennes valeurs remises) puis l'erreur est relancée.
+  // `paires` = [[nom, valeur], ...]
+  ecrireLot(paires) {
+    const anciennes = paires.map(([nom]) => [nom, localStorage.getItem(this.PREFIXE + nom)]);
+    try {
+      paires.forEach(([nom, valeur]) => this.ecrire(nom, valeur));
+    } catch (e) {
+      anciennes.forEach(([nom, brut]) => {
+        try {
+          if (brut === null) localStorage.removeItem(this.PREFIXE + nom);
+          else localStorage.setItem(this.PREFIXE + nom, brut);
+        } catch (e2) {
+          // la remise en place libère de la place : elle ne devrait pas échouer
+        }
+      });
+      throw e;
+    }
   },
 
   // Au démarrage : crée les réglages par défaut s'ils n'existent pas
@@ -39,12 +78,31 @@ const DB = {
     return { recettes: this.recettes(), dico: this.dico(), historique: this.historique(), reglages: this.reglages() };
   },
 
-  // Remplace toutes les données par celles d'une sauvegarde (la liste en cours n'est pas touchée)
+  // Remplace toutes les données par celles d'une sauvegarde (la liste en cours n'est pas touchée).
+  // Tout-ou-rien : jamais un mélange de deux sauvegardes.
   remplacerTout(donnees) {
-    this.ecrire("recettes", donnees.recettes);
-    this.ecrire("dico", donnees.dico);
-    this.ecrire("historique", donnees.historique);
-    this.ecrire("reglages", donnees.reglages);
+    this.ecrireLot([
+      ["recettes", donnees.recettes],
+      ["dico", donnees.dico],
+      ["historique", donnees.historique],
+      ["reglages", donnees.reglages]
+    ]);
+  },
+
+  // --- Copie de secours avant une restauration ---
+  // Les données actuelles sont gardées dans `spesa_avant_restauration` pour pouvoir annuler.
+  // Écrit une seule copie (la précédente est remplacée).
+  garderSecours(dateISO) {
+    this.ecrire("avant_restauration", { date: dateISO, ...this.exporterTout() });
+  },
+
+  // La copie de secours, ou null s'il n'y en a pas
+  secours() {
+    return this.lire("avant_restauration", null);
+  },
+
+  supprimerSecours() {
+    localStorage.removeItem(this.PREFIXE + "avant_restauration");
   },
 
   // Note la date de dernière sauvegarde dans les réglages
@@ -57,10 +115,6 @@ const DB = {
   // --- Dictionnaire des ingrédients (clé normalisée -> { libelle, rayon }) ---
   dico() {
     return this.lire("dico", {});
-  },
-
-  enregistrerDico(dico) {
-    this.ecrire("dico", dico);
   },
 
   // --- Liste en cours ---
@@ -76,15 +130,21 @@ const DB = {
     this.ecrire("liste", liste);
   },
 
+  // Dictionnaire et liste ensemble (ajout d'un article libre)
+  enregistrerDicoEtListe(dico, liste) {
+    this.ecrireLot([["dico", dico], ["liste", liste]]);
+  },
+
   // --- Historique : listes terminées, copies figées (consultation seule) ---
   historique() {
     return this.lire("historique", []);
   },
 
-  ajouterHistorique(entree) {
+  // Fin des courses : l'archive et la liste vidée s'enregistrent ensemble
+  terminerCourses(entree) {
     const historique = this.historique();
     historique.push(entree);
-    this.ecrire("historique", historique);
+    this.ecrireLot([["historique", historique], ["liste", this.listeVide()]]);
   },
 
   // --- Recettes ---
@@ -101,8 +161,8 @@ const DB = {
     return "r_" + Date.now().toString(36);
   },
 
-  // Ajoute la recette, ou remplace celle qui a le même id
-  enregistrerRecette(recette) {
+  // Ajoute la recette (ou remplace celle qui a le même id) et met à jour le dictionnaire, ensemble
+  enregistrerRecette(recette, dico) {
     const liste = this.recettes();
     const position = liste.findIndex((r) => r.id === recette.id);
     if (position >= 0) {
@@ -110,7 +170,7 @@ const DB = {
     } else {
       liste.push(recette);
     }
-    this.ecrire("recettes", liste);
+    this.ecrireLot([["recettes", liste], ["dico", dico]]);
   },
 
   supprimerRecette(id) {
