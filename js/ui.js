@@ -23,9 +23,27 @@ const UI = {
     document.querySelectorAll(".onglet").forEach((onglet) => {
       onglet.classList.toggle("actif", onglet.dataset.cible === nom);
     });
-    // En mode courses, le bouton flottant masquerait des quantités : on le cache
-    // (le bandeau de rappel et les Réglages permettent de sauvegarder)
-    document.getElementById("bouton-sauvegarde").hidden = nom === "courses";
+    this.ecranCourant = nom;
+    this.majBoutonSauvegarde();
+  },
+
+  // En mode courses (liste validée), le bouton flottant masquerait des quantités : on le cache
+  // (le bandeau de rappel et les Réglages permettent de sauvegarder)
+  ecranCourant: "recettes",
+  modeCourses: false,
+
+  definirModeCourses(actif) {
+    this.modeCourses = actif;
+    this.majBoutonSauvegarde();
+  },
+
+  majBoutonSauvegarde() {
+    document.getElementById("bouton-sauvegarde").hidden = this.ecranCourant === "liste" && this.modeCourses;
+  },
+
+  // Titre de l'écran Liste : « Liste » pendant la préparation, « Courses » une fois validée
+  titreListe(texte) {
+    document.getElementById("titre-liste").textContent = texte;
   },
 
   // Dans l'écran Recettes : "liste", "detail", "form" ou "import"
@@ -372,23 +390,12 @@ const UI = {
     ]));
   },
 
-  // --- Liste, étape « courses » (liste validée) ---
-  rendreListeValidee() {
-    document.getElementById("contenu-liste").replaceChildren(
-      el("p", { texte: t("liste_validee") }),
-      el("div", { class: "actions" }, [
-        el("button", { class: "bouton", "data-action": "liste-modifier", texte: t("modifier_liste") })
-      ])
-    );
-  },
-
-  // --- Onglet Courses : liste finale rangée par rayon ---
+  // --- Liste, étape « courses » (liste validée) : liste finale rangée par rayon ---
   // Mode courses : une ligne = une grande zone tactile qui coche l'article.
   // `coches` = clés des articles déjà dans le caddie.
-  rendreCourses(groupes, listeValidee, coches) {
-    const c = document.getElementById("contenu-courses");
+  rendreCourses(groupes, coches) {
+    const c = document.getElementById("contenu-liste");
     c.replaceChildren();
-    if (!listeValidee) return c.append(el("p", { class: "vide", texte: t("courses_pas_prete") }));
     if (groupes.length > 0) c.append(el("p", { id: "compteur-courses", class: "aide" }));
     if (groupes.length === 0) c.append(el("p", { class: "vide", texte: t("courses_liste_vide") }));
     groupes.forEach((groupe) => {
@@ -408,14 +415,15 @@ const UI = {
     ]));
     this.ajouterLigneIngredient(document.getElementById("c-ligne"), undefined, false);
     c.append(el("div", { class: "actions" }, [
-      el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") })
+      el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") }),
+      el("button", { class: "bouton", "data-action": "liste-modifier", texte: t("modifier_liste") })
     ]));
   },
 
   // --- Historique (consultation seule) ---
-  // Dans l'écran Courses : "courses" (liste en cours) ou "historique"
-  afficherVueCourses(nom) {
-    document.getElementById("vue-courses").hidden = nom !== "courses";
+  // Dans l'écran Liste : "panier" (liste en cours) ou "historique"
+  afficherVueListe(nom) {
+    document.getElementById("vue-panier").hidden = nom !== "panier";
     document.getElementById("vue-historique").hidden = nom !== "historique";
     window.scrollTo(0, 0);
   },

@@ -1,6 +1,5 @@
 {
   "nav_recettes": "Recettes",
-  "nav_liste": "Liste",
   "nav_courses": "Courses",
   "nav_reglages": "Réglages",
 
@@ -55,9 +54,7 @@
   "titre_revision": "Révision",
   "aide_revision": "Décoche ce que tu as déjà à la maison.",
   "valider_liste": "Valider la liste",
-  "liste_validee": "Ta liste est validée. Elle t'attend dans l'onglet Courses.",
   "modifier_liste": "Modifier la liste",
-  "courses_pas_prete": "Aucune liste validée. Prépare-la dans l'onglet Liste.",
   "courses_liste_vide": "Rien à acheter : tout est déjà à la maison.",
   "terminer_courses": "Terminer les courses",
   "articles_coches": "articles dans le caddie",

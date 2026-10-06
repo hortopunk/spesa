@@ -126,7 +126,7 @@ Précisions (étape 5) : `decoches` contient des clés normalisées (ex. `huile 
   "lignes": [{ "libelle": "Lait", "rayon": "cremerie", "quantites": [{ "quantite": 500, "unite": "ml" }], "coche": true }]
 }
 ```
-L'archivage est fait par « Terminer les courses » (étape 6). L'écran de consultation (étape 7) s'ouvre par le bouton « Historique des courses » de l'onglet Courses : liste des courses terminées (la plus récente en premier), puis détail d'une liste (recettes, articles par rayon, cochés = étaient dans le caddie). Aucune modification ni suppression possible.
+L'archivage est fait par « Terminer les courses » (étape 6). L'écran de consultation (étape 7) s'ouvre par le bouton « Historique des courses » de l'onglet Courses (visible à toutes les étapes) : liste des courses terminées (la plus récente en premier), puis détail d'une liste (recettes, articles par rayon, cochés = étaient dans le caddie). Aucune modification ni suppression possible.
 
 **Réglages** (`spesa_reglages`) : langue, date de dernière sauvegarde, version du schéma.
 
@@ -238,7 +238,7 @@ Limite assumée : la sauvegarde est manuelle (deux appuis environ). Évolution p
 Petit projet, besoin esthétique modéré, mais soigné et lisible.
 - Minimaliste, clair. 2 ou 3 couleurs (fond, texte, une couleur d'accent). Mode sombre non prévu en v1.
 - Police système (aucun chargement externe). Une seule police embarquée est possible plus tard.
-- Zones tactiles : 44 px minimum. Navigation en bas de l'écran (à portée du pouce) : Recettes, Liste, Courses, Réglages.
+- Zones tactiles : 44 px minimum. Navigation en bas de l'écran (à portée du pouce) : Recettes, Courses, Réglages. L'onglet Courses regroupe la préparation de la liste (ajouts, révision) et le mode courses (cochage), selon l'étape en cours (`etat`) ; l'historique s'ouvre depuis le même onglet.
 - Icônes : quelques SVG en ligne, sans bibliothèque.
 - Aucune dépendance externe : tout fonctionne sans réseau.
 

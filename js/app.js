@@ -172,9 +172,9 @@ function executerAction(bouton) {
     case "revision-valider":
       // Les articles déjà cochés restent cochés (ceux qui ont disparu de la liste sont oubliés)
       modifierListe((l) => { l.etat = "courses"; l.coches = Logic.garderCoches(l.coches, groupesDeLaListe(l, true)); }, false);
-      UI.afficherEcran("courses");
+      window.scrollTo(0, 0);
       break;
-    case "liste-modifier": modifierListe((l) => { l.etat = "revision"; }); break;
+    case "liste-modifier": modifierListe((l) => { l.etat = "revision"; }, false); window.scrollTo(0, 0); break;
     case "cocher": {
       // Mode courses : article dans le caddie ou non (pas de nouveau dessin, pour ne pas faire sauter l'écran)
       const liste = DB.liste();
@@ -191,7 +191,7 @@ function executerAction(bouton) {
     case "historique-ouvrir": afficherHistorique(); break;
     case "historique-detail": afficherArchive(Number(bouton.dataset.index)); break;
     case "historique-retour": afficherHistorique(); break;
-    case "historique-fermer": UI.afficherVueCourses("courses"); break;
+    case "historique-fermer": UI.afficherVueListe("panier"); break;
 
     // Sauvegarde
     case "sauvegarder": sauvegarder(); break;
@@ -222,6 +222,8 @@ function groupesDeLaListe(liste, final) {
 function afficherEcranListe() {
   const liste = DB.liste();
   const avant = JSON.stringify(liste);
+  UI.titreListe(t(liste.etat === "courses" ? "titre_courses" : "titre_liste"));
+  UI.definirModeCourses(liste.etat === "courses");
   // Une recette supprimée disparaît de la liste
   liste.recettes = liste.recettes.filter((choix) => DB.recette(choix.id));
 
@@ -234,7 +236,10 @@ function afficherEcranListe() {
     UI.rendreRevision(groupes, liste.decoches);
   } else if (liste.etat === "courses") {
     enregistrerSiChange(liste, avant);
-    UI.rendreListeValidee();
+    const groupes = groupesDeLaListe(liste, true);
+    UI.rendreCourses(groupes, liste.coches);
+    const compte = Logic.compterCoches(groupes, liste.coches);
+    UI.majCompteur(compte.coches, compte.total);
   } else {
     enregistrerSiChange(liste, avant);
     const choisies = liste.recettes.map((choix, index) => ({
@@ -256,15 +261,6 @@ function redessinerListe() {
   const brouillon = UI.lireBrouillonArticle();
   afficherEcranListe();
   UI.restaurerBrouillonArticle(brouillon);
-}
-
-// Affiche l'onglet Courses : liste finale rangée par rayon
-function afficherEcranCourses() {
-  const liste = DB.liste();
-  const groupes = groupesDeLaListe(liste, true);
-  UI.rendreCourses(groupes, liste.etat === "courses", liste.coches);
-  const compte = Logic.compterCoches(groupes, liste.coches);
-  UI.majCompteur(compte.coches, compte.total);
 }
 
 // --- Sauvegarde et restauration (le travail est dans backup.js) ---
@@ -293,7 +289,7 @@ function afficherHistorique() {
     })
     .reverse();
   UI.rendreHistorique(entrees);
-  UI.afficherVueCourses("historique");
+  UI.afficherVueListe("historique");
 }
 
 function afficherArchive(index) {
@@ -335,7 +331,6 @@ async function sauvegarder() {
 function toutRedessiner() {
   afficherListe();
   afficherEcranListe();
-  afficherEcranCourses();
   rafraichirBandeau();
   afficherReglages();
 }
@@ -382,7 +377,6 @@ function terminerCourses() {
   DB.terminerCourses(Logic.construireArchive(liste, DB.recettes(), groupes, new Date().toISOString()));
   etat.choixRecette = false;
   afficherEcranListe();
-  afficherEcranCourses();
   UI.afficherEcran("liste");
   rafraichirBandeau();
   // Fin des courses : bon moment pour sauvegarder (l'historique vient de changer)
@@ -397,7 +391,6 @@ function modifierListe(changement, garderBrouillon = true) {
   changement(liste);
   DB.enregistrerListe(liste);
   afficherEcranListe();
-  afficherEcranCourses();
   UI.restaurerBrouillonArticle(brouillon);
 }
 
@@ -415,7 +408,6 @@ function ajouterArticle(conteneur, idErreur) {
   liste.coches = liste.coches.filter((c) => c !== cle);
   DB.enregistrerDicoEtListe(Logic.mettreAJourDico(DB.dico(), [resultat.rayon]), liste);
   afficherEcranListe();
-  afficherEcranCourses();
 }
 
 // Hors-ligne et stockage durable (voir service-worker.js)
@@ -446,10 +438,9 @@ async function demarrer() {
   document.querySelectorAll(".onglet").forEach((onglet) => {
     onglet.addEventListener("click", () => {
       UI.afficherEcran(onglet.dataset.cible);
-      if (onglet.dataset.cible === "liste") afficherEcranListe();
-      if (onglet.dataset.cible === "courses") {
-        UI.afficherVueCourses("courses");   // on revient toujours à la liste en cours
-        afficherEcranCourses();
+      if (onglet.dataset.cible === "liste") {
+        UI.afficherVueListe("panier");   // on revient toujours à la liste en cours
+        afficherEcranListe();
       }
       if (onglet.dataset.cible === "reglages") afficherReglages();
       rafraichirBandeau();
@@ -493,7 +484,6 @@ async function demarrer() {
 
   afficherListe();
   afficherEcranListe();
-  afficherEcranCourses();
   afficherReglages();
   rafraichirBandeau();
   // Des données illisibles ont été mises de côté pendant le démarrage : on le dit

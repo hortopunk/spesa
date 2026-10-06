@@ -45,15 +45,10 @@
     </section>
 
     <section class="ecran" id="ecran-liste" data-ecran="liste" hidden>
-      <h1 data-i18n="titre_liste"></h1>
-      <div id="contenu-liste"></div>
-    </section>
-
-    <section class="ecran" id="ecran-courses" data-ecran="courses" hidden>
-      <!-- Deux vues : la liste en cours et l'historique (consultation seule) -->
-      <div id="vue-courses">
-        <h1 data-i18n="titre_courses"></h1>
-        <div id="contenu-courses"></div>
+      <!-- Deux vues : la liste en cours (ajouts, révision ou courses selon l'étape) et l'historique -->
+      <div id="vue-panier">
+        <h1 id="titre-liste" data-i18n="titre_liste"></h1>
+        <div id="contenu-liste"></div>
         <button class="bouton bouton-historique" data-action="historique-ouvrir" data-i18n="historique_ouvrir"></button>
       </div>
       <div id="vue-historique" hidden></div>
@@ -77,10 +72,6 @@
       <span data-i18n="nav_recettes"></span>
     </button>
     <button class="onglet" data-cible="liste">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
-      <span data-i18n="nav_liste"></span>
-    </button>
-    <button class="onglet" data-cible="courses">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h10l2-8H6.5M9 20h.01M17 20h.01"/></svg>
       <span data-i18n="nav_courses"></span>
     </button>
