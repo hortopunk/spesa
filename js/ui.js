@@ -97,15 +97,19 @@ const UI = {
   // Le nouvel habillage (fond noir, cartes) s'applique à l'écran Courses quand la liste est validée.
   // Les autres écrans gardent l'ancien style en attendant leur tour.
   majHabillage() {
-    const vueDesign = !document.getElementById("vue-panier").hidden || !document.getElementById("vue-ajout").hidden;
-    const actif = this.ecranCourant === "liste" && this.modeCourses && vueDesign;
+    const vueCourses = !document.getElementById("vue-panier").hidden || !document.getElementById("vue-ajout").hidden;
+    const courses = this.ecranCourant === "liste" && this.modeCourses && vueCourses;
+    const recettes = this.ecranCourant === "recettes" && !document.getElementById("vue-liste").hidden;
+    const actif = courses || recettes;
     document.body.classList.toggle("design", actif);
     // Écran secondaire (Ajout) : pas d'onglets, l'action reste seule en pied
-    document.body.classList.toggle("secondaire", actif && !document.getElementById("vue-ajout").hidden);
+    document.body.classList.toggle("secondaire", courses && !document.getElementById("vue-ajout").hidden);
+    this.majBoutonSauvegarde();
   },
 
   majBoutonSauvegarde() {
-    document.getElementById("bouton-sauvegarde").hidden = this.ecranCourant === "liste" && this.modeCourses;
+    document.getElementById("bouton-sauvegarde").hidden =
+      document.body.classList.contains("design") || (this.ecranCourant === "liste" && this.modeCourses);
   },
 
   // Titre de l'écran Liste : « Liste » pendant la préparation, « Courses » une fois validée
@@ -119,42 +123,124 @@ const UI = {
       document.getElementById("vue-" + vue).hidden = vue !== nom;
     });
     window.scrollTo(0, 0);
+    this.majHabillage();
   },
 
-  // --- Liste des recettes ---
-  // `dansLaListe` : identifiants des recettes déjà dans la liste de courses (le bouton affiche alors ✓)
-  rendreListe(recettes, rechercheActive, dansLaListe) {
+  // --- Liste des recettes (DESIGN-ecrans.md, écran Recettes) ---
+  // La coque (en-tête, recherche, zone qui défile, pied) est dessinée une fois ; les cartes à chaque appel.
+  // `choix` = recettes déjà dans la liste de courses : [{ id, parts }]. `total` = nombre de recettes enregistrées.
+  rendreListe(recettes, rechercheActive, choix, total, recherche) {
+    const vue = document.getElementById("vue-liste");
+    if (!document.getElementById("liste-recettes")) {
+      const champ = el("input", { type: "search", id: "recherche", "aria-label": t("recherche_recettes"), placeholder: t("recherche_recettes") });
+      champ.value = recherche;
+      vue.replaceChildren(
+        el("header", { class: "entete-carte" }, [
+          el("div", {}, [
+            el("h1", { texte: t("titre_recettes") }),
+            el("p", { id: "resume-recettes", class: "resume" })
+          ])
+        ]),
+        el("div", { class: "carte-recherche" }, [
+          svg("0 0 24 24", [["circle", { cx: 11, cy: 11, r: 7 }], ["path", { d: "M20 20l-4-4" }]], "icone-trait loupe"),
+          champ
+        ]),
+        el("div", { class: "zone-liste" }, [el("ul", { id: "liste-recettes", class: "liste-cartes" })]),
+        el("div", { class: "pied-carte pied-double" }, [
+          el("button", { type: "button", class: "bouton-ajout", "data-action": "nouvelle" }, [
+            svg("0 0 24 24", [["path", { d: "M12 5v14M5 12h14" }]], "icone-trait plus"),
+            el("span", { texte: t("nouvelle_recette") })
+          ]),
+          el("button", { type: "button", class: "bouton-importer", "data-action": "importer", "aria-label": t("importer_recette"), texte: t("importer_court") })
+        ])
+      );
+    }
+    document.getElementById("resume-recettes").textContent = t(total > 1 ? "recettes_plusieurs" : "recettes_un").replace("{n}", total);
+
     const ul = document.getElementById("liste-recettes");
     ul.replaceChildren();
     recettes.forEach((r) => {
-      const dejaLa = dansLaListe.includes(r.id);
-      ul.append(el("li", {}, [
-        el("button", { class: "carte", "data-action": "ouvrir", "data-id": r.id }, [
-          el("span", { class: "carte-titre", texte: r.titre })
+      const ligne = choix.find((c) => c.id === r.id);
+      const meta = ligne
+        ? (ligne.parts > 1 ? t("dans_la_liste_plusieurs").replace("{n}", ligne.parts) : t("dans_la_liste_un"))
+        : t("pas_dans_la_liste");
+      ul.append(el("li", { class: "carte-recette" }, [
+        // Zone cliquable : ouvre le détail
+        el("button", { type: "button", class: "carte-recette-lien", "data-action": "ouvrir", "data-id": r.id }, [
+          el("span", { class: "tuile-noire" }, [
+            el("span", { class: "tuile-nombre", texte: r.ingredients.length }),
+            el("span", { class: "tuile-unite", texte: t("ingr_court") })
+          ]),
+          el("span", { class: "carte-texte" }, [
+            el("span", { class: "carte-nom", texte: r.titre }),
+            el("span", { class: "carte-meta", texte: meta })
+          ])
         ]),
-        // Ajout rapide à la liste de courses, avec les parts de la recette
+        // Ouvre la feuille de parts : n'ajoute pas directement
         el("button", {
-          class: "bouton ajout-rapide" + (dejaLa ? " ajoute" : ""),
+          type: "button", class: "bouton-ajout-rapide" + (ligne ? " ajoute" : ""),
           "data-action": "ajout-rapide", "data-id": r.id,
-          "aria-label": t(dejaLa ? "deja_dans_la_liste" : "ajouter_a_la_liste") + " : " + r.titre
-        }, [this.iconePanier(dejaLa)])
+          "aria-label": t(ligne ? "deja_dans_la_liste" : "ajouter_a_la_liste") + " : " + r.titre
+        }, [svg("0 0 24 24", [["path", { d: ligne ? "M5 12.5l4.5 4.5L19 7.5" : "M12 5v14M5 12h14" }]], "icone-trait")])
       ]));
     });
-    const vide = document.getElementById("vide-recettes");
-    vide.hidden = recettes.length > 0;
-    vide.textContent = rechercheActive ? t("aucun_resultat") : t("vide_recettes");
+    // État vide : carte avec tuile noire « 0 »
+    if (recettes.length === 0) {
+      ul.append(el("li", { class: "carte-recette carte-recette-vide" }, [
+        el("span", { class: "tuile-noire" }, [el("span", { class: "tuile-nombre", texte: "0" })]),
+        el("span", { class: "carte-texte" }, [
+          el("span", { class: "carte-nom", texte: rechercheActive ? t("aucun_resultat") : t("vide_recettes_titre") }),
+          rechercheActive ? null : el("span", { class: "carte-meta", texte: t("vide_recettes_texte") })
+        ])
+      ]));
+    }
   },
 
-  // Icône panier « + » (ou panier « ✓ » une fois ajouté), dessinée en SVG sans bibliothèque
-  iconePanier(coche) {
-    const ns = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(ns, "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("aria-hidden", "true");
-    const chemin = document.createElementNS(ns, "path");
-    chemin.setAttribute("d", "M3 4h2l2.5 11h10l2-8H6.5M9 20h.01M17 20h.01" + (coche ? "M9.5 11l2.2 2.2 3.8-4" : "M12.5 8.5v5M10 11h5"));
-    svg.append(chemin);
-    return svg;
+  // Feuille « Pour combien de parts ? » : remplace le pied, sans onglets (dialogue modal)
+  ouvrirFeuilleParts(recette, parts, dejaDedans) {
+    this.fermerFeuilleParts();
+    const feuille = el("div", { id: "feuille-parts", class: "feuille", role: "dialog", "aria-modal": "true", "aria-labelledby": "feuille-titre" }, [
+      el("h2", { id: "feuille-titre", texte: t("feuille_titre") }),
+      el("p", { class: "feuille-recette", texte: recette.titre }),
+      el("div", { class: "feuille-parts" }, [
+        el("button", { type: "button", class: "bouton-rond", "data-action": "feuille-moins", "aria-label": t("diminuer_parts") }, [
+          svg("0 0 24 24", [["path", { d: "M5 12h14" }]], "icone-trait")
+        ]),
+        el("div", { class: "feuille-valeur", tabindex: "-1", role: "status" }, [
+          el("strong", { id: "feuille-nombre", texte: parts }),
+          el("span", { id: "feuille-unite" })
+        ]),
+        el("button", { type: "button", class: "bouton-rond", "data-action": "feuille-plus", "aria-label": t("augmenter_parts") }, [
+          svg("0 0 24 24", [["path", { d: "M12 5v14M5 12h14" }]], "icone-trait")
+        ])
+      ]),
+      el("button", { type: "button", class: "bouton-ajout", "data-action": "feuille-valider", texte: t(dejaDedans ? "mettre_a_jour" : "bouton_ajout") }),
+      el("button", { type: "button", class: "bouton-contour", "data-action": "feuille-annuler", texte: t("annuler") }),
+      dejaDedans ? el("button", { type: "button", class: "bouton-contour tirets", "data-action": "feuille-retirer", texte: t("retirer_de_la_liste") }) : null
+    ]);
+    feuille.dataset.id = recette.id;
+    document.body.append(feuille);
+    // Le reste de l'écran n'est plus accessible tant que la feuille est ouverte
+    ["ecrans", "navigation"].forEach((id) => document.getElementById(id).setAttribute("inert", ""));
+    this.majFeuilleParts(parts);
+    feuille.querySelector(".feuille-valeur").focus();
+  },
+
+  // Met à jour la valeur affichée (et le mot « part(s) »)
+  majFeuilleParts(parts) {
+    document.getElementById("feuille-nombre").textContent = parts;
+    document.getElementById("feuille-unite").textContent = " " + t(parts > 1 ? "parts" : "part");
+  },
+
+  // Ferme la feuille et redonne le focus au bouton qui l'avait ouverte
+  fermerFeuilleParts() {
+    const feuille = document.getElementById("feuille-parts");
+    if (!feuille) return;
+    const id = feuille.dataset.id;
+    feuille.remove();
+    ["ecrans", "navigation"].forEach((n) => document.getElementById(n).removeAttribute("inert"));
+    const bouton = document.querySelector('[data-action="ajout-rapide"][data-id="' + id + '"]');
+    if (bouton) bouton.focus();
   },
 
   // --- Détail d'une recette ---
@@ -694,9 +780,7 @@ const UI = {
       el("div", {}, [
         el("h1", { texte: t("titre_courses") }),
         el("p", { id: "resume-courses", class: "resume", role: "status" })
-      ]),
-      // Pastille de langue : pour l'instant un simple repère, sans action (DESIGN.md, décision 4)
-      el("span", { class: "pastille-langue", role: "img", "aria-label": t("langue_actuelle"), texte: t("langue_code") })
+      ])
     ]));
 
     const champ = el("input", { type: "search", id: "recherche-courses", "aria-label": t("recherche_article"), placeholder: t("recherche_courses") });

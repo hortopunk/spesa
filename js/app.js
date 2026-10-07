@@ -8,14 +8,15 @@ const etat = {
   editionId: null,     // recette en cours de modification (null = nouvelle)
   choixRecette: false, // écran Liste : le choix d'une recette à ajouter est déplié
   courses: { filtre: "tout", recherche: "" },  // mode courses : filtre (tout, a_prendre, pris) et texte cherché
-  ajout: { nom: "", quantite: "1", unite: "piece", rayon: "", auto: false }   // écran « Nouvel article » (auto = rayon repris du dictionnaire)
+  ajout: { nom: "", quantite: "1", unite: "piece", rayon: "", auto: false },   // écran « Nouvel article » (auto = rayon repris du dictionnaire)
+  feuille: { id: null, parts: 1, dedans: false }   // feuille de parts de l'écran Recettes
 };
 
 // Dessine les cartes de recettes sans changer de vue ni remonter l'écran (utile après un ajout rapide)
 function redessinerRecettes() {
-  const filtrees = Logic.filtrerRecettes(DB.recettes(), etat.recherche);
-  const dansLaListe = DB.liste().recettes.map((choix) => choix.id);
-  UI.rendreListe(filtrees, etat.recherche.trim() !== "", dansLaListe);
+  const toutes = DB.recettes();
+  const filtrees = Logic.filtrerRecettes(toutes, etat.recherche);
+  UI.rendreListe(filtrees, etat.recherche.trim() !== "", DB.liste().recettes, toutes.length, etat.recherche);
 }
 
 function afficherListe() {
@@ -158,13 +159,39 @@ function executerAction(bouton) {
     case "annuler-import": afficherListe(); break;
     case "ouvrir": ouvrirRecette(bouton.dataset.id); break;
     case "ajout-rapide": {
-      // Une recette déjà dans la liste n'est pas ajoutée deux fois
+      // Ouvre la feuille de parts (n'ajoute pas directement). Valeur de départ : parts déjà choisies, sinon celles de la recette.
       const recette = DB.recette(bouton.dataset.id);
-      if (!recette || DB.liste().recettes.some((choix) => choix.id === recette.id)) break;
-      modifierListe((l) => l.recettes.push({ id: recette.id, parts: recette.parts }));
+      if (!recette) break;
+      const choix = DB.liste().recettes.find((c) => c.id === recette.id);
+      etat.feuille = { id: recette.id, parts: choix ? choix.parts : recette.parts, dedans: Boolean(choix) };
+      UI.ouvrirFeuilleParts(recette, etat.feuille.parts, etat.feuille.dedans);
+      break;
+    }
+    case "feuille-moins": case "feuille-plus": {
+      const suivant = etat.feuille.parts + (bouton.dataset.action === "feuille-plus" ? 1 : -1);
+      etat.feuille.parts = Math.min(99, Math.max(1, suivant));   // entre 1 et 99
+      UI.majFeuilleParts(etat.feuille.parts);
+      break;
+    }
+    case "feuille-valider": {
+      const { id, parts } = etat.feuille;
+      UI.fermerFeuilleParts();
+      modifierListe((l) => {
+        const choix = l.recettes.find((c) => c.id === id);
+        if (choix) choix.parts = parts;
+        else l.recettes.push({ id, parts });
+      });
       redessinerRecettes();
       break;
     }
+    case "feuille-retirer": {
+      const { id } = etat.feuille;
+      UI.fermerFeuilleParts();
+      modifierListe((l) => { l.recettes = l.recettes.filter((c) => c.id !== id); });
+      redessinerRecettes();
+      break;
+    }
+    case "feuille-annuler": UI.fermerFeuilleParts(); break;
     case "retour": afficherListe(); break;
     case "parts-moins":
       if (etat.partsVoulues > 1) { etat.partsVoulues--; afficherDetail(etat.ouverteId); }
@@ -625,14 +652,17 @@ async function demarrer() {
   // Tous les clics passent par gererClic. Les boutons et lignes sont recréés à chaque
   // affichage, donc on écoute le document (délégation) plutôt que chaque bouton.
   document.addEventListener("click", gererClic);
-  document.getElementById("recherche").addEventListener("input", (e) => {
-    etat.recherche = e.target.value;
-    afficherListe();
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") UI.fermerFeuilleParts();   // Échap = annuler
   });
 
   // Lignes d'ingrédient (recette ou article libre) : autocomplétion et rayon
   document.addEventListener("input", (e) => {
     if (e.target.matches(".i-nom")) surSaisieNom(e.target);
+    if (e.target.id === "recherche") {
+      etat.recherche = e.target.value;
+      redessinerRecettes();   // seules les cartes sont redessinées : le champ garde le focus
+    }
     if (e.target.id === "ajout-nom") surSaisieAjout(e.target.value);
     if (e.target.id === "ajout-quantite") { etat.ajout.quantite = e.target.value; UI.effacerErreurAjout("quantite"); majAjout(); }
     if (e.target.id === "recherche-courses") {
