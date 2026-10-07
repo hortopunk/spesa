@@ -6,9 +6,18 @@ const Logic = {
 
   // Rayons, dans l'ordre d'affichage (à ajuster selon ton magasin habituel)
   RAYONS: [
-    "fruits_legumes", "boulangerie", "boucherie_poissonnerie", "cremerie", "epicerie_salee",
+    "fruits", "legumes", "boulangerie", "boucherie_poissonnerie", "cremerie", "epicerie_salee",
     "epicerie_sucree", "surgeles", "boissons", "hygiene_entretien", "autre"
   ],
+
+  // Anciens rayons supprimés -> rayon actuel. « fruits_legumes » a été séparé en deux :
+  // les données déjà enregistrées passent en « legumes » (on peut les changer ensuite).
+  RAYONS_ANCIENS: { fruits_legumes: "legumes" },
+
+  // Rayon à utiliser pour une valeur lue dans les données (ancienne ou actuelle)
+  rayonActuel(rayon) {
+    return this.RAYONS_ANCIENS[rayon] || rayon;
+  },
 
   // Normalisation : minuscules, sans accents, ponctuation et espaces nettoyés
   normaliser(texte) {
@@ -111,7 +120,7 @@ const Logic = {
   ingredientsAvecRayon(ingredients, dico) {
     return ingredients.map((ing) => {
       const fiche = dico[this.normaliser(ing.nom)];
-      return { ...ing, rayon: fiche ? fiche.rayon : "" };
+      return { ...ing, rayon: fiche ? this.rayonActuel(fiche.rayon) : "" };
     });
   },
 
@@ -187,7 +196,7 @@ const Logic = {
       const cle = this.normaliser(ligne.nom);
       if (!groupes.has(cle)) {
         const fiche = dico[cle];
-        const rayon = fiche ? fiche.rayon : ligne.rayon;
+        const rayon = this.rayonActuel(fiche ? fiche.rayon : ligne.rayon);
         groupes.set(cle, {
           cle,
           libelle: fiche ? fiche.libelle : ligne.nom,
@@ -225,7 +234,7 @@ const Logic = {
     return this.RAYONS
       .map((rayon) => ({
         rayon,
-        lignes: lignes.filter((l) => l.rayon === rayon).sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"))
+        lignes: lignes.filter((l) => this.rayonActuel(l.rayon) === rayon).sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"))
       }))
       .filter((groupe) => groupe.lignes.length > 0);
   },

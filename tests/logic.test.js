@@ -144,9 +144,9 @@ test("ingredientsAvecRayon : rayon connu ou vide", () => {
 
 test("mettreAJourDico : garde le libellé d'origine, met à jour le rayon, ne modifie pas l'original", () => {
   const avant = JSON.stringify(DICO);
-  const res = Logic.mettreAJourDico(DICO, [{ nom: "LAIT", rayon: "boissons" }, { nom: "Courgette", rayon: "fruits_legumes" }]);
+  const res = Logic.mettreAJourDico(DICO, [{ nom: "LAIT", rayon: "boissons" }, { nom: "Courgette", rayon: "legumes" }]);
   assert.deepEqual(res.lait, { libelle: "Lait", rayon: "boissons" });
-  assert.deepEqual(res.courgette, { libelle: "Courgette", rayon: "fruits_legumes" });
+  assert.deepEqual(res.courgette, { libelle: "Courgette", rayon: "legumes" });
   assert.equal(JSON.stringify(DICO), avant);
 });
 
@@ -274,14 +274,25 @@ test("lignesDeListe : recettes aux parts choisies et articles libres, recette su
   assert.equal(lignes[1].nom, "papier");
 });
 
+test("rayonActuel : l'ancien rayon « fruits_legumes » devient « legumes », les autres ne changent pas", () => {
+  assert.equal(Logic.rayonActuel("fruits_legumes"), "legumes");
+  assert.equal(Logic.rayonActuel("fruits"), "fruits");
+  assert.equal(Logic.rayonActuel("cremerie"), "cremerie");
+});
+
+test("grouperParRayon : une ancienne ligne « fruits_legumes » (historique) apparaît dans « legumes »", () => {
+  const groupes = Logic.grouperParRayon([{ cle: "a", libelle: "Aubergine", rayon: "fruits_legumes" }]);
+  assert.deepEqual(groupes.map((g) => g.rayon), ["legumes"]);
+});
+
 test("grouperParRayon : ordre des rayons, ordre alphabétique, rayons vides ignorés", () => {
   const lignes = [
     { cle: "b", libelle: "Beurre", rayon: "cremerie" },
-    { cle: "a", libelle: "Aubergine", rayon: "fruits_legumes" },
+    { cle: "a", libelle: "Aubergine", rayon: "legumes" },
     { cle: "l", libelle: "Lait", rayon: "cremerie" }
   ];
   const groupes = Logic.grouperParRayon(lignes);
-  assert.deepEqual(groupes.map((g) => g.rayon), ["fruits_legumes", "cremerie"]);
+  assert.deepEqual(groupes.map((g) => g.rayon), ["legumes", "cremerie"]);
   assert.deepEqual(groupes[1].lignes.map((l) => l.libelle), ["Beurre", "Lait"]);
 });
 

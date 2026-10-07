@@ -98,11 +98,11 @@ Un ingrédient sans quantité (ex. « sel ») est autorisé : `"quantite": null,
 
 **Dictionnaire** (`spesa_dico`, objet) : clé normalisée → fiche
 ```json
-{ "aubergine": { "libelle": "aubergine", "rayon": "fruits_legumes" } }
+{ "aubergine": { "libelle": "aubergine", "rayon": "legumes" } }
 ```
 Un nouvel ingrédient validé est ajouté automatiquement. Le rayon est demandé une seule fois, puis mémorisé.
 
-Mise en œuvre (étape 4) : chaque ligne d'ingrédient du formulaire de recette porte un champ « Rayon ». Il est prérempli si l'ingrédient est connu, obligatoire sinon. Le modifier dans une recette met à jour la fiche du dictionnaire. Identifiants de rayons, dans l'ordre : `fruits_legumes`, `boulangerie`, `boucherie_poissonnerie`, `cremerie`, `epicerie_salee`, `epicerie_sucree`, `surgeles`, `boissons`, `hygiene_entretien`, `autre`.
+Mise en œuvre (étape 4) : chaque ligne d'ingrédient du formulaire de recette porte un champ « Rayon ». Il est prérempli si l'ingrédient est connu, obligatoire sinon. Le modifier dans une recette met à jour la fiche du dictionnaire. Identifiants de rayons, dans l'ordre : `fruits`, `legumes`, `boulangerie`, `boucherie_poissonnerie`, `cremerie`, `epicerie_salee`, `epicerie_sucree`, `surgeles`, `boissons`, `hygiene_entretien`, `autre`.
 
 **Liste en cours** (`spesa_liste`, objet)
 ```json
@@ -152,7 +152,7 @@ Chaque jeu de données porte un numéro de version de schéma, pour migrer propr
 - Pas de conversion entre masse et volume.
 - Arrondi (étape 13) : une fois les quantités additionnées, les pièces et les pincées sont arrondies à l'entier supérieur dans la liste de courses (0,5 + 0,5 carotte = 1 ; 4,5 gousses = 5). Les autres unités gardent leurs décimales. La page d'une recette garde les quantités exactes.
 
-**Rayons** (liste fixe, ordre modifiable plus tard dans le code) : fruits et légumes, boulangerie, boucherie-poissonnerie, crèmerie, épicerie salée, épicerie sucrée, surgelés, boissons, hygiène et entretien, autre. Cette liste est une proposition à ajuster à l'ordre de ton magasin habituel.
+**Rayons** (liste fixe, ordre modifiable plus tard dans le code) : fruits, légumes, boulangerie, boucherie-poissonnerie, crèmerie, épicerie salée, épicerie sucrée, surgelés, boissons, hygiène et entretien, autre. Cette liste est une proposition à ajuster à l'ordre de ton magasin habituel. Changement (design 0.5) : « fruits et légumes » (`fruits_legumes`) est séparé en `fruits` et `legumes`. Les données déjà enregistrées avec `fruits_legumes` sont lues comme `legumes` (`Logic.rayonActuel`), sans réécriture du stockage.
 
 ## 6. Langues (traduction de l'interface)
 

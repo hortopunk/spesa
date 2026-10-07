@@ -98,7 +98,7 @@ function surSaisieNom(champ) {
   const dico = DB.dico();
   UI.rendreSuggestions(ligne, Logic.suggerer(dico, champ.value));
   const fiche = dico[Logic.normaliser(champ.value)];
-  UI.proposerRayon(ligne, fiche ? fiche.rayon : null);
+  UI.proposerRayon(ligne, fiche ? Logic.rayonActuel(fiche.rayon) : null);
 }
 
 // Message à l'écran quand une écriture échoue (stockage plein) ou qu'une erreur survient
