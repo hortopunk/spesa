@@ -8,6 +8,38 @@
   --nav-hauteur: 64px;
 }
 
+/* ---------- Tokens du design (DESIGN.md, sections 2 et 4) ----------
+   Seule source des couleurs, rayons et espacements du nouveau design.
+   Ne rien inventer ici : toute valeur vient de DESIGN.md.
+   Étape 1 : ils sont déclarés, les écrans les utiliseront aux étapes suivantes. */
+:root {
+  /* Couleurs */
+  --canvas: #000000;            /* fond de l'app */
+  --card: #ededed;              /* carte standard */
+  --card-done: #1a1a1a;         /* carte d'un article coché (à valider) */
+  --ink: #0a0a0a;               /* texte principal et formes sur carte */
+  --ink-soft: #4a4a4a;          /* texte secondaire, libellés, contours de filtres */
+  --ink-placeholder: #3f3f3f;   /* texte indicatif des champs */
+  --ink-on-dark: #f5f5f5;       /* texte sur noir ou sur --ink */
+  --accent-blue: #8fd9e8;       /* carte de recherche */
+  --accent-yellow: #ffd84a;     /* cartes de saisie : Article, Quantité */
+  --accent-green: #a8d26b;      /* bouton d'action principal */
+  --accent-orange: #ff8a3d;     /* sticker « Aperçu » */
+  --tile-pink: #f7a8d8;         /* vignette du rayon Boissons */
+  --tile-coral: #f2674a;        /* vignette du rayon Maison */
+
+  /* Rayons */
+  --radius-card: 32px;
+  --radius-tile: 24px;
+  --radius-pill: 999px;
+  --radius-check: 16px;
+
+  /* Espacements (grille de 4 px) */
+  --gap-card: 4px;              /* espace entre deux cartes */
+  --pad-card-left: 24px;
+  --pad-card-right: 28px;       /* le rayon mange 4 px à droite */
+}
+
 * { box-sizing: border-box; }
 
 body {
