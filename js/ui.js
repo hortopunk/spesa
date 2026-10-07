@@ -100,6 +100,8 @@ const UI = {
     const vueDesign = !document.getElementById("vue-panier").hidden || !document.getElementById("vue-ajout").hidden;
     const actif = this.ecranCourant === "liste" && this.modeCourses && vueDesign;
     document.body.classList.toggle("design", actif);
+    // Écran secondaire (Ajout) : pas d'onglets, l'action reste seule en pied
+    document.body.classList.toggle("secondaire", actif && !document.getElementById("vue-ajout").hidden);
   },
 
   majBoutonSauvegarde() {
