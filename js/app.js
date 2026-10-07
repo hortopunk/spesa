@@ -140,6 +140,7 @@ function defaire() {
 function gererClic(evenement) {
   const bouton = evenement.target.closest("[data-action]");
   if (!bouton) return;
+  if (bouton.getAttribute("aria-disabled") === "true") return;   // bouton désactivé : le clic ne fait rien
   try {
     executerAction(bouton);
   } catch (erreur) {
@@ -259,13 +260,13 @@ function executerAction(bouton) {
       break;
     }
     case "ajout-unite": etat.ajout.unite = bouton.dataset.unite; majAjout(); break;
-    case "ajout-rayon": etat.ajout.rayon = bouton.dataset.rayon; etat.ajout.auto = false; majAjout(); break;
+    case "ajout-rayon": etat.ajout.rayon = bouton.dataset.rayon; etat.ajout.auto = false; UI.effacerErreurAjout("rayon"); majAjout(); break;
     case "ajout-suggestion":
       document.getElementById("ajout-nom").value = bouton.textContent;
       surSaisieAjout(bouton.textContent);
       break;
     case "ajout-valider":
-      if (enregistrerArticle(etat.ajout, "ajout-erreur")) UI.afficherVueListe("panier");
+      if (ajoutValide() && enregistrerArticle(etat.ajout, "ajout-erreur")) UI.afficherVueListe("panier");
       break;
     case "terminer-courses": terminerCourses(); break;
 
@@ -494,6 +495,18 @@ function ouvrirAjout() {
   document.getElementById("ajout-nom").focus();
 }
 
+// Vérifie les trois champs de l'écran Ajout ; affiche toutes les erreurs d'un coup. Renvoie true si tout est bon.
+function ajoutValide() {
+  const a = etat.ajout;
+  const erreurs = [];
+  if (a.nom.trim() === "") erreurs.push({ champ: "nom", message: t("erreur_article_vide") });
+  if (a.quantite.trim() !== "" && Logic.lireNombre(a.quantite.trim()) === null) erreurs.push({ champ: "quantite", message: t("erreur_ajout_quantite") });
+  if (!Logic.RAYONS.includes(a.rayon)) erreurs.push({ champ: "rayon", message: t("erreur_ajout_rayon") });
+  if (erreurs.length === 0) return true;
+  UI.afficherErreursAjout(erreurs);
+  return false;
+}
+
 // Rafraîchit l'écran Ajout : suggestions du dictionnaire selon le nom tapé
 function majAjout() {
   UI.majAjout(etat.ajout, Logic.suggerer(DB.dico(), etat.ajout.nom));
@@ -502,6 +515,7 @@ function majAjout() {
 // Le nom a changé : le rayon connu du dictionnaire est proposé (tant qu'on ne l'a pas choisi à la main)
 function surSaisieAjout(nom) {
   etat.ajout.nom = nom;
+  UI.effacerErreurAjout("nom");
   const fiche = DB.dico()[Logic.normaliser(nom)];
   if (fiche) {
     etat.ajout.rayon = Logic.rayonActuel(fiche.rayon);
@@ -620,7 +634,7 @@ async function demarrer() {
   document.addEventListener("input", (e) => {
     if (e.target.matches(".i-nom")) surSaisieNom(e.target);
     if (e.target.id === "ajout-nom") surSaisieAjout(e.target.value);
-    if (e.target.id === "ajout-quantite") { etat.ajout.quantite = e.target.value; majAjout(); }
+    if (e.target.id === "ajout-quantite") { etat.ajout.quantite = e.target.value; UI.effacerErreurAjout("quantite"); majAjout(); }
     if (e.target.id === "recherche-courses") {
       etat.courses.recherche = e.target.value;
       redessinerCartesCourses();

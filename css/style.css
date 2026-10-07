@@ -405,7 +405,6 @@ input[type="checkbox"] {
 .case:focus-visible, .filtre:focus-visible, .bouton-ajout:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px var(--ink-on-dark);
 }
 @media (prefers-reduced-motion: reduce) {
   .case:active { transform: none; }
@@ -507,7 +506,8 @@ body.design #bandeau-sauvegarde {
   appearance: none;
 }
 .carte-recherche input::placeholder { color: var(--ink-placeholder); opacity: 1; }
-.carte-recherche:focus-within { outline: 3px solid var(--ink-on-dark); outline-offset: 2px; }
+/* Carte colorée de recherche : contour clair en dedans (DESIGN-ecrans.md, focus clavier) */
+.carte-recherche:focus-within { outline: 3px solid var(--ink-on-dark); outline-offset: -8px; }
 
 /* Carte de filtres : les pastilles passent à la ligne si le texte grossit */
 .carte-filtres {
@@ -642,7 +642,7 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 .bouton-retour svg { width: 22px; height: 22px; stroke-width: 2.2; }
 .bouton-rond svg { width: 22px; height: 22px; stroke-width: 2.5; }
 .bouton-retour:focus-visible, .bouton-rond:focus-visible {
-  outline: 3px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 2px var(--ink-on-dark);
+  outline: 3px solid var(--ink); outline-offset: 2px;
 }
 
 .libelle-carte { display: block; margin: 0; font-size: 14px; line-height: 18px; font-weight: 600; color: var(--ink-soft); }
@@ -652,7 +652,7 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 .carte-champ { padding: 14px var(--pad-card-right) 14px var(--pad-card-left); background: var(--accent-yellow); color: var(--ink); }
 .carte-champ.haut { border-radius: var(--radius-card) var(--radius-card) 0 0; }
 .carte-champ.bas { border-radius: 0 0 var(--radius-card) var(--radius-card); }
-.carte-champ.haut:focus-within { outline: 3px solid var(--ink-on-dark); outline-offset: 2px; }
+.carte-champ.haut:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
 .carte-champ input#ajout-nom {
   display: block;
   width: 100%;
@@ -706,7 +706,7 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 .carte-simple { flex: none; padding: 14px var(--pad-card-right) 14px var(--pad-card-left); border-radius: var(--radius-card); background: var(--card); }
 .grille-rayons { margin-top: 6px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; }
 .rayon-choix { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
-.rayon-choix:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 2px var(--ink-on-dark); }
+.rayon-choix:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .rayon-tuile {
   position: relative;
   height: 64px;
@@ -739,6 +739,49 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 }
 .pied-carte .erreur-carte { margin: 0 0 12px; font-size: 14px; line-height: 18px; font-weight: 600; color: var(--ink); }
 .pied-carte .erreur-carte::before { content: "! "; font-weight: 700; }
+
+/* ---------- Désactivé et erreur de saisie (DESIGN-ecrans.md, section 1) : jamais seulement grisé, jamais de rouge ---------- */
+/* Bouton désactivé : transparent, bordure en tirets, texte gris foncé (aria-disabled="true", le clic est ignoré dans app.js) */
+.bouton-ajout[aria-disabled="true"] {
+  background: transparent;
+  border: 2.5px dashed var(--gris-fonce);
+  color: var(--gris-fonce);
+  cursor: not-allowed;
+}
+.bouton-ajout[aria-disabled="true"]:active { transform: none; }
+
+/* Champ en erreur : encadré noir de 3 px, en plus de la pastille « ! » et du message */
+.carte-champ input[aria-invalid="true"] { box-shadow: 0 0 0 3px var(--ink); border-radius: 8px; }
+.valeur-quantite[aria-invalid="true"] { box-shadow: 0 0 0 3px var(--ink); border-radius: 12px; }
+.grille-rayons[aria-invalid="true"] { outline: 3px solid var(--ink); outline-offset: 4px; border-radius: 16px; }
+.erreur-champ {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 10px 0 0;
+  font-size: 14px; line-height: 20px; font-weight: 600;
+  color: var(--ink);
+}
+.erreur-champ[hidden] { display: none; }
+.pastille-erreur {
+  flex: none;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--noir);
+  color: var(--ink-on-dark);
+  font-size: 14px; line-height: 1; font-weight: 700;
+}
+/* Résumé en tête d'écran : carte sombre, texte clair */
+.resume-erreurs {
+  flex: none;
+  margin-bottom: var(--gap-card);
+  padding: 14px var(--pad-card-right) 14px var(--pad-card-left);
+  border-radius: var(--radius-card);
+  background: var(--card-done);
+  color: var(--ink-on-dark);
+  font-size: 17px; line-height: 24px; font-weight: 600;
+}
+.resume-erreurs[hidden] { display: none; }
+.resume-erreurs:focus-visible { outline: 3px solid var(--ink-on-dark); outline-offset: -8px; }
 
 /* ---------- Sauvegarde ---------- */
 /* Bouton flottant en bas à droite, au-dessus de la navigation */

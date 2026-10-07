@@ -379,6 +379,45 @@ const UI = {
     p.hidden = false;
   },
 
+  // Erreurs de l'écran Ajout (sans rouge) : encadré noir du champ + pastille « ! » + message sous le champ
+  // + résumé en tête d'écran. `erreurs` = [{ champ: "nom" | "quantite" | "rayon", message }]
+  afficherErreursAjout(erreurs) {
+    ["nom", "quantite", "rayon"].forEach((c) => this.effacerErreurAjout(c));
+    erreurs.forEach(({ champ, message }) => {
+      const p = document.getElementById("ajout-erreur-" + champ);
+      p.replaceChildren(el("span", { class: "pastille-erreur", "aria-hidden": "true", texte: "!" }), el("span", { texte: message }));
+      p.hidden = false;
+      const saisie = this.champAjout(champ);
+      saisie.setAttribute("aria-invalid", "true");
+      saisie.setAttribute("aria-describedby", p.id);
+    });
+    this.majResumeErreurs();
+    document.getElementById("ajout-resume").focus();
+  },
+
+  // Efface l'erreur d'un champ dès que la personne le corrige
+  effacerErreurAjout(champ) {
+    const p = document.getElementById("ajout-erreur-" + champ);
+    if (!p || p.hidden) return;
+    p.hidden = true;
+    p.replaceChildren();
+    const saisie = this.champAjout(champ);
+    saisie.removeAttribute("aria-invalid");
+    saisie.removeAttribute("aria-describedby");
+    this.majResumeErreurs();
+  },
+
+  champAjout(champ) {
+    return document.getElementById(champ === "rayon" ? "ajout-rayon-groupe" : "ajout-" + champ);
+  },
+
+  majResumeErreurs() {
+    const n = document.querySelectorAll("#vue-ajout .erreur-champ:not([hidden])").length;
+    const resume = document.getElementById("ajout-resume");
+    resume.hidden = n === 0;
+    resume.textContent = n === 0 ? "" : n === 1 ? t("erreur_resume_un") : t("erreur_resume_plusieurs").replace("{n}", n);
+  },
+
   // --- Liste : texte d'une ou plusieurs quantités, ex. "1,5 kg + 2 pièce(s)" ---
   texteQuantites(quantites) {
     return quantites.map((q) => this.texteQuantite(q)).join(" + ");
@@ -545,6 +584,7 @@ const UI = {
       el("div", { class: "carte-champ haut" }, [
         el("label", { for: "ajout-nom", class: "libelle-carte", texte: t("libelle_article") }),
         champNom,
+        el("p", { id: "ajout-erreur-nom", class: "erreur-champ", role: "alert", hidden: true }),
         suggestions
       ]),
       el("div", { class: "perforation", "aria-hidden": "true" }, [
@@ -567,14 +607,15 @@ const UI = {
           Logic.UNITES.map((u) => el("button", {
             type: "button", class: "filtre", "data-action": "ajout-unite", "data-unite": u, texte: t("unite_" + u)
           }))
-        )
+        ),
+        el("p", { id: "ajout-erreur-quantite", class: "erreur-champ", role: "alert", hidden: true })
       ])
     ]);
 
     // Rayon : grille de vignettes (même couleur et même forme que sur les cartes)
     const carteRayon = el("div", { class: "carte-simple" }, [
       el("div", { class: "libelle-carte", texte: t("champ_rayon") }),
-      el("div", { class: "grille-rayons", role: "group", "aria-label": t("champ_rayon") },
+      el("div", { id: "ajout-rayon-groupe", class: "grille-rayons", role: "group", "aria-label": t("champ_rayon") },
         Logic.RAYONS.map((r) => {
           const [classeTuile, forme] = VIGNETTES[r];
           return el("button", { type: "button", class: "rayon-choix", "data-action": "ajout-rayon", "data-rayon": r }, [
@@ -585,7 +626,8 @@ const UI = {
             el("span", { class: "rayon-nom", texte: t("rayon_" + r) })
           ]);
         })
-      )
+      ),
+      el("p", { id: "ajout-erreur-rayon", class: "erreur-champ", role: "alert", hidden: true })
     ]);
 
     // Aperçu : la future carte article, avec son autocollant
@@ -599,7 +641,11 @@ const UI = {
     ]);
 
     v.append(
-      el("div", { class: "zone-liste" }, [coupon, carteRayon, apercu]),
+      el("div", { class: "zone-liste" }, [
+        // Résumé des erreurs en tête d'écran : le focus s'y déplace quand on valide avec des erreurs
+        el("div", { id: "ajout-resume", class: "resume-erreurs", role: "alert", tabindex: "-1", hidden: true }),
+        coupon, carteRayon, apercu
+      ]),
       el("div", { class: "pied-carte" }, [
         el("p", { id: "ajout-erreur", class: "erreur-carte", role: "alert", hidden: true }),
         el("button", { type: "button", class: "bouton-ajout", "data-action": "ajout-valider", texte: t("bouton_ajout") })
