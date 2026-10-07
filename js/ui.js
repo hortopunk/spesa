@@ -78,6 +78,7 @@ const UI = {
     });
     this.ecranCourant = nom;
     this.majBoutonSauvegarde();
+    this.majHabillage();
   },
 
   // En mode courses (liste validée), le bouton flottant masquerait des quantités : on le cache
@@ -88,6 +89,14 @@ const UI = {
   definirModeCourses(actif) {
     this.modeCourses = actif;
     this.majBoutonSauvegarde();
+    this.majHabillage();
+  },
+
+  // Le nouvel habillage (fond noir, cartes) s'applique à l'écran Courses quand la liste est validée.
+  // Les autres écrans gardent l'ancien style en attendant leur tour.
+  majHabillage() {
+    const actif = this.ecranCourant === "liste" && this.modeCourses && !document.getElementById("vue-panier").hidden;
+    document.body.classList.toggle("design", actif);
   },
 
   majBoutonSauvegarde() {
@@ -490,7 +499,7 @@ const UI = {
       el("button", {
         type: "button", class: "case", "data-action": "cocher", "data-cle": ligne.cle,
         "data-description": [nom, quantite, rayon.toLowerCase()].filter(Boolean).join(", ")
-      }, [svg("0 0 26 26", [["polyline", { points: "4,14 10,20 22,6" }]], "coche-icone")])
+      }, [svg("0 0 24 24", [["path", { d: "M5 12.5l4.5 4.5L19 7.5" }]], "coche-icone")])
     ]);
     this.majEtatCarte(carte.querySelector(".case"), coche);
     return carte;
@@ -504,29 +513,99 @@ const UI = {
     bouton.closest(".carte-article").classList.toggle("coche", coche);
   },
 
-  // Mode courses : une carte article par ligne, un appui sur la case coche l'article.
-  // `coches` = clés des articles déjà dans le caddie.
-  rendreCourses(groupes, coches) {
+  // Écran Courses (DESIGN.md 5.2 à 5.6) : en-tête, recherche, filtres, cartes qui défilent, bouton vert.
+  // `filtres` = { filtre, recherche }. La coque est dessinée ici ; les cartes par majZoneCourses.
+  rendreCourses(groupes, coches, filtres) {
     const c = document.getElementById("contenu-liste");
     c.replaceChildren();
-    if (groupes.length > 0) c.append(el("p", { id: "compteur-courses", class: "aide" }));
-    if (groupes.length === 0) c.append(el("p", { class: "vide", texte: t("courses_liste_vide") }));
-    groupes.forEach((groupe) => {
-      c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
-      groupe.lignes.forEach((l) => c.append(this.carteArticle(l, coches.includes(l.cle))));
-    });
-    // Article oublié : ajouté sans toucher aux cochages déjà faits
-    c.append(el("details", { class: "article-oublie" }, [
-      el("summary", { texte: t("article_oublie") }),
-      el("div", { id: "c-ligne" }),
-      el("button", { class: "bouton", "data-action": "courses-ajouter-article", texte: "+ " + t("ajouter_article") }),
-      el("p", { id: "c-erreur", class: "erreur", role: "alert", hidden: true })
+
+    c.append(el("header", { class: "entete-carte" }, [
+      el("div", {}, [
+        el("h1", { texte: t("titre_courses") }),
+        el("p", { id: "resume-courses", class: "resume", role: "status" })
+      ]),
+      // Pastille de langue : pour l'instant un simple repère, sans action (DESIGN.md, décision 4)
+      el("span", { class: "pastille-langue", role: "img", "aria-label": t("langue_actuelle"), texte: t("langue_code") })
     ]));
+
+    const champ = el("input", { type: "search", id: "recherche-courses", "aria-label": t("recherche_article"), placeholder: t("recherche_courses") });
+    champ.value = filtres.recherche;
+    c.append(el("div", { class: "carte-recherche" }, [
+      svg("0 0 24 24", [["circle", { cx: 11, cy: 11, r: 7 }], ["path", { d: "M20 20l-4-4" }]], "icone-trait loupe"),
+      champ
+    ]));
+
+    c.append(el("div", { class: "carte-filtres", role: "group", "aria-label": t("filtres_courses") },
+      ["tout", "a_prendre", "pris"].map((f) => el("button", {
+        type: "button", class: "filtre", "data-action": "courses-filtre", "data-filtre": f,
+        "aria-pressed": f === filtres.filtre ? "true" : "false", texte: t("filtre_" + f)
+      }))
+    ));
+
+    // Zone qui défile : cartes (redessinées à chaque filtre) puis carte de fin (jamais redessinée,
+    // pour ne pas perdre ce qu'on est en train de saisir dans « Un oubli ? »)
+    c.append(el("div", { class: "zone-liste", id: "zone-courses" }, [
+      el("div", { id: "cartes-courses" }),
+      el("div", { class: "carte-fin" }, [
+        // Article oublié : ajouté sans toucher aux cochages déjà faits
+        el("details", { class: "article-oublie", id: "article-oublie" }, [
+          el("summary", { texte: t("article_oublie") }),
+          el("div", { id: "c-ligne" }),
+          el("button", { class: "bouton", "data-action": "courses-ajouter-article", texte: "+ " + t("ajouter_article") }),
+          el("p", { id: "c-erreur", class: "erreur", role: "alert", hidden: true })
+        ]),
+        el("div", { class: "actions" }, [
+          el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") }),
+          el("button", { class: "bouton", "data-action": "liste-modifier", texte: t("modifier_liste") }),
+          el("button", { class: "bouton", "data-action": "historique-ouvrir", texte: t("historique_ouvrir") })
+        ])
+      ])
+    ]));
+
+    c.append(el("div", { class: "pied-carte" }, [
+      el("button", { type: "button", class: "bouton-ajout", "data-action": "courses-ouvrir-ajout" }, [
+        svg("0 0 24 24", [["path", { d: "M12 5v14M5 12h14" }]], "icone-trait plus"),
+        el("span", { texte: t("ajouter_un_article") })
+      ])
+    ]));
+
     this.ajouterLigneIngredient(document.getElementById("c-ligne"), undefined, false);
-    c.append(el("div", { class: "actions" }, [
-      el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") }),
-      el("button", { class: "bouton", "data-action": "liste-modifier", texte: t("modifier_liste") })
-    ]));
+    this.majZoneCourses(groupes, coches, filtres);
+  },
+
+  // Redessine les cartes selon le filtre et la recherche, sans toucher au reste ni remonter la liste
+  majZoneCourses(groupes, coches, filtres) {
+    const lignes = Logic.filtrerLignes(groupes, coches, filtres.filtre, filtres.recherche);
+    const zone = document.getElementById("zone-courses");
+    const haut = zone.scrollTop;
+    const compte = Logic.compterCoches(groupes, coches);
+    let cartes;
+    if (lignes.length > 0) {
+      cartes = lignes.map((l) => this.carteArticle(l, coches.includes(l.cle)));
+    } else if (filtres.recherche.trim() !== "") {
+      cartes = [this.carteVide(false, "vide_recherche_titre", "vide_recherche_meta")];
+    } else if (filtres.filtre === "pris") {
+      cartes = [this.carteVide(false, "vide_pris_titre", "vide_pris_meta")];
+    } else {
+      cartes = [this.carteVide(true, "vide_a_prendre_titre", compte.total === 0 ? "courses_liste_vide" : "vide_a_prendre_meta")];
+    }
+    document.getElementById("cartes-courses").replaceChildren(...cartes);
+    zone.scrollTop = haut;
+    document.querySelectorAll(".filtre").forEach((b) => b.setAttribute("aria-pressed", b.dataset.filtre === filtres.filtre ? "true" : "false"));
+    this.majResume(compte.coches, compte.total);
+  },
+
+  // Carte « liste vide » (DESIGN.md 5.5) : vignette verte avec coche, ou grise avec tiret
+  carteVide(positive, cleTitre, cleMeta) {
+    return el("div", { class: "carte-article" }, [
+      el("span", { class: "vignette " + (positive ? "tuile-legumes" : "tuile-autre") }, [
+        svg("0 0 24 24", [["path", { d: positive ? "M5 12.5l4.5 4.5L19 7.5" : "M6 12h12" }]], "icone-trait")
+      ]),
+      el("span", { class: "carte-texte" }, [
+        el("span", { class: "carte-nom", texte: t(cleTitre) }),
+        el("span", { class: "carte-meta", texte: t(cleMeta) })
+      ])
+    ]);
   },
 
   // --- Historique (consultation seule) ---
@@ -534,6 +613,7 @@ const UI = {
   afficherVueListe(nom) {
     document.getElementById("vue-panier").hidden = nom !== "panier";
     document.getElementById("vue-historique").hidden = nom !== "historique";
+    this.majHabillage();
     window.scrollTo(0, 0);
   },
 
@@ -616,9 +696,14 @@ const UI = {
     p.hidden = false;
   },
 
-  // Met à jour « 3 / 12 » sans tout redessiner
-  majCompteur(coches, total) {
-    const p = document.getElementById("compteur-courses");
-    if (p) p.textContent = coches + " / " + total + " " + t("articles_coches");
+  // Résumé sous le titre : « Il reste 3 articles » (compte les articles pas encore cochés)
+  majResume(coches, total) {
+    const p = document.getElementById("resume-courses");
+    if (!p) return;
+    const reste = total - coches;
+    if (total === 0) p.textContent = t("courses_liste_vide");
+    else if (reste === 0) p.textContent = t("resume_tout_pris");
+    else if (reste === 1) p.textContent = t("resume_reste_un");
+    else p.textContent = t("resume_reste_n").replace("{n}", reste);
   }
 };

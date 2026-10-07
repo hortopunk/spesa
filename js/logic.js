@@ -239,6 +239,19 @@ const Logic = {
       .filter((groupe) => groupe.lignes.length > 0);
   },
 
+  // Lignes à afficher en mode courses, dans l'ordre des rayons.
+  // `filtre` : "tout", "a_prendre" (pas encore cochés) ou "pris" (cochés).
+  // `recherche` : texte tapé, comparé sans accents ni majuscules.
+  filtrerLignes(groupes, coches, filtre, recherche) {
+    const texte = this.normaliser(recherche);
+    return groupes.flatMap((g) => g.lignes).filter((l) => {
+      const pris = coches.includes(l.cle);
+      if (filtre === "a_prendre" && pris) return false;
+      if (filtre === "pris" && !pris) return false;
+      return texte === "" || this.normaliser(l.libelle).includes(texte);
+    });
+  },
+
   // Nombre d'articles de la liste finale et nombre d'articles cochés
   compterCoches(groupes, coches) {
     const cles = groupes.flatMap((g) => g.lignes.map((l) => l.cle));

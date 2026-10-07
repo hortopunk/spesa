@@ -334,7 +334,7 @@ input[type="checkbox"] {
 /* ---------- Carte article (DESIGN.md, 5.1) ---------- */
 .carte-article {
   min-height: 96px;                        /* minimum : le texte peut grossir */
-  margin: 0 -16px var(--gap-card);         /* bord à bord de l'écran (annule la marge de #ecrans) */
+  flex: none;
   padding: 8px var(--pad-card-right) 8px var(--pad-card-left);
   display: flex;
   align-items: center;
@@ -371,7 +371,7 @@ input[type="checkbox"] {
 .tuile-maison { background: var(--tile-maison); }
 .tuile-autre { background: var(--tile-neutral); }
 
-.carte-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.carte-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .carte-nom {
   font-size: 20px; line-height: 24px; font-weight: 600;
   overflow-wrap: anywhere;
@@ -400,14 +400,209 @@ input[type="checkbox"] {
   transition: transform 150ms var(--ease-out), background-color 150ms var(--ease-out);
 }
 .case:active { transform: scale(0.92); }   /* légère contraction à l'appui */
-.case[aria-pressed="true"] { background: var(--card); }
+.case[aria-pressed="true"] { background: var(--card); border-color: var(--card); }
 .case .coche-icone { width: 26px; height: 26px; fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 150ms var(--ease-out); }
 .case[aria-pressed="true"] .coche-icone { opacity: 1; }
-.case:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
-.carte-article.coche .case:focus-visible { outline-color: var(--ink-on-dark); }
+/* Repère de focus (maquette) : anneau clair de 2 px, puis contour noir de 3 px décalé de 2 */
+.case:focus-visible, .filtre:focus-visible, .bouton-ajout:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--ink-on-dark);
+}
 @media (prefers-reduced-motion: reduce) {
   .case:active { transform: none; }
 }
+
+/* ---------- Écran Courses : habillage « cartes sur fond noir » (DESIGN.md, 4 et 5.2 à 5.6) ----------
+   Actif seulement quand body porte la classe « design » (ui.js, majHabillage). */
+body.design {
+  --nav-total: calc(var(--nav-hauteur) + env(safe-area-inset-bottom, 0px));
+  background: var(--canvas);
+  color: var(--ink);
+  overflow: hidden;
+}
+body.design #ecrans {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  height: calc(100dvh - var(--nav-total) - var(--gap-card));   /* s'arrête au-dessus de la barre du bas */
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card);
+}
+body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+body.design #contenu-liste { gap: var(--gap-card); }
+body.design #titre-liste, body.design #vue-panier > .bouton-historique { display: none; }   /* repris dans la carte d'en-tête et la carte de fin */
+
+/* Rappel de sauvegarde : une carte comme les autres */
+body.design #bandeau-sauvegarde {
+  flex: none;
+  margin: 0;
+  padding: 12px var(--pad-card-right) 12px var(--pad-card-left);
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+/* En-tête : demi-carte collée en haut */
+.entete-carte {
+  flex: none;
+  min-height: calc(96px + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) var(--pad-card-right) 0 var(--pad-card-left);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: var(--card);
+}
+.entete-carte h1 { margin: 0; font-size: 32px; line-height: 34px; font-weight: 600; color: var(--ink); }
+.entete-carte .resume { margin: 0; font-size: 17px; line-height: 22px; font-weight: 500; color: var(--ink-soft); }
+.pastille-langue {
+  flex: none;
+  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--ink-on-dark);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Icônes à trait (loupe, plus, coche, tiret) */
+.icone-trait, .vignette svg.icone-trait { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Carte de recherche */
+.carte-recherche {
+  flex: none;
+  min-height: 64px;
+  padding: 0 var(--pad-card-right) 0 var(--pad-card-left);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--radius-card);
+  background: var(--accent-blue);
+}
+.carte-recherche .loupe { flex: none; width: 22px; height: 22px; stroke-width: 2.2; }
+.carte-recherche input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 20px;
+  font-weight: 600;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.carte-recherche input::placeholder { color: var(--ink-placeholder); opacity: 1; }
+.carte-recherche:focus-within { outline: 3px solid var(--ink-on-dark); outline-offset: 2px; }
+
+/* Carte de filtres : les pastilles passent à la ligne si le texte grossit */
+.carte-filtres {
+  flex: none;
+  min-height: 68px;
+  padding: 12px var(--pad-card-left);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+.filtre {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1.5px solid var(--ink-soft);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.filtre[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--ink-on-dark); }
+
+/* Zone qui défile : barre masquée (la dernière carte reste coupée en bas pour montrer qu'on peut défiler) */
+.zone-liste {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.zone-liste::-webkit-scrollbar { display: none; }
+#cartes-courses { display: contents; }
+
+/* Carte de fin de liste : oubli, terminer, modifier, historique (anciens boutons, mis aux couleurs des cartes) */
+.carte-fin {
+  flex: none;
+  padding: 12px var(--pad-card-right) 20px var(--pad-card-left);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  color: var(--ink);
+}
+.carte-fin .article-oublie { margin-top: 0; }
+.carte-fin summary { color: var(--ink); font-weight: 600; }
+.carte-fin .bouton { border-color: var(--ink); border-radius: var(--radius-pill); background: transparent; color: var(--ink); }
+.carte-fin .bouton.principal { border-color: var(--accent-green); background: var(--accent-green); color: var(--ink); }
+.carte-fin .actions { margin-top: 12px; }
+
+/* Pied de page : carte avec le bouton vert (encadré dans la carte, pas fond de carte) */
+.pied-carte {
+  flex: none;
+  padding: 20px var(--pad-card-left);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+.bouton-ajout {
+  width: 100%;
+  min-height: 56px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent-green);
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms var(--ease-out);
+}
+.bouton-ajout:active { transform: scale(0.97); }
+.bouton-ajout .plus { width: 22px; height: 22px; stroke-width: 2.5; }
+@media (prefers-reduced-motion: reduce) { .bouton-ajout:active { transform: none; } }
+
+/* Barre du bas : demi-carte collée en bas, mêmes couleurs que les cartes */
+body.design #navigation {
+  height: var(--nav-total);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background: var(--card);
+}
+body.design .onglet { color: var(--ink-soft); }
+body.design .onglet.actif { color: var(--ink); }
 
 /* ---------- Sauvegarde ---------- */
 /* Bouton flottant en bas à droite, au-dessus de la navigation */

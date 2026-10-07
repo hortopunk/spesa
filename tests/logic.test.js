@@ -274,6 +274,21 @@ test("lignesDeListe : recettes aux parts choisies et articles libres, recette su
   assert.equal(lignes[1].nom, "papier");
 });
 
+test("filtrerLignes : filtre « à prendre / pris » et recherche sans accents ni majuscules", () => {
+  const groupes = [
+    { rayon: "cremerie", lignes: [{ cle: "lait", libelle: "Lait demi-écrémé" }, { cle: "oeufs", libelle: "Œufs" }] },
+    { rayon: "epicerie_salee", lignes: [{ cle: "cafe", libelle: "Café moulu" }] }
+  ];
+  const cles = (lignes) => lignes.map((l) => l.cle);
+  const coches = ["oeufs"];
+  assert.deepEqual(cles(Logic.filtrerLignes(groupes, coches, "tout", "")), ["lait", "oeufs", "cafe"]);
+  assert.deepEqual(cles(Logic.filtrerLignes(groupes, coches, "a_prendre", "")), ["lait", "cafe"]);
+  assert.deepEqual(cles(Logic.filtrerLignes(groupes, coches, "pris", "")), ["oeufs"]);
+  assert.deepEqual(cles(Logic.filtrerLignes(groupes, coches, "tout", "CAFE")), ["cafe"]);
+  assert.deepEqual(cles(Logic.filtrerLignes(groupes, coches, "tout", "oeuf")), ["oeufs"]);
+  assert.deepEqual(cles(Logic.filtrerLignes(groupes, coches, "pris", "lait")), []);
+});
+
 test("rayonActuel : l'ancien rayon « fruits_legumes » devient « legumes », les autres ne changent pas", () => {
   assert.equal(Logic.rayonActuel("fruits_legumes"), "legumes");
   assert.equal(Logic.rayonActuel("fruits"), "fruits");

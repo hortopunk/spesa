@@ -6,7 +6,8 @@ const etat = {
   ouverteId: null,     // recette affichée en détail
   partsVoulues: 1,     // parts choisies dans le détail (non enregistrées)
   editionId: null,     // recette en cours de modification (null = nouvelle)
-  choixRecette: false  // écran Liste : le choix d'une recette à ajouter est déplié
+  choixRecette: false, // écran Liste : le choix d'une recette à ajouter est déplié
+  courses: { filtre: "tout", recherche: "" }   // mode courses : filtre (tout, a_prendre, pris) et texte cherché
 };
 
 // Dessine les cartes de recettes sans changer de vue ni remonter l'écran (utile après un ajout rapide)
@@ -221,6 +222,7 @@ function executerAction(bouton) {
     case "revision-retour": modifierListe((l) => { l.etat = "ajouts"; }); break;
     case "revision-valider":
       // Les articles déjà cochés restent cochés (ceux qui ont disparu de la liste sont oubliés)
+      etat.courses = { filtre: "tout", recherche: "" };
       modifierListe((l) => { l.etat = "courses"; l.coches = Logic.garderCoches(l.coches, groupesDeLaListe(l, true)); }, false);
       window.scrollTo(0, 0);
       break;
@@ -233,8 +235,24 @@ function executerAction(bouton) {
       if (coche) liste.coches.push(bouton.dataset.cle);
       DB.enregistrerListe(liste);
       UI.majEtatCarte(bouton, coche);
-      const compte = Logic.compterCoches(groupesDeLaListe(liste, true), liste.coches);
-      UI.majCompteur(compte.coches, compte.total);
+      // Avec un filtre actif, l'article coché change de liste : on redessine les cartes
+      if (etat.courses.filtre !== "tout") redessinerCartesCourses();
+      else {
+        const compte = Logic.compterCoches(groupesDeLaListe(liste, true), liste.coches);
+        UI.majResume(compte.coches, compte.total);
+      }
+      break;
+    }
+    case "courses-filtre":
+      etat.courses.filtre = bouton.dataset.filtre;
+      redessinerCartesCourses();
+      break;
+    case "courses-ouvrir-ajout": {
+      // Le bouton vert déplie « Un oubli ? » et amène le champ à l'écran
+      const bloc = document.getElementById("article-oublie");
+      bloc.open = true;
+      bloc.scrollIntoView({ block: "center" });
+      bloc.querySelector(".i-nom").focus();
       break;
     }
     case "terminer-courses": terminerCourses(); break;
@@ -263,6 +281,12 @@ function executerAction(bouton) {
 
 // --- Liste de courses ---
 
+// Redessine seulement les cartes du mode courses (filtre ou recherche changés)
+function redessinerCartesCourses() {
+  const liste = DB.liste();
+  UI.majZoneCourses(groupesDeLaListe(liste, true), liste.coches, etat.courses);
+}
+
 // Lignes de la liste, fusionnées, rangées par rayon (sans les décochés si `final`)
 function groupesDeLaListe(liste, final) {
   let lignes = Logic.fusionner(Logic.lignesDeListe(liste, DB.recettes()), DB.dico());
@@ -289,9 +313,7 @@ function afficherEcranListe() {
   } else if (liste.etat === "courses") {
     enregistrerSiChange(liste, avant);
     const groupes = groupesDeLaListe(liste, true);
-    UI.rendreCourses(groupes, liste.coches);
-    const compte = Logic.compterCoches(groupes, liste.coches);
-    UI.majCompteur(compte.coches, compte.total);
+    UI.rendreCourses(groupes, liste.coches, etat.courses);
   } else {
     enregistrerSiChange(liste, avant);
     const choisies = liste.recettes.map((choix, index) => ({
@@ -552,6 +574,10 @@ async function demarrer() {
   // Lignes d'ingrédient (recette ou article libre) : autocomplétion et rayon
   document.addEventListener("input", (e) => {
     if (e.target.matches(".i-nom")) surSaisieNom(e.target);
+    if (e.target.id === "recherche-courses") {
+      etat.courses.recherche = e.target.value;
+      redessinerCartesCourses();
+    }
   });
   document.addEventListener("focusout", (e) => {
     if (e.target.matches(".i-nom")) UI.rendreSuggestions(e.target.closest(".ligne-ingredient"), []);
