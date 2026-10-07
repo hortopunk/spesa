@@ -20,28 +20,30 @@ const FORMES = {
   cercle: [["circle", { cx: 20, cy: 20, r: 17 }]],
   carre: [["rect", { x: 4, y: 4, width: 32, height: 32, rx: 6 }]],
   triangle: [["polygon", { points: "20,3 37,35 3,35" }]],
-  demidisque: [["path", { d: "M3 30 A17 17 0 0 1 37 30 Z" }]],
-  demidisqueIncline: [["path", { d: "M3 30 A17 17 0 0 1 37 30 Z", transform: "rotate(35 20 24)" }]],
+  demidisque: [["path", { d: "M3 30A17 17 0 0 1 37 30Z" }]],
+  demidisqueIncline: [["path", { d: "M3 30A17 17 0 0 1 37 30Z", transform: "rotate(35 20 22)" }]],
+  quart: [["path", { d: "M5 35V5A30 30 0 0 1 35 35Z" }]],
+  feuille: [["path", { d: "M4 20A16 16 0 0 1 20 4H36V20A16 16 0 0 1 20 36H4Z" }]],
   losange: [["polygon", { points: "20,2 38,20 20,38 2,20" }]],
-  maison: [["polygon", { points: "20,3 38,19 32,19 32,37 8,37 8,19 2,19" }]],
-  tiret: [["rect", { x: 8, y: 17, width: 24, height: 6, rx: 3 }]],
-  // Flocon : trois traits de 34 qui se croisent au centre (0°, 60°, 120°)
+  maison: [["path", { d: "M20 3L37 19H32V36H8V19H3Z" }]],
+  tiret: [["rect", { x: 5, y: 17, width: 30, height: 6, rx: 3 }]],
+  // Flocon : trois traits qui se croisent au centre (90°, 30°, 150°)
   flocon: [
-    ["line", { x1: 3, y1: 20, x2: 37, y2: 20, class: "trait" }],
-    ["line", { x1: 11.5, y1: 5.28, x2: 28.5, y2: 34.72, class: "trait" }],
-    ["line", { x1: 11.5, y1: 34.72, x2: 28.5, y2: 5.28, class: "trait" }]
+    ["line", { x1: 20, y1: 4, x2: 20, y2: 36, class: "trait" }],
+    ["line", { x1: 6.1, y1: 12, x2: 33.9, y2: 28, class: "trait" }],
+    ["line", { x1: 6.1, y1: 28, x2: 33.9, y2: 12, class: "trait" }]
   ]
 };
 
 // Un rayon = une couleur de vignette (classe CSS `tuile-…`) + une forme
 const VIGNETTES = {
   fruits: ["tuile-fruits", "cercle"],
-  legumes: ["tuile-legumes", "cercle"],
+  legumes: ["tuile-legumes", "feuille"],
   boulangerie: ["tuile-boulangerie", "triangle"],
   boucherie_poissonnerie: ["tuile-boucherie", "demidisqueIncline"],
   cremerie: ["tuile-cremerie", "carre"],
   epicerie_salee: ["tuile-epicerie", "demidisque"],
-  epicerie_sucree: ["tuile-epicerie", "demidisque"],
+  epicerie_sucree: ["tuile-epicerie", "quart"],
   surgeles: ["tuile-surgeles", "flocon"],
   boissons: ["tuile-boissons", "losange"],
   hygiene_entretien: ["tuile-maison", "maison"],
@@ -95,7 +97,8 @@ const UI = {
   // Le nouvel habillage (fond noir, cartes) s'applique à l'écran Courses quand la liste est validée.
   // Les autres écrans gardent l'ancien style en attendant leur tour.
   majHabillage() {
-    const actif = this.ecranCourant === "liste" && this.modeCourses && !document.getElementById("vue-panier").hidden;
+    const vueDesign = !document.getElementById("vue-panier").hidden || !document.getElementById("vue-ajout").hidden;
+    const actif = this.ecranCourant === "liste" && this.modeCourses && vueDesign;
     document.body.classList.toggle("design", actif);
   },
 
@@ -513,6 +516,126 @@ const UI = {
     bouton.closest(".carte-article").classList.toggle("coche", coche);
   },
 
+  // Écran « Nouvel article » (DESIGN.md 5.7). `ajout` = { nom, quantite, unite, rayon } (texte saisi).
+  // La coque est dessinée ici une fois ; majAjout la met à jour sans perdre le focus du champ.
+  rendreAjout(ajout) {
+    const v = document.getElementById("vue-ajout");
+    v.replaceChildren();
+
+    v.append(el("header", { class: "entete-carte" }, [
+      el("button", { type: "button", class: "bouton-retour", "data-action": "ajout-retour", "aria-label": t("retour_courses") }, [
+        svg("0 0 24 24", [["path", { d: "M19 12H5M11 6l-6 6 6 6" }]], "icone-trait")
+      ]),
+      el("h1", { texte: t("titre_ajout") })
+    ]));
+
+    // Coupon jaune : Article + Quantité, séparés par une perforation décorative
+    const champNom = el("input", {
+      id: "ajout-nom", type: "text", autocomplete: "off", placeholder: t("ajout_exemple"), value: ajout.nom
+    });
+    const suggestions = el("div", { id: "ajout-suggestions", class: "puces", hidden: true });
+    suggestions.addEventListener("mousedown", (e) => e.preventDefault());   // garde le clavier ouvert
+    const champQuantite = el("input", {
+      id: "ajout-quantite", class: "valeur-quantite", type: "text", inputmode: "decimal",
+      "aria-label": t("champ_quantite"), value: ajout.quantite
+    });
+    const coupon = el("div", { class: "coupon" }, [
+      el("div", { class: "carte-champ haut" }, [
+        el("label", { for: "ajout-nom", class: "libelle-carte", texte: t("libelle_article") }),
+        champNom,
+        suggestions
+      ]),
+      el("div", { class: "perforation", "aria-hidden": "true" }, [
+        el("div", { class: "perforation-trait" }),
+        el("span", { class: "encoche gauche" }),
+        el("span", { class: "encoche droite" })
+      ]),
+      el("div", { class: "carte-champ bas" }, [
+        el("div", { class: "libelle-carte", texte: t("champ_quantite") }),
+        el("div", { class: "stepper" }, [
+          el("button", { type: "button", class: "bouton-rond", "data-action": "ajout-moins", "aria-label": t("quantite_moins") }, [
+            svg("0 0 24 24", [["path", { d: "M5 12h14" }]], "icone-trait")
+          ]),
+          champQuantite,
+          el("button", { type: "button", class: "bouton-rond", "data-action": "ajout-plus", "aria-label": t("quantite_plus") }, [
+            svg("0 0 24 24", [["path", { d: "M12 5v14M5 12h14" }]], "icone-trait")
+          ])
+        ]),
+        el("div", { class: "puces", role: "group", "aria-label": t("libelle_unite") },
+          Logic.UNITES.map((u) => el("button", {
+            type: "button", class: "filtre", "data-action": "ajout-unite", "data-unite": u, texte: t("unite_" + u)
+          }))
+        )
+      ])
+    ]);
+
+    // Rayon : grille de vignettes (même couleur et même forme que sur les cartes)
+    const carteRayon = el("div", { class: "carte-simple" }, [
+      el("div", { class: "libelle-carte", texte: t("champ_rayon") }),
+      el("div", { class: "grille-rayons", role: "group", "aria-label": t("champ_rayon") },
+        Logic.RAYONS.map((r) => {
+          const [classeTuile, forme] = VIGNETTES[r];
+          return el("button", { type: "button", class: "rayon-choix", "data-action": "ajout-rayon", "data-rayon": r }, [
+            el("span", { class: "rayon-tuile " + classeTuile }, [
+              svg("0 0 40 40", FORMES[forme]),
+              el("span", { class: "rayon-coche" }, [svg("0 0 24 24", [["path", { d: "M5 12.5l4.5 4.5L19 7.5" }]], "icone-trait")])
+            ]),
+            el("span", { class: "rayon-nom", texte: t("rayon_" + r) })
+          ]);
+        })
+      )
+    ]);
+
+    // Aperçu : la future carte article, avec son autocollant
+    const apercu = el("div", { class: "carte-article carte-apercu", id: "ajout-apercu" }, [
+      el("span", { class: "vignette" }),
+      el("span", { class: "carte-texte" }, [
+        el("span", { class: "carte-nom" }),
+        el("span", { class: "carte-meta" })
+      ]),
+      el("span", { class: "autocollant", texte: t("sticker_apercu") })
+    ]);
+
+    v.append(
+      el("div", { class: "zone-liste" }, [coupon, carteRayon, apercu]),
+      el("div", { class: "pied-carte" }, [
+        el("p", { id: "ajout-erreur", class: "erreur-carte", role: "alert", hidden: true }),
+        el("button", { type: "button", class: "bouton-ajout", "data-action": "ajout-valider", texte: t("bouton_ajout") })
+      ])
+    );
+    this.majAjout(ajout, []);
+  },
+
+  // Met à jour l'écran Ajout : unité et rayon choisis, quantité, aperçu, suggestions
+  majAjout(ajout, suggestions) {
+    document.querySelectorAll("[data-action='ajout-unite']").forEach((b) =>
+      b.setAttribute("aria-pressed", b.dataset.unite === ajout.unite ? "true" : "false"));
+    document.querySelectorAll("[data-action='ajout-rayon']").forEach((b) => {
+      const choisi = b.dataset.rayon === ajout.rayon;
+      b.setAttribute("aria-pressed", choisi ? "true" : "false");
+      b.classList.toggle("choisi", choisi);
+    });
+    const quantite = document.getElementById("ajout-quantite");
+    if (document.activeElement !== quantite) quantite.value = ajout.quantite;
+
+    const puces = document.getElementById("ajout-suggestions");
+    puces.replaceChildren(...suggestions.map((s) =>
+      el("button", { type: "button", class: "filtre", "data-action": "ajout-suggestion", texte: s })));
+    puces.hidden = suggestions.length === 0;
+
+    // Aperçu : même rendu que la carte de la liste
+    const nombre = Logic.lireNombre(ajout.quantite);
+    const texteQuantite = nombre === null || ajout.quantite.trim() === "" ? "" : this.texteQuantite({ quantite: nombre, unite: ajout.unite });
+    const rayon = ajout.rayon ? t("rayon_" + ajout.rayon) : "";
+    const [classeTuile, forme] = VIGNETTES[ajout.rayon] || VIGNETTES.autre;
+    const apercu = document.getElementById("ajout-apercu");
+    const vignette = apercu.querySelector(".vignette");
+    vignette.className = "vignette " + (ajout.rayon ? classeTuile : "tuile-autre");
+    vignette.replaceChildren(svg("0 0 40 40", ajout.rayon ? FORMES[forme] : FORMES.tiret));
+    apercu.querySelector(".carte-nom").textContent = ajout.nom.trim() === "" ? t("apercu_nom_vide") : Logic.majuscule(ajout.nom.trim());
+    apercu.querySelector(".carte-meta").textContent = [texteQuantite, rayon].filter(Boolean).join(" · ");
+  },
+
   // Écran Courses (DESIGN.md 5.2 à 5.6) : en-tête, recherche, filtres, cartes qui défilent, bouton vert.
   // `filtres` = { filtre, recherche }. La coque est dessinée ici ; les cartes par majZoneCourses.
   rendreCourses(groupes, coches, filtres) {
@@ -542,18 +665,10 @@ const UI = {
       }))
     ));
 
-    // Zone qui défile : cartes (redessinées à chaque filtre) puis carte de fin (jamais redessinée,
-    // pour ne pas perdre ce qu'on est en train de saisir dans « Un oubli ? »)
+    // Zone qui défile : cartes (redessinées à chaque filtre) puis carte de fin
     c.append(el("div", { class: "zone-liste", id: "zone-courses" }, [
       el("div", { id: "cartes-courses" }),
       el("div", { class: "carte-fin" }, [
-        // Article oublié : ajouté sans toucher aux cochages déjà faits
-        el("details", { class: "article-oublie", id: "article-oublie" }, [
-          el("summary", { texte: t("article_oublie") }),
-          el("div", { id: "c-ligne" }),
-          el("button", { class: "bouton", "data-action": "courses-ajouter-article", texte: "+ " + t("ajouter_article") }),
-          el("p", { id: "c-erreur", class: "erreur", role: "alert", hidden: true })
-        ]),
         el("div", { class: "actions" }, [
           el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") }),
           el("button", { class: "bouton", "data-action": "liste-modifier", texte: t("modifier_liste") }),
@@ -569,7 +684,6 @@ const UI = {
       ])
     ]));
 
-    this.ajouterLigneIngredient(document.getElementById("c-ligne"), undefined, false);
     this.majZoneCourses(groupes, coches, filtres);
   },
 
@@ -612,6 +726,7 @@ const UI = {
   // Dans l'écran Liste : "panier" (liste en cours) ou "historique"
   afficherVueListe(nom) {
     document.getElementById("vue-panier").hidden = nom !== "panier";
+    document.getElementById("vue-ajout").hidden = nom !== "ajout";
     document.getElementById("vue-historique").hidden = nom !== "historique";
     this.majHabillage();
     window.scrollTo(0, 0);

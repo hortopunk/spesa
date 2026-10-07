@@ -122,24 +122,25 @@ Les cartes Article et Quantité (fond jaune) vs recherche (fond bleu) : voir rè
 
 ## 6. Rayons et formes
 
-Onze rayons, alignés sur ceux de l'appli (`Logic.RAYONS`, ARCHITECTURE.md). Un rayon est un couple **(couleur, forme)** : la forme porte l'identité. Forme noire (`ink`) dans une vignette, viewBox 40. Les couleurs de vignette viennent de Romain (v0.5) ; leurs valeurs exactes sont des propositions **[À VALIDER]**.
+Onze rayons, alignés sur ceux de l'appli (`Logic.RAYONS`). Un rayon est un couple **(couleur, forme)** : la forme porte l'identité, deux rayons n'ont jamais la même forme. Forme noire (`ink`) dans une vignette, viewBox 40. Source : DESIGN-ecrans.md section 2 (maquette Rayons), qui prévaut ici.
 
-| Rayon (id) | Vignette | Forme |
+| Rayon (id) | Vignette | Forme (viewBox 40) |
 |---|---|---|
-| Fruits (`fruits`) | rouge #E5484D | cercle (r 17) |
-| Légumes (`legumes`) | vert #A8D26B | cercle (r 17) |
+| Fruits (`fruits`) | rouge #E5484D | cercle (cx20 cy20 r17) |
+| Légumes (`legumes`) | vert #A8D26B | feuille (M4 20A16 16 0 0 1 20 4H36V20A16 16 0 0 1 20 36H4Z) |
 | Boulangerie (`boulangerie`) | jaune #FFD84A | triangle (20,3 37,35 3,35) |
-| Boucherie-poissonnerie (`boucherie_poissonnerie`) | rouge rosé #E8788A | demi-disque incliné de 35° (M3 30 A17 17 0 0 1 37 30 Z, rotation 35° autour de 20,24) |
-| Crèmerie (`cremerie`) | gris #B8B8B8 | carré arrondi (4,4 → 36 × 36, rx 6) |
-| Épicerie salée et sucrée (`epicerie_salee`, `epicerie_sucree`) | orange #FF8A3D | demi-disque (M3 30 A17 17 0 0 1 37 30 Z) |
-| Surgelés (`surgeles`) | gris bleu acier #8FA3B8 | flocon : trois traits de 34 qui se croisent au centre (0°, 60°, 120°), trait 3,5, bouts ronds |
-| Boissons (`boissons`) | bleu ciel #8FC7FF | losange (20,2 38,20 20,38 2,20) |
-| Hygiène et entretien (`hygiene_entretien`, appelé « Maison » dans le design) | rose #F7A8D8 | maison (20,3 38,19 32,19 32,37 8,37 8,19 2,19) |
-| Autre (`autre`) | gris clair #BDBDBD | tiret (8,17 → 24 × 6, rx 3) |
+| Boucherie-poissonnerie (`boucherie_poissonnerie`) | rouge rosé #E8788A | demi-disque incliné de 35° (rotate(35 20 22) de M3 30A17 17 0 0 1 37 30Z) |
+| Crèmerie (`cremerie`) | gris clair #BDBDBD | carré arrondi (4,4 · 32×32 · rx 6) |
+| Épicerie salée (`epicerie_salee`) | orange #FF8A3D | demi-disque (M3 30A17 17 0 0 1 37 30Z) |
+| Épicerie sucrée (`epicerie_sucree`) | orange #FF8A3D | quart de disque (M5 35V5A30 30 0 0 1 35 35Z) |
+| Surgelés (`surgeles`) | gris bleu #8FA3B8 | flocon : 3 traits arrondis, trait 4 : (20,4)-(20,36), (6.1,12)-(33.9,28), (6.1,28)-(33.9,12) |
+| Boissons (`boissons`) | bleu #8FD9E8 | losange (20,2 38,20 20,38 2,20) |
+| Hygiène et entretien (`hygiene_entretien`) | rose #F7A8D8 | maison (M20 3L37 19H32V36H8V19H3Z) |
+| Autre (`autre`) | gris clair #BDBDBD | tiret (5,17 · 30×6 · rx 3) |
 
-Fruits et Légumes ont la même forme (cercle) : seule la couleur les sépare (rouge / vert). Les deux demi-disques (Épicerie, Boucherie) ne se distinguent que par l'inclinaison. À surveiller.
-
-Chaque forme reste distincte en niveaux de gris. Une catégorie = une forme + une couleur, partout. 
+Tailles de vignette : 80×80 rayon 24 (liste), 48 rayon 16 (sélecteur), 32 rayon 10 (ligne de texte). Rayon par défaut d'un nouvel ingrédient : Autre.
+Couleurs hors palette (vignettes uniquement) : #E5484D, #E8788A, #8FA3B8, #F7A8D8.
+À surveiller : demi-disque incliné (Boucherie) et demi-disque (Épicerie salée) se ressemblent à 32 px ; la couleur les départage, l'étiquette texte reste obligatoire.
 
 ## 7. États et interactions
 

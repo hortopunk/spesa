@@ -7,7 +7,8 @@ const etat = {
   partsVoulues: 1,     // parts choisies dans le détail (non enregistrées)
   editionId: null,     // recette en cours de modification (null = nouvelle)
   choixRecette: false, // écran Liste : le choix d'une recette à ajouter est déplié
-  courses: { filtre: "tout", recherche: "" }   // mode courses : filtre (tout, a_prendre, pris) et texte cherché
+  courses: { filtre: "tout", recherche: "" },  // mode courses : filtre (tout, a_prendre, pris) et texte cherché
+  ajout: { nom: "", quantite: "1", unite: "piece", rayon: "", auto: false }   // écran « Nouvel article » (auto = rayon repris du dictionnaire)
 };
 
 // Dessine les cartes de recettes sans changer de vue ni remonter l'écran (utile après un ajout rapide)
@@ -205,7 +206,6 @@ function executerAction(bouton) {
     }); break;
     case "liste-parts-plus": modifierListe((l) => l.recettes[Number(bouton.dataset.index)].parts++); break;
     case "liste-ajouter-article": ajouterArticle("m-ligne", "m-erreur"); break;
-    case "courses-ajouter-article": ajouterArticle("c-ligne", "c-erreur"); break;
     case "liste-retirer-article": modifierListe((l) => l.manuels.splice(Number(bouton.dataset.index), 1)); break;
     case "liste-effacer": {
       const avant = DB.liste();
@@ -247,14 +247,26 @@ function executerAction(bouton) {
       etat.courses.filtre = bouton.dataset.filtre;
       redessinerCartesCourses();
       break;
-    case "courses-ouvrir-ajout": {
-      // Le bouton vert déplie « Un oubli ? » et amène le champ à l'écran
-      const bloc = document.getElementById("article-oublie");
-      bloc.open = true;
-      bloc.scrollIntoView({ block: "center" });
-      bloc.querySelector(".i-nom").focus();
+    case "courses-ouvrir-ajout": ouvrirAjout(); break;
+
+    // Écran « Nouvel article »
+    case "ajout-retour": UI.afficherVueListe("panier"); break;
+    case "ajout-moins": case "ajout-plus": {
+      const n = Logic.lireNombre(etat.ajout.quantite) || 0;
+      const suivant = bouton.dataset.action === "ajout-plus" ? n + 1 : Math.max(1, n - 1);
+      etat.ajout.quantite = Logic.formaterNombre(suivant);
+      majAjout();
       break;
     }
+    case "ajout-unite": etat.ajout.unite = bouton.dataset.unite; majAjout(); break;
+    case "ajout-rayon": etat.ajout.rayon = bouton.dataset.rayon; etat.ajout.auto = false; majAjout(); break;
+    case "ajout-suggestion":
+      document.getElementById("ajout-nom").value = bouton.textContent;
+      surSaisieAjout(bouton.textContent);
+      break;
+    case "ajout-valider":
+      if (enregistrerArticle(etat.ajout, "ajout-erreur")) UI.afficherVueListe("panier");
+      break;
     case "terminer-courses": terminerCourses(); break;
 
     // Historique
@@ -471,9 +483,41 @@ function modifierListe(changement, garderBrouillon = true) {
 // Ajoute l'article libre saisi (nom, quantité, unité, rayon) à la liste.
 // `conteneur` et `idErreur` : la ligne de saisie et son message d'erreur (écran Liste ou Courses).
 function ajouterArticle(conteneur, idErreur) {
-  const resultat = Logic.construireLigne(UI.lireArticle(conteneur));
-  if (resultat.vide) return UI.afficherErreur(t("erreur_article_vide"), idErreur);
-  if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur), idErreur);
+  enregistrerArticle(UI.lireArticle(conteneur), idErreur);
+}
+
+// Ouvre l'écran « Nouvel article », vide
+function ouvrirAjout() {
+  etat.ajout = { nom: "", quantite: "1", unite: "piece", rayon: "", auto: false };
+  UI.rendreAjout(etat.ajout);
+  UI.afficherVueListe("ajout");
+  document.getElementById("ajout-nom").focus();
+}
+
+// Rafraîchit l'écran Ajout : suggestions du dictionnaire selon le nom tapé
+function majAjout() {
+  UI.majAjout(etat.ajout, Logic.suggerer(DB.dico(), etat.ajout.nom));
+}
+
+// Le nom a changé : le rayon connu du dictionnaire est proposé (tant qu'on ne l'a pas choisi à la main)
+function surSaisieAjout(nom) {
+  etat.ajout.nom = nom;
+  const fiche = DB.dico()[Logic.normaliser(nom)];
+  if (fiche) {
+    etat.ajout.rayon = Logic.rayonActuel(fiche.rayon);
+    etat.ajout.auto = true;
+  } else if (etat.ajout.auto) {
+    etat.ajout.rayon = "";
+    etat.ajout.auto = false;
+  }
+  majAjout();
+}
+
+// Ajoute un article libre { nom, quantite, unite, rayon } (texte saisi) à la liste. Renvoie true si c'est fait.
+function enregistrerArticle(saisie, idErreur) {
+  const resultat = Logic.construireLigne(saisie);
+  if (resultat.vide || saisie.nom.trim() === "") { UI.afficherErreur(t("erreur_article_vide"), idErreur); return false; }
+  if (resultat.erreur) { UI.afficherErreur(t(resultat.erreur), idErreur); return false; }
   const liste = DB.liste();
   liste.manuels.push({ ...resultat.ingredient, rayon: resultat.rayon.rayon });
   // Un article ajouté doit apparaître et être à acheter : ni décoché ni déjà dans le caddie
@@ -482,6 +526,7 @@ function ajouterArticle(conteneur, idErreur) {
   liste.coches = liste.coches.filter((c) => c !== cle);
   DB.enregistrerDicoEtListe(Logic.mettreAJourDico(DB.dico(), [resultat.rayon]), liste);
   afficherEcranListe();
+  return true;
 }
 
 // Hors-ligne et stockage durable (voir service-worker.js)
@@ -574,6 +619,8 @@ async function demarrer() {
   // Lignes d'ingrédient (recette ou article libre) : autocomplétion et rayon
   document.addEventListener("input", (e) => {
     if (e.target.matches(".i-nom")) surSaisieNom(e.target);
+    if (e.target.id === "ajout-nom") surSaisieAjout(e.target.value);
+    if (e.target.id === "ajout-quantite") { etat.ajout.quantite = e.target.value; majAjout(); }
     if (e.target.id === "recherche-courses") {
       etat.courses.recherche = e.target.value;
       redessinerCartesCourses();

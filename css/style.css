@@ -54,8 +54,6 @@
   /* Vignettes de rayon (DESIGN.md, section 6) : teintes propres aux rayons, hors palette de 9.
      Les autres vignettes réutilisent vert, jaune, orange, bleu et gris clair de la palette. */
   --tile-fruits: #e5484d;                 /* Fruits : rouge */
-  --tile-cremerie: #b8b8b8;               /* Crèmerie : gris */
-  --tile-boissons: #8fc7ff;               /* Boissons : bleu ciel */
   --tile-maison: #f7a8d8;                 /* Hygiène et entretien : rose */
   --tile-surgeles: #8fa3b8;               /* Surgelés : gris bleu acier */
   --tile-boucherie: #e8788a;              /* Boucherie-poissonnerie : rouge rosé */
@@ -356,7 +354,7 @@ input[type="checkbox"] {
   transition: opacity 200ms var(--ease-out);
 }
 .vignette svg { width: 44px; height: 44px; fill: var(--ink); }
-.vignette svg .trait { fill: none; stroke: var(--ink); stroke-width: 3.5; stroke-linecap: round; }
+.vignette svg .trait { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
 .carte-article.coche .vignette { opacity: 0.45; }
 
 /* Un rayon = une couleur de vignette + une forme (la forme est choisie dans ui.js) */
@@ -364,10 +362,10 @@ input[type="checkbox"] {
 .tuile-legumes { background: var(--vert); }
 .tuile-boulangerie { background: var(--jaune); }
 .tuile-boucherie { background: var(--tile-boucherie); }
-.tuile-cremerie { background: var(--tile-cremerie); }
+.tuile-cremerie { background: var(--gris-clair); }
 .tuile-epicerie { background: var(--orange); }
 .tuile-surgeles { background: var(--tile-surgeles); }
-.tuile-boissons { background: var(--tile-boissons); }
+.tuile-boissons { background: var(--bleu); }
 .tuile-maison { background: var(--tile-maison); }
 .tuile-autre { background: var(--tile-neutral); }
 
@@ -603,6 +601,125 @@ body.design #navigation {
 }
 body.design .onglet { color: var(--ink-soft); }
 body.design .onglet.actif { color: var(--ink); }
+
+/* ---------- Écran Ajout : « Nouvel article » (DESIGN.md 5.7) ---------- */
+body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--gap-card); }
+.zone-liste { overflow-x: hidden; }   /* les encoches du coupon dépassent de l'écran : pas de défilement latéral */
+
+.bouton-retour, .bouton-rond {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.bouton-retour { width: 44px; height: 44px; }
+.bouton-rond { width: 48px; height: 48px; }
+.bouton-retour svg { width: 22px; height: 22px; stroke-width: 2.2; }
+.bouton-rond svg { width: 22px; height: 22px; stroke-width: 2.5; }
+.bouton-retour:focus-visible, .bouton-rond:focus-visible {
+  outline: 3px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 2px var(--ink-on-dark);
+}
+
+.libelle-carte { display: block; margin: 0; font-size: 14px; line-height: 18px; font-weight: 600; color: var(--ink-soft); }
+
+/* Coupon jaune : deux cartes collées, séparées par une perforation */
+.coupon { flex: none; position: relative; display: flex; flex-direction: column; }
+.carte-champ { padding: 14px var(--pad-card-right) 14px var(--pad-card-left); background: var(--accent-yellow); color: var(--ink); }
+.carte-champ.haut { border-radius: var(--radius-card) var(--radius-card) 0 0; }
+.carte-champ.bas { border-radius: 0 0 var(--radius-card) var(--radius-card); }
+.carte-champ.haut:focus-within { outline: 3px solid var(--ink-on-dark); outline-offset: 2px; }
+.carte-champ input#ajout-nom {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 600;
+  outline: none;
+}
+.carte-champ input#ajout-nom::placeholder { color: var(--ink-placeholder); opacity: 1; }
+
+.perforation { position: relative; z-index: 1; height: 1px; background: var(--accent-yellow); }
+.perforation-trait {
+  position: absolute; left: 22px; right: 22px; top: 0; height: 1px;
+  background-image: repeating-linear-gradient(90deg, var(--ink) 0, var(--ink) 18px, transparent 18px, transparent 32px);
+}
+.encoche { position: absolute; top: -11.5px; width: 24px; height: 24px; border-radius: var(--radius-pill); background: var(--canvas); }
+.encoche.gauche { left: -12px; }
+.encoche.droite { right: -12px; }
+
+/* Quantité */
+.stepper { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+.valeur-quantite {
+  width: 80px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+}
+.valeur-quantite:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.puces { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+.carte-champ .filtre[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--ink-on-dark); }
+.carte-champ .filtre { border-color: var(--ink-soft); }
+
+/* Carte « Rayon » : grille de vignettes */
+.carte-simple { flex: none; padding: 14px var(--pad-card-right) 14px var(--pad-card-left); border-radius: var(--radius-card); background: var(--card); }
+.grille-rayons { margin-top: 6px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; }
+.rayon-choix { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
+.rayon-choix:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 2px var(--ink-on-dark); }
+.rayon-tuile {
+  position: relative;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid transparent;
+  border-radius: 22px;
+}
+.rayon-tuile > svg:first-child { width: 36px; height: 36px; fill: var(--ink); }
+.rayon-tuile svg .trait { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
+.rayon-choix.choisi .rayon-tuile { border-color: var(--ink); }
+.rayon-coche { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; display: none; align-items: center; justify-content: center; border-radius: var(--radius-pill); background: var(--ink); }
+.rayon-choix.choisi .rayon-coche { display: flex; }
+.rayon-coche svg { width: 13px; height: 13px; stroke: var(--ink-on-dark); stroke-width: 3.5; }
+.rayon-nom { font-size: 14px; line-height: 18px; font-weight: 500; text-align: center; overflow-wrap: anywhere; }
+.rayon-choix.choisi .rayon-nom { font-weight: 700; }
+
+/* Aperçu : la future carte, avec son autocollant orange (place réservée pour qu'un nom long ne passe pas dessous) */
+.carte-apercu { position: relative; }
+.carte-apercu .carte-nom { padding-right: 84px; }
+.autocollant {
+  position: absolute; top: 10px; right: 24px;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-orange);
+  color: var(--ink);
+  font-size: 14px; line-height: 20px; font-weight: 700;
+  transform: rotate(-4deg);
+}
+.pied-carte .erreur-carte { margin: 0 0 12px; font-size: 14px; line-height: 18px; font-weight: 600; color: var(--ink); }
+.pied-carte .erreur-carte::before { content: "! "; font-weight: 700; }
 
 /* ---------- Sauvegarde ---------- */
 /* Bouton flottant en bas à droite, au-dessus de la navigation */
