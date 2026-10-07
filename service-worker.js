@@ -3,7 +3,7 @@
 // ⚠ À CHAQUE MODIFICATION d'un fichier de l'appli, changer le numéro de VERSION
 // ci-dessous. Sinon les téléphones gardent l'ancienne version en cache.
 
-const VERSION = "spesa-v15";
+const VERSION = "spesa-v17";
 
 // Tous les fichiers nécessaires pour fonctionner hors-ligne
 const FICHIERS = [
@@ -20,7 +20,9 @@ const FICHIERS = [
   "langues/fr.json",
   "langues/co.json",
   "icons/icon-192.png",
-  "icons/icon-512.png"
+  "icons/icon-512.png",
+  "polices/archivo-latin-wght-normal.woff2",
+  "test-police.html"
 ];
 
 // Installation : on met tous les fichiers de cette version en cache, ou aucun

@@ -1,5 +1,16 @@
 /* SPESA — tout le style dans ce fichier.
    3 couleurs : fond, texte, accent. */
+/* ---------- Police Archivo (hébergée, aucun CDN) ----------
+   Bloc « latin » du paquet @fontsource-variable/archivo 5.3.0 (licence OFL, voir polices/LICENSE). */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(../polices/archivo-latin-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
 :root {
   --fond: #faf8f4;
   --texte: #222222;
@@ -11,22 +22,43 @@
 /* ---------- Tokens du design (DESIGN.md, sections 2 et 4) ----------
    Seule source des couleurs, rayons et espacements du nouveau design.
    Ne rien inventer ici : toute valeur vient de DESIGN.md.
-   Étape 1 : ils sont déclarés, les écrans les utiliseront aux étapes suivantes. */
+   Palette fermée de 9 teintes : les tokens de rôle ci-dessous pointent tous vers l'une d'elles.
+   Les écrans les utiliseront aux étapes suivantes. */
 :root {
-  /* Couleurs */
-  --canvas: #000000;            /* fond de l'app */
-  --card: #ededed;              /* carte standard */
-  --card-done: #1a1a1a;         /* carte d'un article coché (à valider) */
-  --ink: #0a0a0a;               /* texte principal et formes sur carte */
-  --ink-soft: #4a4a4a;          /* texte secondaire, libellés, contours de filtres */
-  --ink-placeholder: #3f3f3f;   /* texte indicatif des champs */
-  --ink-on-dark: #f5f5f5;       /* texte sur noir ou sur --ink */
-  --accent-blue: #8fd9e8;       /* carte de recherche */
-  --accent-yellow: #ffd84a;     /* cartes de saisie : Article, Quantité */
-  --accent-green: #a8d26b;      /* bouton d'action principal */
-  --accent-orange: #ff8a3d;     /* sticker « Aperçu » */
-  --tile-pink: #f7a8d8;         /* vignette du rayon Boissons */
-  --tile-coral: #f2674a;        /* vignette du rayon Maison */
+  /* Les 9 teintes */
+  --noir: #000000;
+  --papier: #ededed;
+  --gris-fonce: #4a4a4a;
+  --gris-clair: #bdbdbd;
+  --fond-coche: #1a1a1a;
+  --bleu: #8fd9e8;
+  --jaune: #ffd84a;
+  --vert: #a8d26b;
+  --orange: #ff8a3d;
+
+  /* Rôles */
+  --canvas: var(--noir);                  /* fond de l'app */
+  --card: var(--papier);                  /* carte standard */
+  --card-done: var(--fond-coche);         /* carte d'un article coché (à valider) */
+  --ink: var(--noir);                     /* texte principal et formes sur carte */
+  --ink-soft: var(--gris-fonce);          /* texte secondaire, libellés, contours de filtres */
+  --ink-placeholder: var(--gris-fonce);   /* texte indicatif des champs */
+  --ink-on-dark: var(--papier);           /* texte sur noir ou sur --ink */
+  --ink-done: var(--gris-clair);          /* texte d'un article coché (nom et méta) */
+  --tile-neutral: var(--gris-clair);      /* vignette neutre de la carte vide */
+  --accent-blue: var(--bleu);             /* carte de recherche */
+  --accent-yellow: var(--jaune);          /* cartes de saisie : Article, Quantité */
+  --accent-green: var(--vert);            /* bouton d'action principal */
+  --accent-orange: var(--orange);         /* sticker « Aperçu » */
+
+  /* Vignettes de rayon (DESIGN.md, section 6) : teintes propres aux rayons, hors palette de 9.
+     Les autres vignettes réutilisent vert, jaune, orange, bleu et gris clair de la palette. */
+  --tile-fruits: #e5484d;                 /* Fruits : rouge */
+  --tile-cremerie: #b8b8b8;               /* Crèmerie : gris */
+  --tile-boissons: #8fc7ff;               /* Boissons : bleu ciel */
+  --tile-maison: #f7a8d8;                 /* Hygiène et entretien : rose */
+  --tile-surgeles: #8fa3b8;               /* Surgelés : gris bleu acier */
+  --tile-boucherie: #e8788a;              /* Boucherie-poissonnerie : rouge rosé */
 
   /* Rayons */
   --radius-card: 32px;
@@ -46,7 +78,7 @@ body {
   margin: 0;
   background: var(--fond);
   color: var(--texte);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Archivo', system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.4;
 }
