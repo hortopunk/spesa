@@ -148,6 +148,8 @@
   "erreur_stockage": "Impossible d'enregistrer : le stockage du téléphone est plein. Rien n'a été modifié. Fais une sauvegarde, puis libère de la place.",
   "erreur_inattendue": "Une erreur est survenue. Rien n'a été perdu : réessaie.",
   "alerte_donnees_abimees": "Des données n'ont pas pu être lues. Une copie est gardée à part. Restaure ta dernière sauvegarde dans les Réglages.",
+  "article_coche": "coché",
+  "article_non_coche": "non coché",
   "article_oublie": "Un oubli ? Ajouter un article",
   "secours_info": "Tes données d'avant la restauration du {date} sont gardées de côté.",
   "annuler_restauration": "Annuler la restauration",

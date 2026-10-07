@@ -228,9 +228,11 @@ function executerAction(bouton) {
     case "cocher": {
       // Mode courses : article dans le caddie ou non (pas de nouveau dessin, pour ne pas faire sauter l'écran)
       const liste = DB.liste();
+      const coche = bouton.getAttribute("aria-pressed") !== "true";   // la case est un bouton à bascule
       liste.coches = liste.coches.filter((cle) => cle !== bouton.dataset.cle);
-      if (bouton.checked) liste.coches.push(bouton.dataset.cle);
+      if (coche) liste.coches.push(bouton.dataset.cle);
       DB.enregistrerListe(liste);
+      UI.majEtatCarte(bouton, coche);
       const compte = Logic.compterCoches(groupesDeLaListe(liste, true), liste.coches);
       UI.majCompteur(compte.coches, compte.total);
       break;

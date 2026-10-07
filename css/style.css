@@ -331,6 +331,84 @@ input[type="checkbox"] {
 .ligne-course .coche-nom { transition: color 150ms var(--ease-out); }  /* le texte passe au gris en douceur */
 .ligne-course input:checked ~ span { color: var(--gris); text-decoration: line-through; }
 
+/* ---------- Carte article (DESIGN.md, 5.1) ---------- */
+.carte-article {
+  min-height: 96px;                        /* minimum : le texte peut grossir */
+  margin: 0 -16px var(--gap-card);         /* bord à bord de l'écran (annule la marge de #ecrans) */
+  padding: 8px var(--pad-card-right) 8px var(--pad-card-left);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--radius-card);
+  background: var(--card);
+  color: var(--ink);
+  transition: background-color 200ms var(--ease-out);
+}
+.carte-article.coche { background: var(--card-done); }
+
+.vignette {
+  flex: none;
+  width: 80px; height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-tile);
+  transition: opacity 200ms var(--ease-out);
+}
+.vignette svg { width: 44px; height: 44px; fill: var(--ink); }
+.vignette svg .trait { fill: none; stroke: var(--ink); stroke-width: 3.5; stroke-linecap: round; }
+.carte-article.coche .vignette { opacity: 0.45; }
+
+/* Un rayon = une couleur de vignette + une forme (la forme est choisie dans ui.js) */
+.tuile-fruits { background: var(--tile-fruits); }
+.tuile-legumes { background: var(--vert); }
+.tuile-boulangerie { background: var(--jaune); }
+.tuile-boucherie { background: var(--tile-boucherie); }
+.tuile-cremerie { background: var(--tile-cremerie); }
+.tuile-epicerie { background: var(--orange); }
+.tuile-surgeles { background: var(--tile-surgeles); }
+.tuile-boissons { background: var(--tile-boissons); }
+.tuile-maison { background: var(--tile-maison); }
+.tuile-autre { background: var(--tile-neutral); }
+
+.carte-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.carte-nom {
+  font-size: 20px; line-height: 24px; font-weight: 600;
+  overflow-wrap: anywhere;
+  transition: color 200ms var(--ease-out);
+}
+.carte-meta {
+  font-size: 14px; line-height: 18px; font-weight: 400;
+  color: var(--ink-soft);
+  transition: color 200ms var(--ease-out);
+}
+.carte-article.coche .carte-nom { color: var(--ink-done); text-decoration: line-through; }
+.carte-article.coche .carte-meta { color: var(--ink-done); }
+
+/* Case à cocher : un vrai bouton de 48 px (aria-pressed), coche visible seulement quand elle est cochée */
+.case {
+  flex: none;
+  width: 48px; height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius-check);
+  background: transparent;
+  cursor: pointer;
+  transition: transform 150ms var(--ease-out), background-color 150ms var(--ease-out);
+}
+.case:active { transform: scale(0.92); }   /* légère contraction à l'appui */
+.case[aria-pressed="true"] { background: var(--card); }
+.case .coche-icone { width: 26px; height: 26px; fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 150ms var(--ease-out); }
+.case[aria-pressed="true"] .coche-icone { opacity: 1; }
+.case:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.carte-article.coche .case:focus-visible { outline-color: var(--ink-on-dark); }
+@media (prefers-reduced-motion: reduce) {
+  .case:active { transform: none; }
+}
+
 /* ---------- Sauvegarde ---------- */
 /* Bouton flottant en bas à droite, au-dessus de la navigation */
 #bouton-sauvegarde {

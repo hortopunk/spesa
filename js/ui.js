@@ -14,6 +14,55 @@ function el(balise, props = {}, enfants = []) {
   return e;
 }
 
+// Formes des vignettes de rayon (DESIGN.md, section 6), dessinées dans un carré de 40.
+// Chaque entrée : [balise SVG, attributs]. Forme pleine en couleur `ink`, sauf le flocon (traits).
+const FORMES = {
+  cercle: [["circle", { cx: 20, cy: 20, r: 17 }]],
+  carre: [["rect", { x: 4, y: 4, width: 32, height: 32, rx: 6 }]],
+  triangle: [["polygon", { points: "20,3 37,35 3,35" }]],
+  demidisque: [["path", { d: "M3 30 A17 17 0 0 1 37 30 Z" }]],
+  demidisqueIncline: [["path", { d: "M3 30 A17 17 0 0 1 37 30 Z", transform: "rotate(35 20 24)" }]],
+  losange: [["polygon", { points: "20,2 38,20 20,38 2,20" }]],
+  maison: [["polygon", { points: "20,3 38,19 32,19 32,37 8,37 8,19 2,19" }]],
+  tiret: [["rect", { x: 8, y: 17, width: 24, height: 6, rx: 3 }]],
+  // Flocon : trois traits de 34 qui se croisent au centre (0°, 60°, 120°)
+  flocon: [
+    ["line", { x1: 3, y1: 20, x2: 37, y2: 20, class: "trait" }],
+    ["line", { x1: 11.5, y1: 5.28, x2: 28.5, y2: 34.72, class: "trait" }],
+    ["line", { x1: 11.5, y1: 34.72, x2: 28.5, y2: 5.28, class: "trait" }]
+  ]
+};
+
+// Un rayon = une couleur de vignette (classe CSS `tuile-…`) + une forme
+const VIGNETTES = {
+  fruits: ["tuile-fruits", "cercle"],
+  legumes: ["tuile-legumes", "cercle"],
+  boulangerie: ["tuile-boulangerie", "triangle"],
+  boucherie_poissonnerie: ["tuile-boucherie", "demidisqueIncline"],
+  cremerie: ["tuile-cremerie", "carre"],
+  epicerie_salee: ["tuile-epicerie", "demidisque"],
+  epicerie_sucree: ["tuile-epicerie", "demidisque"],
+  surgeles: ["tuile-surgeles", "flocon"],
+  boissons: ["tuile-boissons", "losange"],
+  hygiene_entretien: ["tuile-maison", "maison"],
+  autre: ["tuile-autre", "tiret"]
+};
+
+// Crée un dessin SVG à partir d'une liste [balise, attributs]
+function svg(viewBox, formes, classe) {
+  const NS = "http://www.w3.org/2000/svg";
+  const s = document.createElementNS(NS, "svg");
+  s.setAttribute("viewBox", viewBox);
+  s.setAttribute("aria-hidden", "true");
+  if (classe) s.setAttribute("class", classe);
+  formes.forEach(([balise, attributs]) => {
+    const f = document.createElementNS(NS, balise);
+    for (const [cle, valeur] of Object.entries(attributs)) f.setAttribute(cle, valeur);
+    s.append(f);
+  });
+  return s;
+}
+
 const UI = {
   // Affiche l'écran demandé et surligne l'onglet correspondant
   afficherEcran(nom) {
@@ -425,7 +474,37 @@ const UI = {
   },
 
   // --- Liste, étape « courses » (liste validée) : liste finale rangée par rayon ---
-  // Mode courses : une ligne = une grande zone tactile qui coche l'article.
+  // Carte article (DESIGN.md, 5.1) : vignette du rayon, nom, « quantité · rayon », case à cocher.
+  // `ligne` = { cle, libelle, rayon, quantites }. Le bouton porte data-action="cocher".
+  carteArticle(ligne, coche) {
+    const [classeTuile, forme] = VIGNETTES[ligne.rayon] || VIGNETTES.autre;
+    const nom = Logic.majuscule(ligne.libelle);
+    const quantite = this.texteQuantites(ligne.quantites);
+    const rayon = t("rayon_" + ligne.rayon);
+    const carte = el("div", { class: "carte-article" }, [
+      el("span", { class: "vignette " + classeTuile }, [svg("0 0 40 40", FORMES[forme])]),
+      el("span", { class: "carte-texte" }, [
+        el("span", { class: "carte-nom", texte: nom }),
+        el("span", { class: "carte-meta", texte: quantite ? quantite + " · " + rayon : rayon })
+      ]),
+      el("button", {
+        type: "button", class: "case", "data-action": "cocher", "data-cle": ligne.cle,
+        "data-description": [nom, quantite, rayon.toLowerCase()].filter(Boolean).join(", ")
+      }, [svg("0 0 26 26", [["polyline", { points: "4,14 10,20 22,6" }]], "coche-icone")])
+    ]);
+    this.majEtatCarte(carte.querySelector(".case"), coche);
+    return carte;
+  },
+
+  // Met à jour la carte quand on coche ou décoche (sans la redessiner)
+  // et le libellé lu par un lecteur d'écran : « Lait, 2 L, crèmerie, non coché ».
+  majEtatCarte(bouton, coche) {
+    bouton.setAttribute("aria-pressed", coche ? "true" : "false");
+    bouton.setAttribute("aria-label", bouton.dataset.description + ", " + t(coche ? "article_coche" : "article_non_coche"));
+    bouton.closest(".carte-article").classList.toggle("coche", coche);
+  },
+
+  // Mode courses : une carte article par ligne, un appui sur la case coche l'article.
   // `coches` = clés des articles déjà dans le caddie.
   rendreCourses(groupes, coches) {
     const c = document.getElementById("contenu-liste");
@@ -434,11 +513,7 @@ const UI = {
     if (groupes.length === 0) c.append(el("p", { class: "vide", texte: t("courses_liste_vide") }));
     groupes.forEach((groupe) => {
       c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
-      groupe.lignes.forEach((l) => c.append(el("label", { class: "ligne-course" }, [
-        el("input", { type: "checkbox", "data-action": "cocher", "data-cle": l.cle, checked: coches.includes(l.cle) }),
-        el("span", { class: "coche-nom", texte: Logic.majuscule(l.libelle) }),
-        el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
-      ])));
+      groupe.lignes.forEach((l) => c.append(this.carteArticle(l, coches.includes(l.cle))));
     });
     // Article oublié : ajouté sans toucher aux cochages déjà faits
     c.append(el("details", { class: "article-oublie" }, [
