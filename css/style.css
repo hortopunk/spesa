@@ -283,18 +283,7 @@ h2 { font-size: 1.1rem; margin: 24px 0 8px; }
 /* ---------- Détail d'une recette ---------- */
 .parts { display: flex; align-items: center; gap: 12px; }
 .parts-nombre { min-width: 1.5em; text-align: center; font-size: 1.2rem; }
-.ingredients { list-style: none; padding: 0; margin: 0; }
-.ingredients li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px dashed var(--ink);
-}
 .quantite { color: var(--ink); font-weight: 600; white-space: nowrap; }
-.etapes { padding-left: 1.4em; }
-.etapes li { margin-bottom: 8px; }
-.notes { color: var(--ink-soft); }
 
 /* ---------- Liste de courses ---------- */
 .ligne-ingredient.sans-retrait { grid-template-columns: 1fr 1fr; }
@@ -442,13 +431,13 @@ body.design #ecrans {
   flex-direction: column;
   gap: var(--gap-card);
 }
-body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste, body.design #ecran-recettes, body.design #vue-liste {
+body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste, body.design #ecran-recettes, body.design #vue-liste, body.design #vue-detail {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-body.design #contenu-liste, body.design #vue-liste { gap: var(--gap-card); }
+body.design #contenu-liste, body.design #vue-liste, body.design #vue-detail { gap: var(--gap-card); }
 body.design #titre-liste, body.design #vue-panier > .bouton-historique { display: none; }   /* repris dans la carte d'en-tête et la carte de fin */
 
 /* Rappel de sauvegarde : une carte comme les autres */
@@ -786,13 +775,13 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 .bouton-importer {
   flex: none;
   min-height: 56px;
-  padding: 0 24px;
+  padding: 0 20px;
   border: 0;
   border-radius: var(--radius-pill);
   background: var(--noir);
   color: var(--ink-on-dark);
   font: inherit;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -823,13 +812,13 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 .feuille-valeur span { font-size: 17px; font-weight: 600; }
 .bouton-contour {
   min-height: 56px;
-  padding: 0 24px;
+  padding: 0 20px;
   border: 2.5px solid var(--ink);
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--ink);
   font: inherit;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -965,6 +954,24 @@ textarea.champ-encadre { padding: 10px 12px; font-weight: 500; resize: vertical;
 }
 .selecteur-saisie:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .selecteur-boite .icone { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink); }
+
+/* ---------- Détail d'une recette (DESIGN.md 7.4) ---------- */
+.entete-carte .bouton-retour + h1 { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.carte-champ.seule { border-radius: var(--radius-card); }
+.valeur-parts { min-width: 96px; text-align: center; font-size: 28px; line-height: 32px; font-weight: 600; }
+.valeur-parts span { font-size: 17px; line-height: 24px; font-weight: 500; }
+.liste-ingredients { margin-top: 12px; }
+.ligne-detail { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 17px; line-height: 24px; }
+.ligne-detail .quantite { flex: none; min-width: 84px; white-space: normal; }
+.ligne-detail .nom { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+.rayon-detail { display: block; font-size: 14px; line-height: 18px; font-weight: 400; color: var(--ink-soft); }
+.liste-etapes { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.liste-etapes li { display: flex; gap: 12px; align-items: flex-start; font-size: 17px; line-height: 24px; font-weight: 500; }
+.liste-etapes li span:last-child { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.texte-carte { margin: 6px 0 0; font-size: 17px; line-height: 24px; font-weight: 500; white-space: pre-line; overflow-wrap: anywhere; }
+.carte-actions { flex: none; padding: 14px var(--pad-card-right) 14px var(--pad-card-left); display: flex; flex-wrap: wrap; gap: 8px; border-radius: var(--radius-card); background: var(--card); }
+.carte-actions .bouton-contour { flex: 1 1 140px; }
+.pied-carte > .bouton-contour { width: 100%; padding: 0 16px; font-size: 18px; }
 
 /* ---------- Sauvegarde ---------- */
 /* Bouton flottant en bas à droite, au-dessus de la navigation */

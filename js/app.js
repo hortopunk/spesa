@@ -24,19 +24,36 @@ function afficherListe() {
   UI.afficherVueRecettes("liste");
 }
 
+// Parts de la recette dans la liste de courses, ou null si elle n'y est pas
+function partsDansListe(id) {
+  const choix = DB.liste().recettes.find((c) => c.id === id);
+  return choix ? choix.parts : null;
+}
+
+// Ingrédients de la recette ouverte, recalculés pour les parts affichées, avec leur rayon
+function lignesDetail(recette) {
+  return Logic.ingredientsAvecRayon(Logic.ingredientsPourParts(recette, etat.partsVoulues), DB.dico());
+}
+
 function afficherDetail(id) {
   const recette = DB.recette(id);
   if (!recette) return afficherListe();
   etat.ouverteId = id;
-  UI.rendreDetail(recette, etat.partsVoulues, Logic.ingredientsPourParts(recette, etat.partsVoulues));
+  UI.rendreDetail(recette, etat.partsVoulues, lignesDetail(recette), partsDansListe(id));
   UI.afficherVueRecettes("detail");
 }
 
-// Ouvre une recette avec ses propres parts de départ
+// Met à jour le détail déjà affiché après un changement de parts
+function majDetail() {
+  const recette = DB.recette(etat.ouverteId);
+  if (recette) UI.majDetail(etat.partsVoulues, lignesDetail(recette), partsDansListe(recette.id));
+}
+
+// Ouvre une recette : parts de la liste si elle y est, sinon ses propres parts
 function ouvrirRecette(id) {
   const recette = DB.recette(id);
   if (!recette) return afficherListe();
-  etat.partsVoulues = recette.parts;
+  etat.partsVoulues = partsDansListe(id) || recette.parts;
   afficherDetail(id);
 }
 
@@ -194,9 +211,23 @@ function executerAction(bouton) {
     case "feuille-annuler": UI.fermerFeuilleParts(); break;
     case "retour": afficherListe(); break;
     case "parts-moins":
-      if (etat.partsVoulues > 1) { etat.partsVoulues--; afficherDetail(etat.ouverteId); }
+      if (etat.partsVoulues > 1) { etat.partsVoulues--; majDetail(); }
       break;
-    case "parts-plus": etat.partsVoulues++; afficherDetail(etat.ouverteId); break;
+    case "parts-plus":
+      if (etat.partsVoulues < 99) { etat.partsVoulues++; majDetail(); }
+      break;
+    case "detail-liste": {
+      // Ajoute à la liste (aux parts affichées), met à jour les parts, ou retire si c'est déjà exactement ça
+      const id = etat.ouverteId;
+      const dans = partsDansListe(id);
+      modifierListe((l) => {
+        if (dans === null) l.recettes.push({ id, parts: etat.partsVoulues });
+        else if (dans !== etat.partsVoulues) l.recettes.find((c) => c.id === id).parts = etat.partsVoulues;
+        else l.recettes = l.recettes.filter((c) => c.id !== id);
+      });
+      majDetail();
+      break;
+    }
     case "modifier": afficherFormulaire(etat.ouverteId); break;
     case "supprimer": {
       // Pas de question : on supprime tout de suite et on laisse 6 secondes pour annuler

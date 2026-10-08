@@ -34,11 +34,12 @@ const UI = {
   majHabillage() {
     const vueCourses = !document.getElementById("vue-panier").hidden || !document.getElementById("vue-ajout").hidden;
     const courses = this.ecranCourant === "liste" && this.modeCourses && vueCourses;
-    const recettes = this.ecranCourant === "recettes" && !document.getElementById("vue-liste").hidden;
+    const detail = this.ecranCourant === "recettes" && !document.getElementById("vue-detail").hidden;
+    const recettes = this.ecranCourant === "recettes" && (!document.getElementById("vue-liste").hidden || detail);
     const actif = courses || recettes;
     document.body.classList.toggle("design", actif);
-    // Écran secondaire (Ajout) : pas d'onglets, l'action reste seule en pied
-    document.body.classList.toggle("secondaire", courses && !document.getElementById("vue-ajout").hidden);
+    // Écran secondaire (Ajout, Détail) : pas d'onglets, l'action reste seule en pied
+    document.body.classList.toggle("secondaire", (courses && !document.getElementById("vue-ajout").hidden) || detail);
     this.majBoutonSauvegarde();
   },
 
@@ -169,41 +170,75 @@ const UI = {
     if (bouton) bouton.focus();
   },
 
-  // --- Détail d'une recette ---
-  // `lignes` = ingrédients déjà recalculés pour `partsVoulues`
-  rendreDetail(recette, partsVoulues, lignes) {
+  // --- Détail d'une recette (DESIGN.md 7.4) ---
+  // `lignes` = ingrédients recalculés pour `partsVoulues`, avec leur rayon (Logic.ingredientsAvecRayon).
+  // `partsListe` = parts de la recette dans la liste de courses, ou null si elle n'y est pas.
+  rendreDetail(recette, partsVoulues, lignes, partsListe) {
     const vue = document.getElementById("vue-detail");
-    vue.replaceChildren(
-      el("button", { class: "bouton lien", "data-action": "retour", texte: "‹ " + t("retour") }),
-      el("h1", { texte: recette.titre }),
-      el("div", { class: "parts" }, [
-        el("span", { texte: t("pour") }),
-        el("button", { class: "bouton rond", "data-action": "parts-moins", "aria-label": t("diminuer_parts"), texte: "−" }),
-        el("strong", { class: "parts-nombre", texte: partsVoulues }),
-        el("button", { class: "bouton rond", "data-action": "parts-plus", "aria-label": t("augmenter_parts"), texte: "+" }),
-        el("span", { texte: partsVoulues > 1 ? t("parts") : t("part") })
+    const carte = (libelle, enfants) => el("div", { class: "carte-simple" }, [el("div", { class: "libelle-carte", texte: libelle }), ...enfants]);
+
+    const cartes = [
+      // Parts : cartes jaune, stepper (la valeur est une zone « live » mise à jour sur place par majDetail)
+      el("div", { class: "carte-champ seule" }, [
+        el("div", { class: "libelle-carte", texte: t("section_parts") }),
+        el("div", { class: "stepper" }, [
+          boutonRond("moins", { action: "parts-moins", libelle: t("diminuer_parts") }),
+          el("div", { class: "valeur-parts", "aria-live": "polite" }, [el("strong", { id: "detail-parts" }), el("span", { id: "detail-parts-unite" })]),
+          boutonRond("plus", { action: "parts-plus", libelle: t("augmenter_parts") })
+        ])
       ]),
-      el("h2", { texte: t("section_ingredients") }),
-      el("ul", { class: "ingredients" }, lignes.map((l) => {
-        return el("li", {}, [
-          el("span", { texte: Logic.majuscule(l.nom) }),
-          el("span", { class: "quantite", texte: l.quantite === null ? "" : UI.texteQuantite(l) })
-        ]);
-      }))
-    );
+      carte(t("section_ingredients"), [
+        el("div", { class: "liste-ingredients", role: "list" }, lignes.map((l, i) => el("div", { role: "listitem" }, [
+          i > 0 && perforation("detail"),
+          el("div", { class: "ligne-detail" }, [
+            rayonTile(l.rayon || "autre", 32),
+            el("span", { class: "quantite" }),
+            el("span", { class: "nom" }, [
+              Logic.majuscule(l.nom),
+              el("span", { class: "rayon-detail", texte: t("rayon_" + (l.rayon || "autre")) })
+            ])
+          ])
+        ])))
+      ])
+    ];
     if (recette.etapes.length > 0) {
-      vue.append(
-        el("h2", { texte: t("section_etapes") }),
-        el("ol", { class: "etapes" }, recette.etapes.map((e) => el("li", { texte: e })))
-      );
+      cartes.push(carte(t("section_etapes"), [
+        el("ol", { class: "liste-etapes" }, recette.etapes.map((e, i) => el("li", {}, [pastilleNumero(i + 1), el("span", { texte: e })])))
+      ]));
     }
     if (recette.notes !== "") {
-      vue.append(el("h2", { texte: t("section_notes") }), el("p", { class: "notes", texte: recette.notes }));
+      cartes.push(carte(t("section_notes"), [el("p", { class: "texte-carte", texte: recette.notes })]));
     }
-    vue.append(el("div", { class: "actions" }, [
-      el("button", { class: "bouton", "data-action": "modifier", texte: t("modifier") }),
-      el("button", { class: "bouton danger", "data-action": "supprimer", texte: t("supprimer") })
+    cartes.push(el("div", { class: "carte-actions" }, [
+      bouton("secondaire", { texte: t("modifier"), icone: "crayon", action: "modifier" }),
+      bouton("secondaire", { texte: t("supprimer"), icone: "corbeille", action: "supprimer" })
     ]));
+
+    vue.replaceChildren(
+      entete({ titre: recette.titre, retour: { action: "retour", libelle: t("retour_recettes") } }),
+      el("div", { class: "zone-liste" }, cartes),
+      el("div", { class: "pied-carte", id: "detail-pied" })
+    );
+    this.majDetail(partsVoulues, lignes, partsListe);
+  },
+
+  // Met à jour sur place ce qui dépend du nombre de parts : valeur, quantités, bouton du pied.
+  // (Rien n'est redessiné : le focus et la position de défilement restent, la valeur est annoncée.)
+  majDetail(partsVoulues, lignes, partsListe) {
+    document.getElementById("detail-parts").textContent = partsVoulues;
+    document.getElementById("detail-parts-unite").textContent = " " + t(partsVoulues > 1 ? "parts" : "part");
+    document.querySelectorAll("#vue-detail .ligne-detail .quantite").forEach((q, i) => {
+      q.textContent = lignes[i].quantite === null ? "" : this.texteQuantite(lignes[i]);
+    });
+    // Pied : ajouter, mettre à jour (déjà dans la liste mais pour un autre nombre de parts) ou retirer
+    let pied;
+    if (partsListe === null) pied = bouton("principal", { texte: t("bouton_ajout"), icone: "plus", action: "detail-liste" });
+    else if (partsListe !== partsVoulues) pied = bouton("principal", { texte: t("mettre_a_jour"), icone: "coche", action: "detail-liste" });
+    else pied = bouton("secondaire", { texte: t("dans_la_liste"), icone: "coche", action: "detail-liste", presse: true });
+    const zone = document.getElementById("detail-pied");
+    const avait = zone.contains(document.activeElement);
+    zone.replaceChildren(pied);
+    if (avait) pied.focus();
   },
 
   // --- Import d'une recette (texte JSON collé ou fichier) ---

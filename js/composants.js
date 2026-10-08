@@ -149,14 +149,15 @@ function pastille(texte, { action, pressee = false, donnees = {} } = {}) {
 // ---------- Boutons (5.6) ----------
 // `role` : "principal" (vert), "secondaire" (contouré), "sombre" (pastille noire), "retrait" (tirets, pleine largeur).
 // `desactive` : tirets + aria-disabled (jamais seulement grisé) ; le clic est ignoré par app.js.
-function bouton(role, { texte, action = null, icone: nomIcone = null, libelle = null, desactive = false, donnees = {} }) {
+function bouton(role, { texte, action = null, icone: nomIcone = null, libelle = null, desactive = false, presse = null, donnees = {} }) {
   const classes = { principal: "bouton-ajout", secondaire: "bouton-contour", sombre: "bouton-importer", retrait: "bouton-contour tirets retrait-doux" };
   const props = { type: "button", class: classes[role], "aria-label": libelle };
   if (action) props["data-action"] = action;
   if (desactive) props["aria-disabled"] = "true";
+  if (presse !== null) props["aria-pressed"] = presse ? "true" : "false";   // bouton à bascule (ex. « Dans la liste »)
   for (const [cle, valeur] of Object.entries(donnees)) props["data-" + cle] = valeur;
   const enfants = [];
-  if (nomIcone) enfants.push(icone(nomIcone, { taille: role === "principal" ? 22 : 20 }));
+  if (nomIcone) enfants.push(icone(nomIcone, { taille: role === "principal" ? 22 : 20, trait: nomIcone === "coche" ? 3 : 2.5 }));
   enfants.push(el("span", { texte }));
   return el("button", props, enfants);
 }
