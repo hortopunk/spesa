@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Détail d'une recette</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@100..900&amp;display=swap">
+<style>
+body{margin:0;background:#000000}
+.on-card:focus-visible{outline:3px solid #000000;outline-offset:2px;box-shadow:0 0 0 2px #EDEDED}
+.no-scroll{scrollbar-width:none;-ms-overflow-style:none}
+.no-scroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; color: #000000; font-family: Archivo, system-ui, sans-serif; display: flex; flex-direction: column; gap: 4px; overflow: hidden">
+
+<div style="flex: none; box-sizing: border-box; min-height: 96px; padding: 0 28px 0 24px; border-radius: 0 0 32px 32px; background: #EDEDED; display: flex; align-items: center; gap: 12px">
+<a href="Recettes.dc.html" class="on-card" aria-label="Retour aux recettes" style="flex: none; width: 44px; height: 44px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid #000000; display: flex; align-items: center; justify-content: center; color: #000000; text-decoration: none">
+<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+</a>
+<h1 style="margin: 0; flex: 1; min-width: 0; font-size: 32px; line-height: 34px; font-weight: 600; color: #000000">Gratin dauphinois</h1>
+</div>
+
+<div class="no-scroll" style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto">
+
+<div style="flex: none; box-sizing: border-box; padding: 14px 28px 14px 24px; border-radius: 32px; background: #FFD84A">
+<div style="font-size: 14px; line-height: 18px; font-weight: 600; color: #4A4A4A">Parts</div>
+<div style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
+<button type="button" class="on-card" aria-label="Diminuer le nombre de parts" onClick="{{dec}}" style="flex: none; width: 48px; height: 48px; border-radius: 999px; border: 1.5px solid #000000; background: transparent; color: #000000; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer">
+<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+</button>
+<div aria-live="polite" style="min-width: 96px; text-align: center; font-size: 28px; line-height: 32px; font-weight: 600; color: #000000">{{parts}} <span style="font-size: 17px; line-height: 24px; font-weight: 500">{{partsLabel}}</span></div>
+<button type="button" class="on-card" aria-label="Augmenter le nombre de parts" onClick="{{inc}}" style="flex: none; width: 48px; height: 48px; border-radius: 999px; border: 1.5px solid #000000; background: transparent; color: #000000; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer">
+<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+</button>
+</div>
+</div>
+
+<div style="flex: none; box-sizing: border-box; padding: 14px 28px 14px 24px; border-radius: 32px; background: #EDEDED">
+<div style="font-size: 14px; line-height: 18px; font-weight: 600; color: #4A4A4A">Ingrédients</div>
+<div role="list" style="margin-top: 12px">
+<sc-for list="{{ingredients}}" as="ing" hint-placeholder-count="6">
+<div role="listitem">
+<sc-if value="{{ing.notFirst}}" hint-placeholder-val="{{ true }}">
+<div aria-hidden="true" style="position: relative; z-index: 1; height: 1px; margin: 12px -28px 12px -24px">
+<div style="position: absolute; left: 22px; right: 22px; top: 0; height: 1px; background-image: repeating-linear-gradient(90deg, #000000 0, #000000 18px, transparent 18px, transparent 32px)"></div>
+<span style="position: absolute; left: -12px; top: -11.5px; width: 24px; height: 24px; border-radius: 999px; background: #000000"></span>
+<span style="position: absolute; right: -12px; top: -11.5px; width: 24px; height: 24px; border-radius: 999px; background: #000000"></span>
+</div>
+</sc-if>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 17px; line-height: 24px">
+<span aria-hidden="true" style="flex: none; width: 32px; height: 32px; border-radius: 10px; background: {{ing.tile}}; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{ing.isLeaf}}" hint-placeholder-val="{{ true }}">
+<svg width="20" height="20" viewBox="0 0 40 40"><path d="M4 20A16 16 0 0 1 20 4H36V20A16 16 0 0 1 20 36H4Z" fill="#000000"></path></svg>
+</sc-if>
+<sc-if value="{{ing.isSquare}}" hint-placeholder-val="{{ false }}">
+<svg width="20" height="20" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="6" fill="#000000"></rect></svg>
+</sc-if>
+</span>
+<span style="flex: none; min-width: 84px; font-weight: 600; color: #000000">{{ing.qty}}</span>
+<span style="flex: 1; min-width: 0; font-weight: 500; color: #000000">{{ing.name}}<span style="display: block; font-size: 14px; line-height: 18px; color: #4A4A4A">{{ing.rayon}}</span></span>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="flex: none; box-sizing: border-box; padding: 14px 28px 14px 24px; border-radius: 32px; background: #EDEDED">
+<div style="font-size: 14px; line-height: 18px; font-weight: 600; color: #4A4A4A">Étapes</div>
+<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 12px; align-items: flex-start">
+<span aria-hidden="true" style="flex: none; width: 32px; height: 32px; border-radius: 999px; background: #000000; color: #EDEDED; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600">1</span>
+<span style="flex: 1; min-width: 0; font-size: 17px; line-height: 24px; font-weight: 500; color: #000000">Éplucher les pommes de terre et les couper en fines rondelles.</span>
+</div>
+<div style="display: flex; gap: 12px; align-items: flex-start">
+<span aria-hidden="true" style="flex: none; width: 32px; height: 32px; border-radius: 999px; background: #000000; color: #EDEDED; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600">2</span>
+<span style="flex: 1; min-width: 0; font-size: 17px; line-height: 24px; font-weight: 500; color: #000000">Frotter un plat à l'ail, y disposer les rondelles, couvrir de crème et de lait.</span>
+</div>
+<div style="display: flex; gap: 12px; align-items: flex-start">
+<span aria-hidden="true" style="flex: none; width: 32px; height: 32px; border-radius: 999px; background: #000000; color: #EDEDED; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600">3</span>
+<span style="flex: 1; min-width: 0; font-size: 17px; line-height: 24px; font-weight: 500; color: #000000">Parsemer de gruyère et de beurre, cuire une heure à 160 °C.</span>
+</div>
+</div>
+</div>
+
+<div style="flex: none; box-sizing: border-box; padding: 14px 28px 14px 24px; border-radius: 32px; background: #EDEDED">
+<div style="font-size: 14px; line-height: 18px; font-weight: 600; color: #4A4A4A">Notes</div>
+<div style="margin-top: 6px; font-size: 17px; line-height: 24px; font-weight: 500; color: #000000">Meilleur réchauffé le lendemain.</div>
+</div>
+
+<div style="flex: none; box-sizing: border-box; padding: 14px 28px 14px 24px; border-radius: 32px; background: #EDEDED; display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" class="on-card" style="flex: 1 1 140px; min-height: 56px; border-radius: 999px; border: 2.5px solid #000000; background: transparent; color: #000000; font-family: inherit; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg>
+<span>Modifier</span>
+</button>
+<button type="button" class="on-card" style="flex: 1 1 140px; min-height: 56px; border-radius: 999px; border: 2.5px solid #000000; background: transparent; color: #000000; font-family: inherit; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"></path></svg>
+<span>Supprimer</span>
+</button>
+</div>
+
+</div>
+
+<div style="flex: none; box-sizing: border-box; padding: 20px 24px; border-radius: 32px 32px 0 0; background: #EDEDED">
+<sc-if value="{{notInList}}" hint-placeholder-val="{{ true }}">
+<button type="button" class="on-card" onClick="{{toggleList}}" style="width: 100%; min-height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 999px; border: 0; background: #A8D26B; color: #000000; font-family: inherit; font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+<span>Ajouter à la liste</span>
+</button>
+</sc-if>
+<sc-if value="{{inList}}" hint-placeholder-val="{{ false }}">
+<button type="button" class="on-card" aria-pressed="true" onClick="{{toggleList}}" style="width: 100%; min-height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 999px; border: 2.5px solid #000000; background: transparent; color: #000000; font-family: inherit; font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+<span>Dans la liste</span>
+</button>
+</sc-if>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { parts: 4, inList: false };
+
+  renderVals() {
+    const s = this.state;
+    const base = 4;
+    const fmt = (x) => String(Math.round(x * 10) / 10).replace('.', ',');
+    const defs = [
+      { q: 800, u: 'g', n: 'pommes de terre', l: true },
+      { q: 25, u: 'cl', n: 'crème liquide' },
+      { q: 25, u: 'cl', n: 'lait' },
+      { q: 2, u: 'gousses', n: "d'ail", l: true },
+      { q: 100, u: 'g', n: 'gruyère râpé' },
+      { q: 20, u: 'g', n: 'beurre' }
+    ];
+    const ingredients = defs.map((d, i) => ({
+      qty: fmt((d.q * s.parts) / base) + ' ' + d.u,
+      name: d.n,
+      notFirst: i > 0,
+      isLeaf: !!d.l,
+      isSquare: !d.l,
+      tile: d.l ? '#A8D26B' : '#BDBDBD',
+      rayon: d.l ? 'Légumes' : 'Crèmerie'
+    }));
+    return {
+      parts: s.parts,
+      partsLabel: s.parts > 1 ? 'parts' : 'part',
+      dec: () => this.setState({ parts: s.parts > 1 ? s.parts - 1 : 1 }),
+      inc: () => this.setState({ parts: s.parts < 99 ? s.parts + 1 : 99 }),
+      ingredients,
+      inList: s.inList,
+      notInList: !s.inList,
+      toggleList: () => this.setState({ inList: !s.inList })
+    };
+  }
+}
+</script>
+</body>
+</html>
