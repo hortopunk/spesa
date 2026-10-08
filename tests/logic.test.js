@@ -480,3 +480,33 @@ test("construireRecette : les étapes peuvent être une liste (formulaire) ; les
   assert.deepEqual(Logic.construireRecette({ ...base, etapes: [" Mélanger ", "", "Cuire"] }, "r1").recette.etapes, ["Mélanger", "Cuire"]);
   assert.deepEqual(Logic.construireRecette({ ...base, etapes: "a\n\nb" }, "r1").recette.etapes, ["a", "b"]);   // ancien format
 });
+
+test("apercuImport : vide, erreur bloquante, ou recette avec avertissements (jamais bloquants)", () => {
+  const dico = { lait: { libelle: "Lait", rayon: "cremerie" } };
+  const recettes = [{ titre: "Gâteau" }];
+  const json = (o) => JSON.stringify({ format: "spesa-recette-v1", titre: "Crêpes", parts: 4, ingredients: [], etapes: [], notes: "", ...o });
+  assert.deepEqual(Logic.apercuImport("  ", dico, recettes), { vide: true });
+  assert.equal(Logic.apercuImport("n'importe quoi", dico, recettes).erreur, "erreur_import_illisible");
+
+  const ok = Logic.apercuImport("Voici : " + json({
+    ingredients: [{ nom: "lait", quantite: 500, unite: "ml" }, { nom: "sel", quantite: null, unite: "" }],
+    etapes: ["Mélanger."], avertissements: ["Quantité de lait peu lisible."]
+  }), dico, recettes);
+  assert.equal(ok.erreur, undefined);
+  assert.equal(ok.partsAbsentes, false);
+  assert.deepEqual(ok.avertissements, [
+    { texte: "Quantité de lait peu lisible." },
+    { cle: "avertissement_quantite_absente", detail: "sel", rayon: "autre" },
+    { cle: "avertissement_rayon_inconnu", detail: "sel", rayon: "autre" }
+  ]);
+
+  // Titre déjà pris : avertissement ; parts absentes : signalé (le formulaire les demandera)
+  const doublon = Logic.apercuImport(json({ titre: "gateau", parts: null, ingredients: [{ nom: "lait", quantite: 1, unite: "l" }] }), dico, recettes);
+  assert.equal(doublon.partsAbsentes, true);
+  assert.deepEqual(doublon.avertissements, [{ cle: "avertissement_doublon" }]);
+});
+
+test("rayonsImport : rayon du dictionnaire, « autre » pour un ingrédient inconnu", () => {
+  const dico = { lait: { libelle: "Lait", rayon: "cremerie" } };
+  assert.deepEqual(Logic.rayonsImport([{ nom: "Lait" }, { nom: "sel" }], dico), [{ nom: "Lait", rayon: "cremerie" }, { nom: "sel", rayon: "autre" }]);
+});

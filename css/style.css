@@ -431,13 +431,13 @@ body.design #ecrans {
   flex-direction: column;
   gap: var(--gap-card);
 }
-body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste, body.design #ecran-recettes, body.design #vue-liste, body.design #vue-detail, body.design #vue-form {
+body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste, body.design #ecran-recettes, body.design #vue-liste, body.design #vue-detail, body.design #vue-form, body.design #vue-import {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-body.design #contenu-liste, body.design #vue-liste, body.design #vue-detail, body.design #vue-form { gap: var(--gap-card); }
+body.design #contenu-liste, body.design #vue-liste, body.design #vue-detail, body.design #vue-form, body.design #vue-import { gap: var(--gap-card); }
 body.design #titre-liste, body.design #vue-panier > .bouton-historique { display: none; }   /* repris dans la carte d'en-tête et la carte de fin */
 
 /* Rappel de sauvegarde : une carte comme les autres */
@@ -1002,6 +1002,38 @@ textarea.champ-encadre.i-etape { min-height: 88px; resize: none; overflow: hidde
 .pied-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .pied-actions > .bouton-ajout { flex: 1 1 180px; width: auto; }
 .pied-actions > .bouton-contour { flex: 1 1 100px; width: auto; }
+
+/* ---------- Import d'une recette (DESIGN.md 7.6) ---------- */
+.titre-numero { display: flex; align-items: center; gap: 12px; }
+.titre-carte { margin: 0; font-size: 20px; line-height: 24px; font-weight: 600; color: var(--ink); }
+.texte-aide { margin: 8px 0 0; font-size: 17px; line-height: 24px; font-weight: 500; }
+.bloc-copie {
+  margin-top: 12px;
+  max-height: 168px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  border-radius: var(--radius-list);
+  background: var(--card-done);
+  color: var(--ink-on-dark);
+  font-size: 14px; line-height: 20px; font-weight: 500;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.bloc-copie:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.rangee-boutons { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.rangee-boutons .bouton-contour { flex: 1 1 140px; min-height: 48px; }
+.rangee-boutons.grand .bouton-contour { min-height: 56px; }
+textarea.champ-encadre.zone-import { margin-top: 12px; height: 128px; resize: none; font-size: 14px; line-height: 20px; }
+#import-message { margin-top: 12px; }
+.apercu-vide { display: flex; align-items: center; gap: 12px; min-height: 80px; }
+.apercu-vide .tuile-noire svg { width: 44px; height: 44px; fill: var(--ink-on-dark); }
+.apercu-vide .erreur-champ { margin: 4px 0 0; }
+.carte-simple.apercu-import { position: relative; }
+.apercu-titre { padding-right: 88px; overflow-wrap: anywhere; }
+.avert-titre { display: flex; align-items: center; gap: 8px; font-size: 17px; line-height: 24px; font-weight: 600; }
+.liste-avert { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.liste-avert li { display: flex; align-items: flex-start; gap: 12px; font-size: 17px; line-height: 24px; font-weight: 500; }
+.liste-avert li > span:last-child, .liste-avert li > svg + span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
 /* Suggestions d'ingrédient (5.19) : lignes de 56 minimum, séparées par un trait en tirets */
 .suggestions li + li { border-top: 1px dashed var(--ink); }

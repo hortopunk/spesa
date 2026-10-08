@@ -36,11 +36,12 @@ const UI = {
     const courses = this.ecranCourant === "liste" && this.modeCourses && vueCourses;
     const detail = this.ecranCourant === "recettes" && !document.getElementById("vue-detail").hidden;
     const formulaire = this.ecranCourant === "recettes" && !document.getElementById("vue-form").hidden;
-    const recettes = this.ecranCourant === "recettes" && (!document.getElementById("vue-liste").hidden || detail || formulaire);
+    const importer = this.ecranCourant === "recettes" && !document.getElementById("vue-import").hidden;
+    const recettes = this.ecranCourant === "recettes" && (!document.getElementById("vue-liste").hidden || detail || formulaire || importer);
     const actif = courses || recettes;
     document.body.classList.toggle("design", actif);
     // Écran secondaire (Ajout, Détail) : pas d'onglets, l'action reste seule en pied
-    document.body.classList.toggle("secondaire", (courses && !document.getElementById("vue-ajout").hidden) || detail || formulaire);
+    document.body.classList.toggle("secondaire", (courses && !document.getElementById("vue-ajout").hidden) || detail || formulaire || importer);
     this.majBoutonSauvegarde();
   },
 
@@ -242,40 +243,108 @@ const UI = {
     if (avait) pied.focus();
   },
 
-  // --- Import d'une recette (texte JSON collé ou fichier) ---
+  // --- Import d'une recette (DESIGN.md 7.6) : demander à une IA, coller le résultat, voir l'aperçu ---
   rendreImport() {
-    document.getElementById("vue-import").replaceChildren(
-      el("h1", { texte: t("titre_import") }),
-      el("p", { class: "aide", texte: t("aide_import") }),
-      el("button", { class: "bouton", "data-action": "import-copier", texte: t("copier_prompt") }),
-      el("details", { id: "import-prompt" }, [
-        el("summary", { texte: t("voir_prompt") }),
-        el("textarea", { readonly: true, rows: "8", texte: t("prompt_import") })
+    const titreCarte = (n, enfant) => el("div", { class: "titre-numero" }, [pastilleNumero(n), enfant]);
+    const vue = document.getElementById("vue-import");
+    vue.replaceChildren(
+      entete({ titre: t("titre_import"), retour: { action: "annuler-import", libelle: t("retour_recettes") } }),
+      el("div", { class: "zone-liste" }, [
+        el("div", { class: "carte-simple" }, [
+          titreCarte(1, el("h2", { class: "titre-carte", texte: t("import_titre_1") })),
+          el("p", { class: "texte-aide", texte: t("import_aide_1") }),
+          el("div", { id: "import-prompt", class: "bloc-copie", tabindex: "0", role: "region", "aria-label": t("import_titre_1"), texte: t("prompt_import") }),
+          el("div", { class: "rangee-boutons grand" }, [
+            bouton("secondaire", { texte: t("copier_texte"), icone: "copier", action: "import-copier", donnees: {} })
+          ]),
+          el("p", { id: "import-message", class: "erreur-champ", role: "alert", hidden: true })
+        ]),
+        el("div", { class: "carte-simple" }, [
+          titreCarte(2, el("label", { for: "import-texte", class: "titre-carte", texte: t("import_titre_2") })),
+          el("textarea", { id: "import-texte", class: "champ-encadre zone-import", rows: 5, placeholder: t("import_placeholder"), autocomplete: "off" }),
+          el("div", { class: "rangee-boutons" }, [
+            bouton("secondaire", { texte: t("coller"), icone: "coller", action: "import-coller" }),
+            bouton("secondaire", { texte: t("choisir_fichier"), icone: "fichier", action: "import-fichier" })
+          ])
+        ]),
+        el("div", { id: "import-apercu", class: "carte-simple", "aria-live": "polite" })
       ]),
-      el("label", { "for": "import-texte", texte: t("champ_import") }),
-      el("textarea", { id: "import-texte", rows: "8" }),
-      el("p", { id: "import-message", role: "alert", hidden: true }),
-      el("div", { class: "actions" }, [
-        el("button", { class: "bouton principal", "data-action": "import-apercu", texte: t("apercu_import") }),
-        el("button", { class: "bouton", "data-action": "import-fichier", texte: t("choisir_fichier") }),
-        el("button", { class: "bouton", "data-action": "annuler-import", texte: t("annuler") })
-      ])
+      el("div", { class: "pied-carte pied-actions", id: "import-pied" })
     );
+    this.majApercuImport({ vide: true });
   },
 
-  // Message de l'écran d'import (réussite ou erreur)
-  messageImport(texte, erreur) {
+  // Texte d'un avertissement d'import : phrase de l'IA, ou clé de texte avec le nom de l'ingrédient
+  texteAvertissement(a) {
+    return a.texte !== undefined ? a.texte : t(a.cle).replace("{detail}", a.detail || "");
+  },
+
+  // Carte « Aperçu » et bouton du pied, selon le résultat de Logic.apercuImport
+  majApercuImport(apercu) {
+    const carte = document.getElementById("import-apercu");
+    const pied = document.getElementById("import-pied");
+    carte.className = "carte-simple";
+    let contenu;
+    if (apercu.vide || apercu.erreur) {
+      // Rien de collé, ou texte inutilisable : vignette noire + « Aperçu » + explication (bloquant)
+      const message = apercu.erreur ? t(apercu.erreur).replace("{detail}", apercu.detail || "") : t("import_apercu_vide");
+      contenu = el("div", { class: "apercu-vide" }, [
+        el("span", { class: "tuile-noire" }, [svg("0 0 40 40", FORMES.tiret)]),
+        el("div", { class: "carte-texte" }, [
+          el("span", { class: "carte-nom", texte: t("sticker_apercu") }),
+          apercu.erreur
+            ? el("span", { class: "erreur-champ" }, [pastilleAlerte(), el("span", { texte: message })])
+            : el("span", { class: "carte-meta", texte: message })
+        ])
+      ]);
+    } else {
+      const r = apercu.recette;
+      const compte = (n, un, plusieurs) => n + " " + t(n > 1 ? plusieurs : un);
+      const meta = [
+        r.parts === null ? t("import_parts_absentes") : compte(r.parts, "part", "parts"),
+        compte(r.ingredients.length, "mot_ingredient", "mot_ingredients"),
+        compte(r.etapes.length, "mot_etape", "mot_etapes")
+      ].join(" · ");
+      carte.classList.add("apercu-import");
+      contenu = el("div", {}, [
+        el("span", { class: "autocollant", texte: t("sticker_apercu") }),
+        el("div", { class: "carte-nom apercu-titre", texte: r.titre }),
+        el("div", { class: "carte-meta", texte: meta }),
+        ...(apercu.avertissements.length === 0 ? [] : [
+          perforation("ligne"),
+          el("div", { class: "avert-titre" }, [
+            pastilleAlerte(),
+            el("span", { texte: apercu.avertissements.length === 1 ? t("avertissements_un") : t("avertissements_plusieurs").replace("{n}", apercu.avertissements.length) })
+          ]),
+          el("ul", { class: "liste-avert" }, apercu.avertissements.map((a) => el("li", {}, [
+            a.rayon ? rayonTile(a.rayon, 32) : pastilleAlerte(),
+            el("span", { texte: this.texteAvertissement(a) })
+          ])))
+        ])
+      ]);
+    }
+    carte.replaceChildren(contenu);
+
+    // Pied : désactivé (tirets) tant qu'il n'y a rien d'utilisable ; sinon vert. Sans parts, on passe par le formulaire.
+    const utilisable = !apercu.vide && !apercu.erreur;
+    pied.replaceChildren(bouton("principal", {
+      texte: t(utilisable && apercu.partsAbsentes ? "completer_recette" : "enregistrer_recette"),
+      icone: "coche", action: "import-valider", desactive: !utilisable
+    }));
+  },
+
+  // Message sous « Copier le texte » (copie impossible, collage refusé...) ; chaîne vide = on le cache
+  messageImport(texte) {
     const p = document.getElementById("import-message");
-    p.textContent = texte;
-    p.className = erreur ? "erreur" : "succes";
-    // Une erreur est annoncée tout de suite, un succès poliment
-    p.setAttribute("role", erreur ? "alert" : "status");
-    p.hidden = false;
+    p.hidden = texte === "";
+    p.replaceChildren(...(texte === "" ? [] : [pastilleAlerte(), el("span", { texte })]));
   },
 
-  // Déplie le prompt pour le copier à la main
-  deplierPrompt() {
-    document.getElementById("import-prompt").open = true;
+  // « Copié » avec une coche, le temps de confirmer (le bouton est une zone « live » : c'est annoncé)
+  confirmerCopie(actif) {
+    const b = document.querySelector('#vue-import [data-action="import-copier"]');
+    b.replaceChildren(icone(actif ? "coche" : "copier", { taille: 20, trait: actif ? 3 : 2.5 }), el("span", { texte: t(actif ? "copie" : "copier_texte") }));
+    b.setAttribute("aria-live", "polite");
   },
 
   // --- Formulaire de création / modification (DESIGN.md 7.5) ---

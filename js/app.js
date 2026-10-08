@@ -9,6 +9,7 @@ const etat = {
   choixRecette: false, // écran Liste : le choix d'une recette à ajouter est déplié
   courses: { filtre: "tout", recherche: "" },  // mode courses : filtre (tout, a_prendre, pris) et texte cherché
   ajout: { nom: "", quantite: "1", unite: "piece", rayon: "", auto: false },   // écran « Nouvel article » (auto = rayon repris du dictionnaire)
+  import: null,        // aperçu de l'import en cours (résultat de Logic.apercuImport)
   feuille: { id: null, parts: 1, dedans: false }   // feuille de parts de l'écran Recettes
 };
 
@@ -78,43 +79,65 @@ function enregistrer() {
   ouvrirRecette(id);
 }
 
-// --- Import de recettes ---
+// --- Import de recettes (DESIGN.md 7.6) ---
 
 function afficherImport() {
+  etat.import = null;
   UI.rendreImport();
   UI.afficherVueRecettes("import");
 }
 
 async function copierPrompt() {
+  UI.messageImport("");
   try {
     await navigator.clipboard.writeText(t("prompt_import"));
-    UI.messageImport(t("prompt_copie"), false);
+    UI.confirmerCopie(true);
+    setTimeout(() => UI.confirmerCopie(false), 2000);
   } catch (e) {
-    UI.deplierPrompt();
-    UI.messageImport(t("prompt_copie_echec"), true);
+    UI.messageImport(t("prompt_copie_echec"));
   }
 }
 
-// Vérifie le texte importé. S'il est bon, il s'affiche dans le formulaire de recette,
-// qui sert d'aperçu : on relit, on corrige, on choisit les rayons inconnus, puis on enregistre.
-function analyserImport(texte) {
-  const resultat = Logic.lireRecetteImportee(texte);
-  if (resultat.erreur) {
-    return UI.messageImport(t(resultat.erreur).replace("{detail}", resultat.detail || ""), true);
+// Colle le presse-papiers dans la zone de texte (le navigateur peut refuser : on le dit)
+async function collerImport() {
+  UI.messageImport("");
+  try {
+    const texte = await navigator.clipboard.readText();
+    document.getElementById("import-texte").value = texte;
+    analyserImport();
+  } catch (e) {
+    UI.messageImport(t("coller_echec"));
   }
-  const avertissements = [...resultat.avertissements];
-  if (resultat.partsAbsentes) avertissements.unshift(t("avertissement_parts"));
-  const titre = Logic.normaliser(resultat.recette.titre);
-  if (DB.recettes().some((r) => Logic.normaliser(r.titre) === titre)) {
-    avertissements.unshift(t("avertissement_doublon"));
+}
+
+// Relit la zone de texte et met l'aperçu à jour (à chaque saisie, collage ou fichier choisi)
+function analyserImport() {
+  const texte = document.getElementById("import-texte").value;
+  etat.import = Logic.apercuImport(texte, DB.dico(), DB.recettes());
+  UI.majApercuImport(etat.import);
+}
+
+// « Enregistrer la recette » : enregistre et ouvre le détail. Si le nombre de parts manque,
+// on ouvre le formulaire (rempli) pour le demander : on n'invente pas de valeur.
+function validerImport() {
+  const apercu = etat.import;
+  if (!apercu || apercu.vide || apercu.erreur) return;
+  if (apercu.partsAbsentes) {
+    etat.editionId = null;   // c'est une nouvelle recette
+    UI.rendreFormulaire(
+      apercu.recette,
+      Logic.ingredientsAvecRayon(apercu.recette.ingredients, DB.dico()),
+      { titre: t("titre_apercu_import"), avertissements: apercu.avertissements.map((a) => UI.texteAvertissement(a)) }
+    );
+    UI.afficherVueRecettes("form");
+    return;
   }
-  etat.editionId = null;   // c'est une nouvelle recette
-  UI.rendreFormulaire(
-    resultat.recette,
-    Logic.ingredientsAvecRayon(resultat.recette.ingredients, DB.dico()),
-    { titre: t("titre_apercu_import"), avertissements }
-  );
-  UI.afficherVueRecettes("form");
+  const id = DB.nouvelId();
+  const dico = DB.dico();
+  DB.enregistrerRecette({ ...apercu.recette, id }, Logic.mettreAJourDico(dico, Logic.rayonsImport(apercu.recette.ingredients, dico)));
+  rafraichirBandeau();
+  etat.import = null;
+  ouvrirRecette(id);
 }
 
 // Quand on tape un nom d'ingrédient : suggestions + rayon connu
@@ -180,7 +203,8 @@ function executerAction(bouton) {
     case "nouvelle": afficherFormulaire(null); break;
     case "importer": afficherImport(); break;
     case "import-copier": copierPrompt(); break;
-    case "import-apercu": analyserImport(document.getElementById("import-texte").value); break;
+    case "import-coller": collerImport(); break;
+    case "import-valider": validerImport(); break;
     case "import-fichier": document.getElementById("fichier-import").click(); break;
     case "annuler-import": afficherListe(); break;
     case "ouvrir": ouvrirRecette(bouton.dataset.id); break;
@@ -727,7 +751,10 @@ async function demarrer() {
   champImport.addEventListener("change", async () => {
     const fichier = champImport.files[0];
     champImport.value = "";
-    if (fichier) analyserImport(await fichier.text());
+    if (fichier) {
+      document.getElementById("import-texte").value = await fichier.text();
+      analyserImport();
+    }
   });
 
   // Restauration : fichier choisi dans le sélecteur caché
@@ -750,6 +777,7 @@ async function demarrer() {
     // Formulaire : une erreur s'efface dès que le champ est corrigé ; l'étape grandit avec son texte
     if (e.target.closest("#vue-form") && e.target.getAttribute("aria-invalid") === "true") UI.effacerChampFormulaire(e.target);
     if (e.target.matches(".i-etape")) UI.ajusterZone(e.target);
+    if (e.target.id === "import-texte") analyserImport();
     if (e.target.id === "recherche") {
       etat.recherche = e.target.value;
       redessinerRecettes();   // seules les cartes sont redessinées : le champ garde le focus

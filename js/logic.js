@@ -403,6 +403,34 @@ const Logic = {
     };
   },
 
+  // Aperçu d'un import : lit le texte collé et prépare ce qu'il faut afficher.
+  // Renvoie { vide: true } (rien de collé), { erreur, detail } (texte inutilisable, bloquant) ou
+  // { recette, partsAbsentes, avertissements } ; chaque avertissement (jamais bloquant) est soit
+  // { texte } (phrase de l'IA), soit { cle, detail?, rayon? } (clé de texte, nom d'ingrédient concerné et son rayon).
+  apercuImport(texte, dico, recettes) {
+    if (texte.trim() === "") return { vide: true };
+    const lu = this.lireRecetteImportee(texte);
+    if (lu.erreur) return lu;
+    const avertissements = lu.avertissements.map((t) => ({ texte: t }));
+    const titre = this.normaliser(lu.recette.titre);
+    if (recettes.some((r) => this.normaliser(r.titre) === titre)) avertissements.push({ cle: "avertissement_doublon" });
+    lu.recette.ingredients.forEach((ing) => {
+      const fiche = dico[this.normaliser(ing.nom)];
+      const rayon = fiche ? fiche.rayon : "autre";
+      if (ing.quantite === null) avertissements.push({ cle: "avertissement_quantite_absente", detail: ing.nom, rayon });
+      if (!fiche) avertissements.push({ cle: "avertissement_rayon_inconnu", detail: ing.nom, rayon });
+    });
+    return { recette: lu.recette, partsAbsentes: lu.partsAbsentes, avertissements };
+  },
+
+  // Rayons à mémoriser pour une recette importée : celui du dictionnaire, « autre » pour un ingrédient inconnu
+  rayonsImport(ingredients, dico) {
+    return ingredients.map((ing) => {
+      const fiche = dico[this.normaliser(ing.nom)];
+      return { nom: ing.nom, rayon: fiche ? fiche.rayon : "autre" };
+    });
+  },
+
   // Transforme la saisie du formulaire (du texte) en recette propre.
   // Renvoie { recette, rayons } si tout va bien (rayons = [{ nom, rayon }] à mémoriser
   // dans le dictionnaire), sinon { erreur: "cle_de_texte" }.

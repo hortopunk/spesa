@@ -41,7 +41,10 @@ const ICONES = {
   crayon: [["path", { d: "M4 20h4L19 9l-4-4L4 16z" }]],
   loupe: [["circle", { cx: 11, cy: 11, r: 7 }], ["path", { d: "M20 20l-4-4" }]],
   chevron: [["path", { d: "M6 9l6 6 6-6" }]],
-  importer: [["path", { d: "M12 4v10M8 10l4 4 4-4M5 20h14" }]]
+  importer: [["path", { d: "M12 4v10M8 10l4 4 4-4M5 20h14" }]],
+  copier: [["rect", { x: 8, y: 8, width: 12, height: 12, rx: 2 }], ["path", { d: "M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" }]],
+  coller: [["rect", { x: 5, y: 5, width: 14, height: 16, rx: 2 }], ["path", { d: "M9 5V3h6v2M9 11h6M9 15h6" }]],
+  fichier: [["path", { d: "M6 3h8l4 4v14H6z" }], ["path", { d: "M14 3v4h4" }]]
 };
 
 // `trait` : 2 à 3 selon l'icône (coches 3, plus et moins 2,5, flèche 2,2)
