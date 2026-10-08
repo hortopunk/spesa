@@ -207,12 +207,43 @@ function erreurChamp(saisie, message) {
 }
 
 // Sélecteur (unité) : un vrai <select> avec un chevron. `options` = [{ valeur, texte }].
-function selecteur({ id, libelle, options, valeur }) {
-  const select = el("select", { id, class: "selecteur-saisie" }, options.map((o) =>
+// `classe` : classe en plus sur le <select> (pour le retrouver dans le code).
+function selecteur({ id, libelle, options, valeur, classe = "" }) {
+  const select = el("select", { id, class: ("selecteur-saisie " + classe).trim() }, options.map((o) =>
     el("option", { value: o.valeur, selected: o.valeur === valeur, texte: o.texte })
   ));
   return el("div", { class: "selecteur" }, [
     el("label", { for: id, class: "libelle-carte", texte: libelle }),
     el("div", { class: "selecteur-boite" }, [select, icone("chevron", { taille: 20, trait: 2 })])
   ]);
+}
+
+// Sélecteur de rayon (5.8) : comme selecteur(), avec la vignette 32 du rayon choisi dans l'encadré.
+// C'est un vrai <select> (liste native du téléphone) : la vignette est posée à gauche et mise à jour
+// par majVignetteRayon() quand la valeur change.
+function selecteurRayon({ id, libelle, options, valeur = "", classe = "" }) {
+  const racine = selecteur({ id, libelle, options, valeur, classe });
+  racine.classList.add("selecteur-rayon");
+  majVignetteRayon(racine.querySelector("select"));
+  return racine;
+}
+
+function majVignetteRayon(select) {
+  const boite = select.closest(".selecteur-boite");
+  if (!boite) return;
+  const ancienne = boite.querySelector(".vignette");
+  if (ancienne) ancienne.remove();
+  boite.classList.toggle("avec-vignette", select.value !== "");
+  if (select.value !== "") boite.prepend(rayonTile(select.value, 32));
+}
+
+// Contenu de la carte de résumé d'erreurs (fond sombre) : pastille « ! » inversée, titre, liste des champs.
+function contenuResume(titre, libelles) {
+  return [
+    pastilleAlerte({ inverse: true }),
+    el("div", { class: "resume-texte" }, [
+      el("div", { class: "resume-titre", texte: titre }),
+      el("div", { class: "resume-liste", texte: libelles.join(" · ") })
+    ])
+  ];
 }

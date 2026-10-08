@@ -35,11 +35,12 @@ const UI = {
     const vueCourses = !document.getElementById("vue-panier").hidden || !document.getElementById("vue-ajout").hidden;
     const courses = this.ecranCourant === "liste" && this.modeCourses && vueCourses;
     const detail = this.ecranCourant === "recettes" && !document.getElementById("vue-detail").hidden;
-    const recettes = this.ecranCourant === "recettes" && (!document.getElementById("vue-liste").hidden || detail);
+    const formulaire = this.ecranCourant === "recettes" && !document.getElementById("vue-form").hidden;
+    const recettes = this.ecranCourant === "recettes" && (!document.getElementById("vue-liste").hidden || detail || formulaire);
     const actif = courses || recettes;
     document.body.classList.toggle("design", actif);
     // Écran secondaire (Ajout, Détail) : pas d'onglets, l'action reste seule en pied
-    document.body.classList.toggle("secondaire", (courses && !document.getElementById("vue-ajout").hidden) || detail);
+    document.body.classList.toggle("secondaire", (courses && !document.getElementById("vue-ajout").hidden) || detail || formulaire);
     this.majBoutonSauvegarde();
   },
 
@@ -277,44 +278,187 @@ const UI = {
     document.getElementById("import-prompt").open = true;
   },
 
-  // --- Formulaire de création / modification ---
+  // --- Formulaire de création / modification (DESIGN.md 7.5) ---
   // `ingredients` = ingrédients de la recette avec leur rayon (voir Logic.ingredientsAvecRayon)
   // `options` (import) : { titre: titre de la vue, avertissements: [textes à vérifier] }
   rendreFormulaire(recette, ingredients, options = {}) {
     const vue = document.getElementById("vue-form");
     const avertissements = options.avertissements || [];
-    vue.replaceChildren(
-      el("h1", { texte: options.titre || (recette ? t("titre_modifier_recette") : t("titre_nouvelle_recette")) }),
-      ...(avertissements.length === 0 ? [] : [
-        el("div", { class: "avertissements" }, [
-          el("p", { texte: t("avertissements_import") }),
-          el("ul", {}, avertissements.map((a) => el("li", { texte: a })))
-        ])
+    const titre = options.titre || (recette ? t("titre_modifier_recette") : t("titre_nouvelle_recette"));
+    const carte = (libelle, enfants, id = null) => el("div", { class: "carte-simple" }, [
+      el("div", { class: "libelle-carte", texte: libelle, id }), ...enfants
+    ]);
+    const erreur = (id) => el("p", { id: id + "-erreur", class: "erreur-champ", role: "alert", hidden: true });
+
+    const cartes = [
+      // Résumé des erreurs : apparaît en tête quand on enregistre avec des erreurs, le focus s'y déplace
+      el("div", { id: "f-resume", class: "resume-erreurs detaille", role: "alert", tabindex: "-1", hidden: true }),
+      avertissements.length > 0 && carte(t("avertissements_import"), [
+        el("ul", { class: "liste-avertissements" }, avertissements.map((a) => el("li", { texte: a })))
       ]),
-      el("label", { "for": "f-titre", texte: t("champ_titre") }),
-      el("input", { id: "f-titre", type: "text", value: recette ? recette.titre : "" }),
-      el("label", { "for": "f-parts", texte: t("champ_parts") }),
-      el("input", {
-        id: "f-parts", type: "text", inputmode: "numeric", placeholder: t("parts_obligatoire"),
-        value: recette ? recette.parts : 4   // import sans parts : null, le champ reste vide
-      }),
-      el("p", { class: "aide aide-champ", texte: t("aide_parts") }),
-      el("h2", { texte: t("section_ingredients") }),
-      el("div", { id: "f-ingredients" }),
-      el("button", { class: "bouton", "data-action": "ajouter-ingredient", texte: "+ " + t("ajouter_ingredient") }),
-      el("label", { "for": "f-etapes", texte: t("champ_etapes") }),
-      el("textarea", { id: "f-etapes", rows: "5", texte: recette ? recette.etapes.join("\n") : "" }),
-      el("label", { "for": "f-notes", texte: t("champ_notes") }),
-      el("textarea", { id: "f-notes", rows: "3", texte: recette ? recette.notes : "" }),
-      el("p", { id: "f-erreur", class: "erreur", role: "alert", hidden: true }),
-      el("div", { class: "actions" }, [
-        el("button", { class: "bouton principal", "data-action": "enregistrer", texte: t("enregistrer") }),
-        el("button", { class: "bouton", "data-action": "annuler", texte: t("annuler") })
+      el("div", { class: "carte-champ seule" }, [
+        el("label", { for: "f-titre", class: "libelle-carte", texte: t("champ_titre") }),
+        el("input", { id: "f-titre", class: "saisie-carte", type: "text", autocomplete: "off", placeholder: t("ex_titre"), value: recette ? recette.titre : "" }),
+        erreur("f-titre")
+      ]),
+      el("div", { class: "carte-champ seule" }, [
+        el("label", { for: "f-parts", class: "libelle-carte", texte: t("champ_parts") }),
+        el("div", { class: "stepper" }, [
+          boutonRond("moins", { action: "form-parts-moins", libelle: t("diminuer_parts") }),
+          el("input", {
+            id: "f-parts", class: "valeur-quantite", type: "text", inputmode: "numeric", autocomplete: "off",
+            placeholder: t("parts_obligatoire"), value: recette ? recette.parts : 4   // import sans parts : null, le champ reste vide
+          }),
+          boutonRond("plus", { action: "form-parts-plus", libelle: t("augmenter_parts") })
+        ]),
+        erreur("f-parts")
+      ]),
+      carte(t("section_ingredients"), [
+        el("div", { id: "f-ingredients", role: "group", "aria-label": t("section_ingredients") }),
+        bouton("secondaire", { texte: t("ajouter_ingredient"), icone: "plus", action: "ajouter-ingredient" })
+      ]),
+      carte(t("section_etapes"), [
+        el("div", { id: "f-etapes", role: "group", "aria-label": t("section_etapes") }),
+        bouton("secondaire", { texte: t("ajouter_etape"), icone: "plus", action: "ajouter-etape" })
+      ]),
+      el("div", { class: "carte-simple" }, [champ({ id: "f-notes", libelle: t("champ_notes"), valeur: recette ? recette.notes : "", multiligne: true, lignes: 3 }).racine])
+    ];
+
+    vue.replaceChildren(
+      entete({ titre, retour: { action: "annuler", libelle: t("annuler_retour") } }),
+      el("div", { class: "zone-liste" }, cartes),
+      el("div", { class: "pied-carte pied-actions" }, [
+        bouton("principal", { texte: t("enregistrer"), icone: "coche", action: "enregistrer" }),
+        bouton("secondaire", { texte: t("annuler"), action: "annuler" })
       ])
     );
-    // Nouvelle recette : une seule ligne vide
-    const conteneur = document.getElementById("f-ingredients");
-    (recette ? ingredients : [undefined]).forEach((ing) => this.ajouterLigneIngredient(conteneur, ing));
+    // Nouvelle recette : une ligne d'ingrédient vide, pas d'étape
+    const lignes = recette ? ingredients.map((i) => ({ ...i, auto: i.rayon !== "" })) : [this.ingredientVide()];
+    this.rendreSegmentsIngredients(lignes);
+    this.rendreSegmentsEtapes(recette ? recette.etapes : []);
+  },
+
+  ingredientVide() {
+    return { nom: "", quantite: null, unite: "piece", rayon: "", auto: false };
+  },
+
+  // Un ingrédient : [nom + retirer] · suggestions · [quantité | unité | rayon] (DESIGN.md 5.18).
+  // `i` = rang (à partir de 0) ; les ids en dépendent, donc la liste est redessinée entièrement à chaque changement.
+  segmentIngredient(ing, i) {
+    const n = i + 1;
+    const base = "f-ing-" + i;
+    const suggestions = el("ul", { class: "suggestions", hidden: true });
+    suggestions.addEventListener("mousedown", (e) => e.preventDefault());   // garde le focus dans le champ
+    const rayon = selecteurRayon({
+      id: base + "-rayon", libelle: t("champ_rayon"), valeur: ing.rayon, classe: "i-rayon",
+      options: [{ valeur: "", texte: t("choisir_rayon") }, ...Logic.RAYONS.map((r) => ({ valeur: r, texte: t("rayon_" + r) }))]
+    });
+    if (ing.auto) rayon.querySelector("select").dataset.auto = "1";   // rayon repris du dictionnaire
+    return el("div", { class: "segment-ingredient" }, [
+      el("div", { class: "segment-ligne" }, [
+        el("div", { class: "segment-champ" }, [
+          el("label", { for: base + "-nom", class: "libelle-carte", texte: t("libelle_ingredient_n").replace("{n}", n) }),
+          el("input", { id: base + "-nom", class: "champ-encadre i-nom", type: "text", autocomplete: "off", placeholder: t("ex_ingredient"), value: ing.nom })
+        ]),
+        boutonCarre("corbeille", { action: "retirer-ingredient", libelle: t("retirer_ingredient_n").replace("{n}", n), donnees: { index: i } })
+      ]),
+      suggestions,
+      el("div", { class: "segment-champs" }, [
+        el("div", { class: "segment-quantite" }, [
+          el("label", { for: base + "-quantite", class: "libelle-carte", texte: t("champ_quantite") }),
+          el("input", {
+            id: base + "-quantite", class: "champ-encadre i-quantite", type: "text", inputmode: "decimal", autocomplete: "off",
+            placeholder: "0", value: ing.quantite === null ? "" : String(ing.quantite).replace(".", ",")
+          })
+        ]),
+        selecteur({
+          id: base + "-unite", libelle: t("libelle_unite"), valeur: ing.unite || "piece", classe: "i-unite",
+          options: Logic.UNITES.map((u) => ({ valeur: u, texte: t("unite_" + u) }))
+        }),
+        rayon
+      ]),
+      ...["nom", "quantite", "rayon"].map((c) => el("p", { id: base + "-" + c + "-erreur", class: "erreur-champ", role: "alert", hidden: true }))
+    ]);
+  },
+
+  // (Re)dessine tous les ingrédients. `focus` = rang de la ligne dont le nom reçoit le focus.
+  rendreSegmentsIngredients(lignes, focus = null) {
+    document.getElementById("f-ingredients").replaceChildren(
+      ...lignes.flatMap((l, i) => [i > 0 && perforation("ligne"), this.segmentIngredient(l, i)]).filter(Boolean)
+    );
+    if (focus !== null) document.getElementById("f-ing-" + focus + "-nom").focus();
+  },
+
+  // Une étape : pastille numérotée + zone de texte qui grandit + retirer
+  segmentEtape(texte, i) {
+    const n = i + 1;
+    return el("div", { class: "segment-etape" }, [
+      pastilleNumero(n),
+      el("div", { class: "segment-champ" }, [
+        el("label", { for: "f-etape-" + i, class: "visuellement-cache", texte: t("libelle_etape_n").replace("{n}", n) }),
+        el("textarea", { id: "f-etape-" + i, class: "champ-encadre i-etape", rows: 3, texte })
+      ]),
+      boutonCarre("corbeille", { action: "retirer-etape", libelle: t("retirer_etape_n").replace("{n}", n), donnees: { index: i } })
+    ]);
+  },
+
+  rendreSegmentsEtapes(etapes, focus = null) {
+    document.getElementById("f-etapes").replaceChildren(
+      ...etapes.flatMap((e, i) => [i > 0 && perforation("ligne"), this.segmentEtape(e, i)]).filter(Boolean)
+    );
+    document.querySelectorAll("#f-etapes .i-etape").forEach((z) => this.ajusterZone(z));
+    if (focus !== null) document.getElementById("f-etape-" + focus).focus();
+  },
+
+  // La zone de texte d'une étape grandit avec son contenu (88 px au minimum, voir le CSS)
+  ajusterZone(zone) {
+    zone.style.height = "auto";
+    zone.style.height = zone.scrollHeight + 3 + "px";
+  },
+
+  // Ce qui est saisi dans les ingrédients et les étapes (du texte brut, rien n'est vérifié ici)
+  lireIngredients() {
+    return [...document.querySelectorAll("#f-ingredients .segment-ingredient")].map((segment) => ({
+      ...this.lireLigne(segment),
+      auto: segment.querySelector(".i-rayon").dataset.auto === "1"
+    }));
+  },
+
+  lireEtapes() {
+    return [...document.querySelectorAll("#f-etapes .i-etape")].map((z) => z.value);
+  },
+
+  // --- Erreurs du formulaire (sans rouge) : contour épais + pastille « ! » + message + carte de résumé ---
+  // `erreurs` = résultat de Logic.validerRecette
+  afficherErreursFormulaire(erreurs) {
+    document.querySelectorAll("#vue-form [aria-invalid='true']").forEach((c) => this.effacerChampFormulaire(c));
+    erreurs.forEach((e) => {
+      const champ = document.getElementById({
+        titre: "f-titre", parts: "f-parts", ingredients: "f-ing-0-nom",
+        nom: "f-ing-" + e.index + "-nom", quantite: "f-ing-" + e.index + "-quantite", rayon: "f-ing-" + e.index + "-rayon"
+      }[e.champ]);
+      const n = (e.index || 0) + 1;
+      erreurChamp(champ, t(e.message).replace("{n}", n));
+      champ.dataset.resume = t(e.resume).replace("{n}", n);
+    });
+    this.majResumeFormulaire();
+    if (erreurs.length > 0) document.getElementById("f-resume").focus();
+  },
+
+  // Efface l'erreur d'un champ (dès qu'on le corrige) et met le résumé à jour
+  effacerChampFormulaire(champ) {
+    erreurChamp(champ, null);
+    delete champ.dataset.resume;
+    this.majResumeFormulaire();
+  },
+
+  majResumeFormulaire() {
+    const libelles = [...document.querySelectorAll("#vue-form [aria-invalid='true']")].map((c) => c.dataset.resume).filter(Boolean);
+    const resume = document.getElementById("f-resume");
+    resume.hidden = libelles.length === 0;
+    resume.replaceChildren(...(libelles.length === 0 ? [] : contenuResume(
+      t(libelles.length === 1 ? "erreur_resume_un" : "erreur_resume_plusieurs").replace("{n}", libelles.length), libelles
+    )));
   },
 
   // Ajoute une ligne d'ingrédient (nom, quantité, unité, rayon) dans `conteneur`.
@@ -346,18 +490,28 @@ const UI = {
     );
   },
 
-  // Affiche (ou cache si la liste est vide) les suggestions d'une ligne
-  rendreSuggestions(ligne, libelles) {
+  // Affiche (ou cache si la liste est vide) les suggestions d'une ligne (DESIGN.md 5.19).
+  // `suggestions` = [{ libelle, rayon }] ; `saisie` = ce qui est tapé (son début est mis en gras).
+  rendreSuggestions(ligne, suggestions, saisie = "") {
     const ul = ligne.querySelector(".suggestions");
-    ul.replaceChildren(...libelles.map((libelle) =>
-      el("li", {}, [el("button", { type: "button", class: "suggestion", "data-action": "choisir-suggestion", texte: libelle })])
-    ));
-    ul.hidden = libelles.length === 0;
+    const debut = saisie.trim().length;
+    ul.replaceChildren(...suggestions.map(({ libelle, rayon }) => el("li", {}, [
+      el("button", { type: "button", class: "suggestion", "data-action": "choisir-suggestion", "data-libelle": libelle }, [
+        rayonTile(rayon, 32),
+        el("span", { class: "s-texte" }, [
+          el("span", { class: "s-nom" }, [el("b", { texte: libelle.slice(0, debut) }), libelle.slice(debut)]),
+          el("span", { class: "s-rayon", texte: t("rayon_" + rayon) })
+        ])
+      ])
+    ])));
+    ul.hidden = suggestions.length === 0;
   },
 
   // Remplace le nom saisi par la suggestion choisie
   remplirNom(ligne, libelle) {
-    ligne.querySelector(".i-nom").value = libelle;
+    const champ = ligne.querySelector(".i-nom");
+    champ.value = libelle;
+    if (champ.getAttribute("aria-invalid") === "true") this.effacerChampFormulaire(champ);
   },
 
   // Rayon d'une ligne : prérempli si l'ingrédient est connu (`rayon`). Sinon, remis
@@ -372,10 +526,8 @@ const UI = {
       champ.value = "";
       delete champ.dataset.auto;
     }
-  },
-
-  retirerLigneIngredient(bouton) {
-    bouton.closest(".ligne-ingredient").remove();
+    majVignetteRayon(champ);
+    if (rayon && champ.getAttribute("aria-invalid") === "true") this.effacerChampFormulaire(champ);   // rayon trouvé : l'erreur n'a plus lieu d'être
   },
 
   // Lit ce qui est saisi dans le formulaire (du texte brut, rien n'est vérifié ici)
@@ -383,8 +535,8 @@ const UI = {
     return {
       titre: document.getElementById("f-titre").value,
       parts: document.getElementById("f-parts").value,
-      ingredients: [...document.querySelectorAll("#f-ingredients .ligne-ingredient")].map((ligne) => this.lireLigne(ligne)),
-      etapes: document.getElementById("f-etapes").value,
+      ingredients: this.lireIngredients(),
+      etapes: this.lireEtapes(),
       notes: document.getElementById("f-notes").value
     };
   },
@@ -615,7 +767,7 @@ const UI = {
 
     // Coupon jaune : Article + Quantité, séparés par une perforation décorative
     const champNom = el("input", {
-      id: "ajout-nom", type: "text", autocomplete: "off", placeholder: t("ajout_exemple"), value: ajout.nom
+      id: "ajout-nom", class: "saisie-carte", type: "text", autocomplete: "off", placeholder: t("ajout_exemple"), value: ajout.nom
     });
     const suggestions = el("div", { id: "ajout-suggestions", class: "puces", hidden: true });
     suggestions.addEventListener("mousedown", (e) => e.preventDefault());   // garde le clavier ouvert

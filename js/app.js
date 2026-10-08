@@ -65,9 +65,14 @@ function afficherFormulaire(id) {
 }
 
 function enregistrer() {
+  const saisie = UI.lireFormulaire();
+  // Toutes les erreurs d'un coup : contours, messages et carte de résumé (le bouton reste actif)
+  const erreurs = Logic.validerRecette(saisie);
+  UI.afficherErreursFormulaire(erreurs);
+  if (erreurs.length > 0) return;
   const id = etat.editionId || DB.nouvelId();
-  const resultat = Logic.construireRecette(UI.lireFormulaire(), id);
-  if (resultat.erreur) return UI.afficherErreur(t(resultat.erreur));
+  const resultat = Logic.construireRecette(saisie, id);
+  if (resultat.erreur) return signalerErreur(new Error(resultat.erreur));   // ne devrait pas arriver après la vérification
   DB.enregistrerRecette(resultat.recette, Logic.mettreAJourDico(DB.dico(), resultat.rayons));
   rafraichirBandeau();
   ouvrirRecette(id);
@@ -114,9 +119,13 @@ function analyserImport(texte) {
 
 // Quand on tape un nom d'ingrédient : suggestions + rayon connu
 function surSaisieNom(champ) {
-  const ligne = champ.closest(".ligne-ingredient");
+  const ligne = champ.closest(".ligne-ingredient, .segment-ingredient");
   const dico = DB.dico();
-  UI.rendreSuggestions(ligne, Logic.suggerer(dico, champ.value));
+  const suggestions = Logic.suggerer(dico, champ.value).map((libelle) => {
+    const fiche = dico[Logic.normaliser(libelle)];
+    return { libelle, rayon: fiche ? fiche.rayon : "autre" };
+  });
+  UI.rendreSuggestions(ligne, suggestions, champ.value);
   const fiche = dico[Logic.normaliser(champ.value)];
   UI.proposerRayon(ligne, fiche ? fiche.rayon : null);
 }
@@ -241,12 +250,42 @@ function executerAction(bouton) {
       });
       break;
     }
-    case "ajouter-ingredient": UI.ajouterLigneIngredient(document.getElementById("f-ingredients")); break;
-    case "retirer-ingredient": UI.retirerLigneIngredient(bouton); break;
+    case "ajouter-ingredient": {
+      const lignes = [...UI.lireIngredients(), UI.ingredientVide()];
+      UI.rendreSegmentsIngredients(lignes, lignes.length - 1);
+      break;
+    }
+    case "retirer-ingredient": {
+      const lignes = UI.lireIngredients().filter((l, i) => i !== Number(bouton.dataset.index));
+      if (lignes.length === 0) lignes.push(UI.ingredientVide());
+      UI.rendreSegmentsIngredients(lignes, Math.min(Number(bouton.dataset.index), lignes.length - 1));
+      break;
+    }
+    case "ajouter-etape": {
+      const etapes = [...UI.lireEtapes(), ""];
+      UI.rendreSegmentsEtapes(etapes, etapes.length - 1);
+      break;
+    }
+    case "retirer-etape": {
+      const etapes = UI.lireEtapes().filter((e, i) => i !== Number(bouton.dataset.index));
+      UI.rendreSegmentsEtapes(etapes);
+      document.querySelector('#vue-form [data-action="ajouter-etape"]').focus();
+      break;
+    }
+    case "form-parts-moins": case "form-parts-plus": {
+      const champ = document.getElementById("f-parts");
+      const actuel = Logic.lireNombre(champ.value);
+      const suivant = (actuel === null ? 0 : Math.floor(actuel)) + (bouton.dataset.action === "form-parts-plus" ? 1 : -1);
+      champ.value = Math.min(99, Math.max(1, suivant));   // entre 1 et 99
+      if (champ.getAttribute("aria-invalid") === "true") UI.effacerChampFormulaire(champ);
+      break;
+    }
     case "choisir-suggestion": {
-      const ligne = bouton.closest(".ligne-ingredient");
-      UI.remplirNom(ligne, bouton.textContent);
+      const ligne = bouton.closest(".ligne-ingredient, .segment-ingredient");
+      UI.remplirNom(ligne, bouton.dataset.libelle);
       surSaisieNom(ligne.querySelector(".i-nom"));
+      UI.rendreSuggestions(ligne, []);   // choisie : la liste se referme
+      ligne.querySelector(".i-nom").focus();
       break;
     }
     case "enregistrer": enregistrer(); break;
@@ -708,6 +747,9 @@ async function demarrer() {
   // Lignes d'ingrédient (recette ou article libre) : autocomplétion et rayon
   document.addEventListener("input", (e) => {
     if (e.target.matches(".i-nom")) surSaisieNom(e.target);
+    // Formulaire : une erreur s'efface dès que le champ est corrigé ; l'étape grandit avec son texte
+    if (e.target.closest("#vue-form") && e.target.getAttribute("aria-invalid") === "true") UI.effacerChampFormulaire(e.target);
+    if (e.target.matches(".i-etape")) UI.ajusterZone(e.target);
     if (e.target.id === "recherche") {
       etat.recherche = e.target.value;
       redessinerRecettes();   // seules les cartes sont redessinées : le champ garde le focus
@@ -720,11 +762,15 @@ async function demarrer() {
     }
   });
   document.addEventListener("focusout", (e) => {
-    if (e.target.matches(".i-nom")) UI.rendreSuggestions(e.target.closest(".ligne-ingredient"), []);
+    if (e.target.matches(".i-nom")) UI.rendreSuggestions(e.target.closest(".ligne-ingredient, .segment-ingredient"), []);
   });
   document.addEventListener("change", (e) => {
     // Rayon choisi à la main : il ne sera plus remis à zéro automatiquement
-    if (e.target.matches(".i-rayon")) delete e.target.dataset.auto;
+    if (e.target.matches(".i-rayon")) {
+      delete e.target.dataset.auto;
+      majVignetteRayon(e.target);
+      if (e.target.getAttribute("aria-invalid") === "true") UI.effacerChampFormulaire(e.target);
+    }
   });
 
   afficherListe();

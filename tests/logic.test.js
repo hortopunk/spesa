@@ -458,3 +458,25 @@ test("Backup.nomFichier : spesa-sauvegarde-AAAA-MM-JJ.json (date locale)", () =>
   const midi = new Date(2026, 9, 2, 12, 0, 0).toISOString();
   assert.equal(Backup.nomFichier(midi), "spesa-sauvegarde-2026-10-02.json");
 });
+
+test("validerRecette : toutes les erreurs d'un coup, avec le rang de la ligne concernée", () => {
+  const ligne = (nom, quantite, rayon) => ({ nom, quantite, unite: "g", rayon });
+  const ok = { titre: "Gratin", parts: "4", ingredients: [ligne("lait", "2", "cremerie")], etapes: [""], notes: "" };
+  assert.deepEqual(Logic.validerRecette(ok), []);
+
+  const mauvais = Logic.validerRecette({
+    titre: " ", parts: "", notes: "", etapes: [],
+    ingredients: [ligne("lait", "2", "cremerie"), ligne("sel", "deux", "autre"), ligne("", "3", ""), ligne("beurre", "", ""), ligne("", "", "")]
+  });
+  assert.deepEqual(mauvais.map((e) => e.champ + (e.index === undefined ? "" : ":" + e.index)),
+    ["titre", "parts", "quantite:1", "nom:2", "rayon:3"]);   // ligne 4 vide : ignorée ; ligne 2 sans nom : pas d'erreur de rayon en plus
+
+  const aucun = Logic.validerRecette({ ...ok, ingredients: [ligne("", "", "")] });
+  assert.deepEqual(aucun.map((e) => e.champ), ["ingredients"]);
+});
+
+test("construireRecette : les étapes peuvent être une liste (formulaire) ; les vides sont retirées", () => {
+  const base = { titre: "T", parts: "2", ingredients: [{ nom: "lait", quantite: "1", unite: "l", rayon: "cremerie" }], notes: "" };
+  assert.deepEqual(Logic.construireRecette({ ...base, etapes: [" Mélanger ", "", "Cuire"] }, "r1").recette.etapes, ["Mélanger", "Cuire"]);
+  assert.deepEqual(Logic.construireRecette({ ...base, etapes: "a\n\nb" }, "r1").recette.etapes, ["a", "b"]);   // ancien format
+});

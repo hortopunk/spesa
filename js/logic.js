@@ -171,6 +171,35 @@ const Logic = {
     return nouveau;
   },
 
+  // Vérifie tout le formulaire de recette d'un coup (pour afficher toutes les erreurs ensemble).
+  // Renvoie une liste (vide si tout va bien) de { champ, index, message, resume } :
+  // champ = "titre", "parts", "ingredients" (aucun ingrédient), "nom", "quantite" ou "rayon" (ces trois
+  // avec `index` = rang de la ligne) ; message et resume = clés de texte (avec {n} = numéro de ligne).
+  validerRecette(saisie) {
+    const erreurs = [];
+    if (saisie.titre.trim() === "") erreurs.push({ champ: "titre", message: "erreur_titre", resume: "resume_titre" });
+    const parts = this.lireNombre(saisie.parts);
+    if (parts === null || parts < 1 || !Number.isInteger(parts)) {
+      erreurs.push({ champ: "parts", message: "erreur_parts", resume: "resume_parts" });
+    }
+    let lignesRemplies = 0;
+    saisie.ingredients.forEach((ligne, index) => {
+      const nom = ligne.nom.trim();
+      const quantite = ligne.quantite.trim();
+      if (nom === "" && quantite === "") return;   // ligne vide : ignorée
+      lignesRemplies++;
+      if (nom === "") erreurs.push({ champ: "nom", index, message: "erreur_form_nom", resume: "resume_nom" });
+      if (quantite !== "" && this.lireNombre(quantite) === null) {
+        erreurs.push({ champ: "quantite", index, message: "erreur_form_quantite", resume: "resume_quantite" });
+      }
+      if (nom !== "" && !this.RAYONS.includes(ligne.rayon)) {
+        erreurs.push({ champ: "rayon", index, message: "erreur_form_rayon", resume: "resume_rayon" });
+      }
+    });
+    if (lignesRemplies === 0) erreurs.push({ champ: "ingredients", index: 0, message: "erreur_ingredient_vide", resume: "resume_ingredients" });
+    return erreurs;
+  },
+
   // Transforme une ligne saisie { nom, quantite, unite, rayon } (du texte) en ingrédient propre.
   // Renvoie { vide: true }, { erreur } ou { ingredient, rayon } (rayon à mémoriser dans le dictionnaire).
   construireLigne(ligne) {
@@ -395,7 +424,9 @@ const Logic = {
     }
     if (ingredients.length === 0) return { erreur: "erreur_ingredient_vide" };
 
-    const etapes = saisie.etapes.split("\n").map((e) => e.trim()).filter((e) => e !== "");
+    // Étapes : une liste de textes (formulaire) ou un texte avec une étape par ligne
+    const brutes = Array.isArray(saisie.etapes) ? saisie.etapes : saisie.etapes.split("\n");
+    const etapes = brutes.map((e) => e.trim()).filter((e) => e !== "");
 
     return { recette: { id, titre, parts, ingredients, etapes, notes: saisie.notes.trim() }, rayons };
   }

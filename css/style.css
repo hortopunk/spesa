@@ -431,13 +431,13 @@ body.design #ecrans {
   flex-direction: column;
   gap: var(--gap-card);
 }
-body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste, body.design #ecran-recettes, body.design #vue-liste, body.design #vue-detail {
+body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste, body.design #ecran-recettes, body.design #vue-liste, body.design #vue-detail, body.design #vue-form {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-body.design #contenu-liste, body.design #vue-liste, body.design #vue-detail { gap: var(--gap-card); }
+body.design #contenu-liste, body.design #vue-liste, body.design #vue-detail, body.design #vue-form { gap: var(--gap-card); }
 body.design #titre-liste, body.design #vue-panier > .bouton-historique { display: none; }   /* repris dans la carte d'en-tête et la carte de fin */
 
 /* Rappel de sauvegarde : une carte comme les autres */
@@ -626,8 +626,8 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 .carte-champ { padding: 14px var(--pad-card-right) 14px var(--pad-card-left); background: var(--accent-yellow); color: var(--ink); }
 .carte-champ.haut { border-radius: var(--radius-card) var(--radius-card) 0 0; }
 .carte-champ.bas { border-radius: 0 0 var(--radius-card) var(--radius-card); }
-.carte-champ.haut:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
-.carte-champ input#ajout-nom {
+.carte-champ.haut:focus-within, .carte-champ.seule:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
+.carte-champ .saisie-carte {
   display: block;
   width: 100%;
   min-height: 36px;
@@ -643,7 +643,7 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
   font-weight: 600;
   outline: none;
 }
-.carte-champ input#ajout-nom::placeholder { color: var(--ink-placeholder); opacity: 1; }
+.carte-champ .saisie-carte::placeholder { color: var(--ink-placeholder); opacity: 1; }
 
 .perforation { position: relative; z-index: 1; height: 1px; background: var(--accent-yellow); }
 .perforation-trait {
@@ -972,6 +972,44 @@ textarea.champ-encadre { padding: 10px 12px; font-weight: 500; resize: vertical;
 .carte-actions { flex: none; padding: 14px var(--pad-card-right) 14px var(--pad-card-left); display: flex; flex-wrap: wrap; gap: 8px; border-radius: var(--radius-card); background: var(--card); }
 .carte-actions .bouton-contour { flex: 1 1 140px; }
 .pied-carte > .bouton-contour { width: 100%; padding: 0 16px; font-size: 18px; }
+
+/* ---------- Formulaire de recette (DESIGN.md 7.5) ---------- */
+.visuellement-cache { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.segment-ligne { display: flex; align-items: flex-end; gap: 8px; }
+.segment-champ { flex: 1 1 0; min-width: 0; }
+.segment-ingredient > .libelle-carte, .segment-ligne .libelle-carte { margin-bottom: 4px; }
+.segment-champs { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+.segment-quantite { flex: 0 0 92px; min-width: 0; }
+.segment-quantite .libelle-carte { margin-bottom: 4px; }
+.segment-champs > .selecteur { flex: 1 1 80px; min-width: 0; }
+.segment-champs > .selecteur-rayon { flex: 2 1 150px; }
+.segment-ingredient .erreur-champ { margin-top: 8px; }
+.segment-ingredient .suggestions { margin: 8px 0 0; }
+.carte-simple > .bouton-contour { margin-top: 16px; }
+.segment-etape { display: flex; align-items: flex-start; gap: 8px; }
+.segment-etape .pastille-numero { margin-top: 8px; }
+textarea.champ-encadre { min-height: 96px; }
+textarea.champ-encadre.i-etape { min-height: 88px; resize: none; overflow: hidden; }
+.selecteur-rayon .selecteur-boite .vignette { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.selecteur-rayon .selecteur-boite.avec-vignette .selecteur-saisie { padding-left: 48px; }
+.resume-erreurs.detaille { display: flex; align-items: center; gap: 12px; }
+.resume-erreurs.detaille[hidden] { display: none; }
+.resume-texte { flex: 1; min-width: 0; }
+.resume-titre { font-size: 20px; line-height: 24px; font-weight: 600; color: var(--ink-on-dark); }
+.resume-liste { font-size: 14px; line-height: 18px; font-weight: 400; color: var(--gris-clair); }
+.liste-avertissements { margin: 6px 0 0; padding-left: 1.2em; font-size: 17px; line-height: 24px; font-weight: 500; }
+
+.pied-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pied-actions > .bouton-ajout { flex: 1 1 180px; width: auto; }
+.pied-actions > .bouton-contour { flex: 1 1 100px; width: auto; }
+
+/* Suggestions d'ingrédient (5.19) : lignes de 56 minimum, séparées par un trait en tirets */
+.suggestions li + li { border-top: 1px dashed var(--ink); }
+.suggestion { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 4px 12px; border-bottom: 0; }
+.suggestion .s-texte { flex: 1; min-width: 0; }
+.suggestion .s-nom { display: block; font-size: 17px; line-height: 22px; font-weight: 500; overflow-wrap: anywhere; }
+.suggestion .s-nom b { font-weight: 800; }
+.suggestion .s-rayon { display: block; font-size: 14px; line-height: 18px; font-weight: 400; color: var(--ink-soft); }
 
 /* ---------- Sauvegarde ---------- */
 /* Bouton flottant en bas à droite, au-dessus de la navigation */
