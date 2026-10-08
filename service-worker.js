@@ -3,7 +3,7 @@
 // ⚠ À CHAQUE MODIFICATION d'un fichier de l'appli, changer le numéro de VERSION
 // ci-dessous. Sinon les téléphones gardent l'ancienne version en cache.
 
-const VERSION = "spesa-v28";
+const VERSION = "spesa-v29";
 
 // Tous les fichiers nécessaires pour fonctionner hors-ligne
 const FICHIERS = [
@@ -12,6 +12,7 @@ const FICHIERS = [
   "manifest.json",
   "css/style.css",
   "js/langue.js",
+  "js/composants.js",
   "js/db.js",
   "js/logic.js",
   "js/backup.js",

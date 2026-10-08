@@ -42,7 +42,7 @@ test("manifest.json : valide, icônes présentes", () => {
 // --- Textes de l'interface (langues/fr.json) ---
 
 const fr = JSON.parse(lire("langues/fr.json"));
-const code = ["js/app.js", "js/ui.js", "js/logic.js", "js/backup.js"].map(lire).join("\n") + lire("index.html");
+const code = ["js/app.js", "js/ui.js", "js/composants.js", "js/logic.js", "js/backup.js"].map(lire).join("\n") + lire("index.html");
 
 test("fr.json : toute clé utilisée dans le code existe", () => {
   const utilisees = new Set();

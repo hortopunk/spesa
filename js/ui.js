@@ -1,70 +1,5 @@
 // ui.js — rendu de l'interface uniquement. Aucune règle métier ici.
 
-// Petit outil pour créer un élément HTML.
-// el("p", { class: "vide", texte: "Bonjour" }, [enfants])
-function el(balise, props = {}, enfants = []) {
-  const e = document.createElement(balise);
-  for (const [cle, valeur] of Object.entries(props)) {
-    if (valeur === false || valeur === null) continue;
-    if (cle === "texte") e.textContent = valeur;
-    else if (cle === "class") e.className = valeur;
-    else e.setAttribute(cle, valeur === true ? "" : valeur);
-  }
-  enfants.filter(Boolean).forEach((enfant) => e.append(enfant));   // `false` = pas d'enfant
-  return e;
-}
-
-// Formes des vignettes de rayon (DESIGN.md, section 6), dessinées dans un carré de 40.
-// Chaque entrée : [balise SVG, attributs]. Forme pleine en couleur `ink`, sauf le flocon (traits).
-const FORMES = {
-  cercle: [["circle", { cx: 20, cy: 20, r: 17 }]],
-  carre: [["rect", { x: 4, y: 4, width: 32, height: 32, rx: 6 }]],
-  triangle: [["polygon", { points: "20,3 37,35 3,35" }]],
-  demidisque: [["path", { d: "M3 30A17 17 0 0 1 37 30Z" }]],
-  demidisqueIncline: [["path", { d: "M3 30A17 17 0 0 1 37 30Z", transform: "rotate(35 20 22)" }]],
-  quart: [["path", { d: "M5 35V5A30 30 0 0 1 35 35Z" }]],
-  feuille: [["path", { d: "M4 20A16 16 0 0 1 20 4H36V20A16 16 0 0 1 20 36H4Z" }]],
-  losange: [["polygon", { points: "20,2 38,20 20,38 2,20" }]],
-  maison: [["path", { d: "M20 3L37 19H32V36H8V19H3Z" }]],
-  tiret: [["rect", { x: 5, y: 17, width: 30, height: 6, rx: 3 }]],
-  // Flocon : trois traits qui se croisent au centre (90°, 30°, 150°)
-  flocon: [
-    ["line", { x1: 20, y1: 4, x2: 20, y2: 36, class: "trait" }],
-    ["line", { x1: 6.1, y1: 12, x2: 33.9, y2: 28, class: "trait" }],
-    ["line", { x1: 6.1, y1: 28, x2: 33.9, y2: 12, class: "trait" }]
-  ]
-};
-
-// Un rayon = une couleur de vignette (classe CSS `tuile-…`) + une forme
-const VIGNETTES = {
-  fruits: ["tuile-fruits", "cercle"],
-  legumes: ["tuile-legumes", "feuille"],
-  boulangerie: ["tuile-boulangerie", "triangle"],
-  boucherie_poissonnerie: ["tuile-boucherie", "demidisqueIncline"],
-  cremerie: ["tuile-cremerie", "carre"],
-  epicerie_salee: ["tuile-epicerie", "demidisque"],
-  epicerie_sucree: ["tuile-epicerie", "quart"],
-  surgeles: ["tuile-surgeles", "flocon"],
-  boissons: ["tuile-boissons", "losange"],
-  hygiene_entretien: ["tuile-maison", "maison"],
-  autre: ["tuile-autre", "tiret"]
-};
-
-// Crée un dessin SVG à partir d'une liste [balise, attributs]
-function svg(viewBox, formes, classe) {
-  const NS = "http://www.w3.org/2000/svg";
-  const s = document.createElementNS(NS, "svg");
-  s.setAttribute("viewBox", viewBox);
-  s.setAttribute("aria-hidden", "true");
-  if (classe) s.setAttribute("class", classe);
-  formes.forEach(([balise, attributs]) => {
-    const f = document.createElementNS(NS, balise);
-    for (const [cle, valeur] of Object.entries(attributs)) f.setAttribute(cle, valeur);
-    s.append(f);
-  });
-  return s;
-}
-
 const UI = {
   // Affiche l'écran demandé et surligne l'onglet correspondant
   afficherEcran(nom) {
@@ -135,12 +70,7 @@ const UI = {
       const champ = el("input", { type: "search", id: "recherche", "aria-label": t("recherche_recettes"), placeholder: t("recherche_recettes") });
       champ.value = recherche;
       vue.replaceChildren(
-        el("header", { class: "entete-carte" }, [
-          el("div", {}, [
-            el("h1", { texte: t("titre_recettes") }),
-            el("p", { id: "resume-recettes", class: "resume" })
-          ])
-        ]),
+        entete({ titre: t("titre_recettes"), resume: { id: "resume-recettes" } }),
         el("div", { class: "carte-recherche" }, [
           svg("0 0 24 24", [["circle", { cx: 11, cy: 11, r: 7 }], ["path", { d: "M20 20l-4-4" }]], "icone-trait loupe"),
           champ
@@ -203,16 +133,12 @@ const UI = {
       el("h2", { id: "feuille-titre", texte: t("feuille_titre") }),
       el("p", { class: "feuille-recette", texte: recette.titre }),
       el("div", { class: "feuille-parts" }, [
-        el("button", { type: "button", class: "bouton-rond", "data-action": "feuille-moins", "aria-label": t("diminuer_parts") }, [
-          svg("0 0 24 24", [["path", { d: "M5 12h14" }]], "icone-trait")
-        ]),
+        boutonRond("moins", { action: "feuille-moins", libelle: t("diminuer_parts") }),
         el("div", { class: "feuille-valeur", tabindex: "-1", role: "status" }, [
           el("strong", { id: "feuille-nombre", texte: parts }),
           el("span", { id: "feuille-unite" })
         ]),
-        el("button", { type: "button", class: "bouton-rond", "data-action": "feuille-plus", "aria-label": t("augmenter_parts") }, [
-          svg("0 0 24 24", [["path", { d: "M12 5v14M5 12h14" }]], "icone-trait")
-        ])
+        boutonRond("plus", { action: "feuille-plus", libelle: t("augmenter_parts") })
       ]),
       el("button", { type: "button", class: "bouton-ajout", "data-action": "feuille-valider", texte: t(dejaDedans ? "mettre_a_jour" : "bouton_ajout") }),
       el("button", { type: "button", class: "bouton-contour", "data-action": "feuille-annuler", texte: t("annuler") }),
@@ -471,7 +397,7 @@ const UI = {
     ["nom", "quantite", "rayon"].forEach((c) => this.effacerErreurAjout(c));
     erreurs.forEach(({ champ, message }) => {
       const p = document.getElementById("ajout-erreur-" + champ);
-      p.replaceChildren(el("span", { class: "pastille-erreur", "aria-hidden": "true", texte: "!" }), el("span", { texte: message }));
+      p.replaceChildren(pastilleAlerte(), el("span", { texte: message }));
       p.hidden = false;
       const saisie = this.champAjout(champ);
       saisie.setAttribute("aria-invalid", "true");
@@ -616,12 +542,11 @@ const UI = {
   // Carte article (DESIGN.md, 5.1) : vignette du rayon, nom, « quantité · rayon », case à cocher.
   // `ligne` = { cle, libelle, rayon, quantites }. Le bouton porte data-action="cocher".
   carteArticle(ligne, coche) {
-    const [classeTuile, forme] = VIGNETTES[ligne.rayon] || VIGNETTES.autre;
     const nom = Logic.majuscule(ligne.libelle);
     const quantite = this.texteQuantites(ligne.quantites);
     const rayon = t("rayon_" + ligne.rayon);
     const carte = el("div", { class: "carte-article" }, [
-      el("span", { class: "vignette " + classeTuile }, [svg("0 0 40 40", FORMES[forme])]),
+      rayonTile(ligne.rayon),
       el("span", { class: "carte-texte" }, [
         el("span", { class: "carte-nom", texte: nom }),
         el("span", { class: "carte-meta", texte: quantite ? quantite + " · " + rayon : rayon })
@@ -649,12 +574,7 @@ const UI = {
     const v = document.getElementById("vue-ajout");
     v.replaceChildren();
 
-    v.append(el("header", { class: "entete-carte" }, [
-      el("button", { type: "button", class: "bouton-retour", "data-action": "ajout-retour", "aria-label": t("retour_courses") }, [
-        svg("0 0 24 24", [["path", { d: "M19 12H5M11 6l-6 6 6 6" }]], "icone-trait")
-      ]),
-      el("h1", { texte: t("titre_ajout") })
-    ]));
+    v.append(entete({ titre: t("titre_ajout"), retour: { action: "ajout-retour", libelle: t("retour_courses") } }));
 
     // Coupon jaune : Article + Quantité, séparés par une perforation décorative
     const champNom = el("input", {
@@ -673,21 +593,13 @@ const UI = {
         el("p", { id: "ajout-erreur-nom", class: "erreur-champ", role: "alert", hidden: true }),
         suggestions
       ]),
-      el("div", { class: "perforation", "aria-hidden": "true" }, [
-        el("div", { class: "perforation-trait" }),
-        el("span", { class: "encoche gauche" }),
-        el("span", { class: "encoche droite" })
-      ]),
+      perforation(),
       el("div", { class: "carte-champ bas" }, [
         el("div", { class: "libelle-carte", texte: t("champ_quantite") }),
         el("div", { class: "stepper" }, [
-          el("button", { type: "button", class: "bouton-rond", "data-action": "ajout-moins", "aria-label": t("quantite_moins") }, [
-            svg("0 0 24 24", [["path", { d: "M5 12h14" }]], "icone-trait")
-          ]),
+          boutonRond("moins", { action: "ajout-moins", libelle: t("quantite_moins") }),
           champQuantite,
-          el("button", { type: "button", class: "bouton-rond", "data-action": "ajout-plus", "aria-label": t("quantite_plus") }, [
-            svg("0 0 24 24", [["path", { d: "M12 5v14M5 12h14" }]], "icone-trait")
-          ])
+          boutonRond("plus", { action: "ajout-plus", libelle: t("quantite_plus") })
         ]),
         el("div", { class: "puces", role: "group", "aria-label": t("libelle_unite") },
           Logic.UNITES.map((u) => el("button", {
@@ -776,12 +688,7 @@ const UI = {
     const c = document.getElementById("contenu-liste");
     c.replaceChildren();
 
-    c.append(el("header", { class: "entete-carte" }, [
-      el("div", {}, [
-        el("h1", { texte: t("titre_courses") }),
-        el("p", { id: "resume-courses", class: "resume", role: "status" })
-      ])
-    ]));
+    c.append(entete({ titre: t("titre_courses"), resume: { id: "resume-courses", role: "status" } }));
 
     const champ = el("input", { type: "search", id: "recherche-courses", "aria-label": t("recherche_article"), placeholder: t("recherche_courses") });
     champ.value = filtres.recherche;

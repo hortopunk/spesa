@@ -68,7 +68,7 @@
   </div>
 
   <!-- Navigation en bas, à portée du pouce -->
-  <nav id="navigation">
+  <nav id="navigation" data-i18n-aria-label="nav_principale">
     <!-- Perforation entre l'action et les onglets (visible seulement dans le nouvel habillage) -->
     <div class="perforation perforation-pied" aria-hidden="true">
       <div class="perforation-trait"></div>
@@ -76,21 +76,22 @@
       <span class="encoche droite"></span>
     </div>
     <button class="onglet actif" data-cible="recettes" aria-current="page">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2zM8 7h6M8 11h6"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5C20 4.7 19.3 4 18.5 4H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg>
       <span data-i18n="nav_recettes"></span>
     </button>
     <button class="onglet" data-cible="liste">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h10l2-8H6.5M9 20h.01M17 20h.01"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5M11 7h9M11 13h9M11 19h9"/></svg>
       <span data-i18n="nav_courses"></span>
     </button>
     <button class="onglet" data-cible="reglages">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 5v4M6 15v4"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
       <span data-i18n="nav_reglages"></span>
     </button>
   </nav>
 
   <!-- Ordre important : langue avant ui, app en dernier -->
   <script src="js/langue.js"></script>
+  <script src="js/composants.js"></script>
   <script src="js/db.js"></script>
   <script src="js/logic.js"></script>
   <script src="js/backup.js"></script>

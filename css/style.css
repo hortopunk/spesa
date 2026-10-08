@@ -12,7 +12,7 @@
 }
 
 :root {
-  --nav-hauteur: 64px;
+  --nav-hauteur: 92px;     /* onglets seuls : 20 + 52 + 20 (DESIGN.md 5.3) */
 }
 
 /* ---------- Tokens du design (DESIGN.md, sections 2 et 4) ----------
@@ -121,34 +121,41 @@ h1 { font-size: 1.5rem; margin: 0 0 16px; }
 
 .vide { color: var(--ink-soft); }
 
-/* Barre de navigation fixée en bas */
+/* Barre d'onglets : pied « onglets seuls » (demi-carte collée en bas). Sur les écrans avec une action,
+   body.design la transforme en étage du bas du coupon (voir plus bas). */
 #navigation {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  height: var(--nav-hauteur);
+  height: calc(var(--nav-hauteur) + env(safe-area-inset-bottom, 0px));
+  padding: 20px var(--pad-card-left) env(safe-area-inset-bottom, 0px);
   display: flex;
-  background: var(--card);
+  align-items: flex-start;
+  gap: 8px;
   border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background: var(--card);
 }
 
 .onglet {
   flex: 1;
-  min-height: 44px;            /* zone tactile minimale */
+  min-height: 52px;            /* zone tactile minimale */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
   border: 0;
-  background: none;
-  color: var(--ink-soft);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
   font: inherit;
-  font-size: 0.75rem;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .onglet svg {
-  width: 24px; height: 24px;
+  width: 22px; height: 22px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -156,7 +163,8 @@ h1 { font-size: 1.5rem; margin: 0 0 16px; }
   stroke-linejoin: round;
 }
 
-.onglet.actif { color: var(--ink); font-weight: 600; }
+/* Onglet actif : fond noir + aria-current (jamais la couleur seule) */
+.onglet.actif { background: var(--noir); color: var(--ink-on-dark); }
 
 /* ---------- Boutons ---------- */
 .bouton {
@@ -590,27 +598,10 @@ body.design #bandeau-sauvegarde {
 body.design #navigation {
   height: var(--nav-total);
   padding: 8px var(--pad-card-left) env(safe-area-inset-bottom, 0px);
-  gap: 4px;
-  align-items: flex-start;
-  border-top: 0;
   border-radius: 0;
-  background: var(--card);
 }
 body.design .perforation-pied { display: block; position: absolute; left: 0; right: 0; top: 0; background: transparent; }
 .perforation-pied { display: none; }
-body.design .onglet {
-  min-height: 52px;
-  flex-direction: row;
-  gap: 6px;
-  border-radius: var(--radius-pill);
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 600;
-}
-body.design .onglet svg { width: 22px; height: 22px; }
-body.design .onglet.actif { background: var(--noir); color: var(--papier); }
-body.design .onglet:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
-body.design .onglet.actif:focus-visible { outline-color: var(--ink); }
 /* Écran secondaire : pas d'onglets, l'action reste seule en pied */
 body.secondaire #navigation { display: none; }
 body.secondaire #ecrans { height: 100dvh; }
@@ -867,15 +858,6 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
   color: var(--ink);
 }
 .erreur-champ[hidden] { display: none; }
-.pastille-erreur {
-  flex: none;
-  width: 24px; height: 24px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--radius-pill);
-  background: var(--noir);
-  color: var(--ink-on-dark);
-  font-size: 14px; line-height: 1; font-weight: 700;
-}
 /* Résumé en tête d'écran : carte sombre, texte clair */
 .resume-erreurs {
   flex: none;
@@ -888,6 +870,102 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 }
 .resume-erreurs[hidden] { display: none; }
 .resume-erreurs:focus-visible { outline: 3px solid var(--ink-on-dark); outline-offset: -8px; }
+
+/* ---------- Composants de base (DESIGN.md, section 5) ---------- */
+/* Les composants sont construits par js/composants.js. Page de référence : dev/composants.html. */
+.icone { flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Vignette de rayon : 80 (liste), 64, 32 (ligne de texte) */
+.vignette.v64 { width: 64px; height: 64px; border-radius: 22px; }
+.vignette.v64 svg { width: 36px; height: 36px; }
+.vignette.v32 { width: 32px; height: 32px; border-radius: 10px; }
+.vignette.v32 svg { width: 20px; height: 20px; }
+
+/* Pastille « ! » (disque noir) et pastille numérotée */
+.pastille-alerte { flex: none; width: 24px; height: 24px; }
+.pastille-alerte .disque { fill: var(--ink); }
+.pastille-alerte .marque { fill: none; stroke: var(--ink-on-dark); stroke-width: 2.6; stroke-linecap: round; }
+.pastille-alerte .point { fill: var(--ink-on-dark); }
+.pastille-alerte.inverse .disque { fill: var(--card); }
+.pastille-alerte.inverse .marque { stroke: var(--card-done); }
+.pastille-alerte.inverse .point { fill: var(--card-done); }
+.pastille-numero {
+  flex: none;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--noir);
+  color: var(--ink-on-dark);
+  font-size: 16px; line-height: 1; font-weight: 600;
+}
+
+/* Perforation dans une carte claire : fond transparent, marges négatives pour toucher les bords de la carte */
+.perforation.perf-ligne, .perforation.perf-detail, .perforation.perf-pied { background: transparent; }
+.perforation.perf-ligne { margin: 14px calc(-1 * var(--pad-card-right)) 14px calc(-1 * var(--pad-card-left)); }
+.perforation.perf-detail { margin: 12px calc(-1 * var(--pad-card-right)) 12px calc(-1 * var(--pad-card-left)); }
+.perforation.perf-pied { margin: 16px calc(-1 * var(--pad-card-left)); }
+
+/* Boutons : secondaire contouré, retrait doux, carré */
+.bouton-contour { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.retrait-doux { width: 100%; min-height: 48px; }
+.bouton-contour[aria-disabled="true"], .bouton-importer[aria-disabled="true"] {
+  background: transparent;
+  border: 2.5px dashed var(--gris-fonce);
+  color: var(--gris-fonce);
+  cursor: not-allowed;
+}
+.bouton-carre {
+  flex: none;
+  width: 48px; height: 48px;
+  padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius-box);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.bouton-carre.plein { background: var(--noir); color: var(--ink-on-dark); }
+.bouton-carre:has(svg[stroke-width="1.5"]) { border-width: 1.5px; }   /* « retirer » (corbeille) : contour fin */
+
+/* Champ dans une carte claire (5.8) : le fond reste celui de la carte, contour noir */
+.champ { display: block; }
+.champ .libelle-carte { margin-bottom: 4px; }
+.champ-encadre {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-box);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 17px; line-height: 24px; font-weight: 600;
+}
+textarea.champ-encadre { padding: 10px 12px; font-weight: 500; resize: vertical; }
+.champ-encadre::placeholder { color: var(--ink-placeholder); opacity: 1; }
+.champ-encadre:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.champ-encadre[aria-invalid="true"] { border-width: 3px; }
+
+/* Sélecteur (unité, rayon) : vrai <select> habillé, chevron à droite */
+.selecteur .libelle-carte { margin-bottom: 4px; }
+.selecteur-boite { position: relative; }
+.selecteur-saisie {
+  width: 100%;
+  min-height: 48px;
+  padding: 4px 36px 4px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-box);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px; line-height: 18px; font-weight: 600;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.selecteur-saisie:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.selecteur-boite .icone { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink); }
 
 /* ---------- Sauvegarde ---------- */
 /* Bouton flottant en bas à droite, au-dessus de la navigation */
