@@ -3,7 +3,7 @@
 
 const DB = {
   PREFIXE: "spesa_",
-  VERSION_SCHEMA: 1,
+  VERSION_SCHEMA: 2,   // 2 : « fruits_legumes » séparé en « fruits » et « legumes »
 
   // Données illisibles rencontrées pendant cette session (noms de clés) : app.js prévient l'utilisateur
   anomalies: [],
@@ -65,6 +65,29 @@ const DB = {
     if (!reglages.version_schema) {
       this.ecrire("reglages", { langue: "fr", derniere_sauvegarde: null, version_schema: this.VERSION_SCHEMA });
     }
+  },
+
+  // Passe les données au schéma actuel. `transformer({ dico, historique, liste })` renvoie les
+  // données corrigées et `changements` (nombre de valeurs modifiées). S'il y a des changements,
+  // les données d'origine sont d'abord gardées dans `spesa_avant_migration` (une seule copie,
+  // jamais supprimée automatiquement, non incluse dans les sauvegardes). Tout est écrit en
+  // tout-ou-rien. Renvoie true si une migration a eu lieu.
+  migrerSchema(transformer) {
+    const reglages = this.reglages();
+    if ((reglages.version_schema || 0) >= this.VERSION_SCHEMA) return false;
+    const liste = this.lire("liste", null);
+    const resultat = transformer({ dico: this.dico(), historique: this.historique(), liste });
+    const paires = [["reglages", { ...reglages, version_schema: this.VERSION_SCHEMA }]];
+    if (resultat.changements > 0) {
+      paires.unshift(
+        ["avant_migration", { date: new Date().toISOString(), ...this.exporterTout(), liste }],
+        ["dico", resultat.dico],
+        ["historique", resultat.historique]
+      );
+      if (liste) paires.push(["liste", resultat.liste]);
+    }
+    this.ecrireLot(paires);
+    return true;
   },
 
   // --- Réglages ---

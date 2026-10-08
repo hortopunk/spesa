@@ -118,3 +118,33 @@ test("chargerDonneesDev : remplace tout, liste en cours comprise (ou liste vide 
   DB.chargerDonneesDev(donnees);
   assert.deepEqual(DB.liste(), DB.listeVide());
 });
+
+test("migrerSchema : copie de sécurité puis données corrigées ; une seule fois ; rien si stockage plein", () => {
+  const transformer = (d) => ({ dico: { ...d.dico, x: { libelle: "X", rayon: "fruits" } }, historique: d.historique, liste: d.liste, changements: 1 });
+  const st = fauxStockage();
+  const DB = chargerDB(st);
+  DB.ecrire("reglages", { langue: "fr", derniere_sauvegarde: null, version_schema: 1 });
+  DB.ecrire("dico", { a: { libelle: "A", rayon: "fruits_legumes" } });
+  assert.equal(DB.migrerSchema(transformer), true);
+  assert.equal(DB.reglages().version_schema, DB.VERSION_SCHEMA);
+  assert.equal(DB.dico().x.rayon, "fruits");
+  assert.equal(DB.lire("avant_migration", null).dico.a.rayon, "fruits_legumes");   // données d'origine gardées
+  assert.equal(DB.migrerSchema(transformer), false);                                // déjà fait
+
+  // Stockage trop petit pour la copie + les données : rien ne change, l'erreur remonte
+  const petit = fauxStockage(200);
+  const DB2 = chargerDB(petit);
+  DB2.ecrire("reglages", { langue: "fr", version_schema: 1 });
+  DB2.ecrire("dico", { a: { libelle: "A", rayon: "fruits_legumes" } });
+  assert.throws(() => DB2.migrerSchema(transformer), { name: "QuotaExceededError" });
+  assert.equal(DB2.reglages().version_schema, 1);
+  assert.equal(DB2.dico().a.rayon, "fruits_legumes");
+});
+
+test("migrerSchema : sans rayon à changer, seul le numéro de schéma passe à 2 (pas de copie inutile)", () => {
+  const DB = chargerDB(fauxStockage());
+  DB.ecrire("reglages", { langue: "fr", version_schema: 1 });
+  DB.migrerSchema((d) => ({ ...d, changements: 0 }));
+  assert.equal(DB.reglages().version_schema, DB.VERSION_SCHEMA);
+  assert.equal(DB.lire("avant_migration", null), null);
+});

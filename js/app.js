@@ -101,7 +101,7 @@ function surSaisieNom(champ) {
   const dico = DB.dico();
   UI.rendreSuggestions(ligne, Logic.suggerer(dico, champ.value));
   const fiche = dico[Logic.normaliser(champ.value)];
-  UI.proposerRayon(ligne, fiche ? Logic.rayonActuel(fiche.rayon) : null);
+  UI.proposerRayon(ligne, fiche ? fiche.rayon : null);
 }
 
 // Message à l'écran quand une écriture échoue (stockage plein) ou qu'une erreur survient
@@ -449,6 +449,15 @@ function toutRedessiner() {
   afficherReglages();
 }
 
+// Met à niveau (schéma actuel) des données venant d'une sauvegarde ou d'une copie de secours.
+// Idempotent : des données déjà à jour ne changent pas.
+function mettreAJourSauvegarde(s) {
+  const m = Logic.migrerRayons({ dico: s.dico, historique: s.historique });
+  s.dico = m.dico;
+  s.historique = m.historique;
+  s.reglages.version_schema = DB.VERSION_SCHEMA;
+}
+
 async function restaurer(fichier) {
   const resultat = Backup.analyser(await fichier.text(), DB.VERSION_SCHEMA);
   if (resultat.erreur) return UI.messageReglages(t(resultat.erreur), true);
@@ -456,7 +465,7 @@ async function restaurer(fichier) {
   if (!confirm(t("confirmer_restauration").replace("{n}", s.recettes.length))) return;
   // Réglages complétés si le fichier est incomplet ; la date de sauvegarde = celle du fichier
   s.reglages.langue = s.reglages.langue || "fr";
-  s.reglages.version_schema = s.reglages.version_schema || DB.VERSION_SCHEMA;
+  mettreAJourSauvegarde(s);
   s.reglages.derniere_sauvegarde = isNaN(new Date(s.date)) ? null : s.date;
   try {
     DB.garderSecours(new Date().toISOString());   // copie des données actuelles pour pouvoir annuler
@@ -472,6 +481,7 @@ async function restaurer(fichier) {
 function annulerRestauration() {
   const secours = DB.secours();
   if (!secours || !confirm(t("confirmer_annuler_restauration"))) return;
+  mettreAJourSauvegarde(secours);   // une copie faite par une ancienne version peut être au schéma 1
   DB.remplacerTout(secours);
   DB.supprimerSecours();
   toutRedessiner();
@@ -545,7 +555,7 @@ function surSaisieAjout(nom) {
   UI.effacerErreurAjout("nom");
   const fiche = DB.dico()[Logic.normaliser(nom)];
   if (fiche) {
-    etat.ajout.rayon = Logic.rayonActuel(fiche.rayon);
+    etat.ajout.rayon = fiche.rayon;
     etat.ajout.auto = true;
   } else if (etat.ajout.auto) {
     etat.ajout.rayon = "";
@@ -617,6 +627,14 @@ async function demarrer() {
   demarrerPWA();
   const donneesDev = await chargerDonneesDev();
   DB.init();
+  // Schéma 1 -> 2 (fruits / légumes) : copie de sécurité puis écriture en tout-ou-rien.
+  // En cas d'échec les données restent intactes ; on prévient et on réessaiera au prochain lancement.
+  let migrationImpossible = false;
+  try {
+    DB.migrerSchema((donnees) => Logic.migrerRayons(donnees));
+  } catch (erreur) {
+    migrationImpossible = true;
+  }
   await Langue.init(DB.reglages().langue);
   Langue.appliquer();
 
@@ -685,6 +703,7 @@ async function demarrer() {
   // Des données illisibles ont été mises de côté pendant le démarrage : on le dit
   if (DB.anomalies.length > 0) UI.afficherAlerte(t("alerte_donnees_abimees"));
   if (donneesDev) UI.afficherAlerte(t("alerte_mode_dev"));
+  if (migrationImpossible) UI.afficherAlerte(t("alerte_migration_impossible"));
 }
 
 demarrer();

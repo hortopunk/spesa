@@ -289,15 +289,46 @@ test("filtrerLignes : filtre « à prendre / pris » et recherche sans accents n
   assert.deepEqual(cles(Logic.filtrerLignes(groupes, coches, "pris", "lait")), []);
 });
 
-test("rayonActuel : l'ancien rayon « fruits_legumes » devient « legumes », les autres ne changent pas", () => {
-  assert.equal(Logic.rayonActuel("fruits_legumes"), "legumes");
-  assert.equal(Logic.rayonActuel("fruits"), "fruits");
-  assert.equal(Logic.rayonActuel("cremerie"), "cremerie");
+test("rayonFruitsLegumes : fruits reconnus (pluriel, accents, plusieurs mots), le reste en légumes", () => {
+  for (const nom of ["Pomme", "pommes golden", "Clémentine", "citron vert", "ananas", "fruit de la passion", "mûres"]) {
+    assert.equal(Logic.rayonFruitsLegumes(nom), "fruits", nom);
+  }
+  for (const nom of ["pomme de terre", "tomate", "avocat", "rhubarbe", "noix de coco", "oignon", "menthe sauvage", "gingembre", "chou-fleur"]) {
+    assert.equal(Logic.rayonFruitsLegumes(nom), "legumes", nom);
+  }
 });
 
-test("grouperParRayon : une ancienne ligne « fruits_legumes » (historique) apparaît dans « legumes »", () => {
-  const groupes = Logic.grouperParRayon([{ cle: "a", libelle: "Aubergine", rayon: "fruits_legumes" }]);
-  assert.deepEqual(groupes.map((g) => g.rayon), ["legumes"]);
+test("migrerRayons : seul « fruits_legumes » change (dico, articles libres, historique), rien n'est modifié sur place", () => {
+  const entree = {
+    dico: {
+      pomme: { libelle: "Pomme", rayon: "fruits_legumes" },
+      oignon: { libelle: "Oignon", rayon: "fruits_legumes" },
+      lait: { libelle: "Lait", rayon: "cremerie" },
+      banane: { libelle: "Banane", rayon: "legumes" }   // choix de l'utilisateur : jamais touché
+    },
+    historique: [{ date: "d", recettes: [], lignes: [{ libelle: "Poire", rayon: "fruits_legumes", coche: true, quantites: [] }] }],
+    liste: { recettes: [], manuels: [{ nom: "citron", quantite: 1, unite: "piece", rayon: "fruits_legumes" }], decoches: [], etat: "ajouts", coches: [] }
+  };
+  const copie = JSON.parse(JSON.stringify(entree));
+  const r = Logic.migrerRayons(entree);
+  assert.deepEqual(entree, copie);
+  assert.deepEqual(Object.fromEntries(Object.entries(r.dico).map(([k, f]) => [k, f.rayon])),
+    { pomme: "fruits", oignon: "legumes", lait: "cremerie", banane: "legumes" });
+  assert.equal(r.dico.pomme.libelle, "Pomme");
+  assert.equal(r.historique[0].lignes[0].rayon, "fruits");
+  assert.equal(r.liste.manuels[0].rayon, "fruits");
+  assert.equal(r.changements, 4);
+  assert.equal(Logic.migrerRayons(r).changements, 0);   // idempotent
+});
+
+test("migrerRayons : sans liste en cours ni historique", () => {
+  const r = Logic.migrerRayons({ dico: {}, historique: undefined, liste: null });
+  assert.deepEqual(r, { dico: {}, historique: [], liste: null, changements: 0 });
+});
+
+test("grouperParRayon : les lignes sont rangées dans l'ordre des rayons", () => {
+  const groupes = Logic.grouperParRayon([{ cle: "a", libelle: "Aubergine", rayon: "legumes" }, { cle: "b", libelle: "Pomme", rayon: "fruits" }]);
+  assert.deepEqual(groupes.map((g) => g.rayon), ["fruits", "legumes"]);
 });
 
 test("grouperParRayon : ordre des rayons, ordre alphabétique, rayons vides ignorés", () => {

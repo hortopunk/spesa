@@ -138,6 +138,8 @@ L'archivage est fait par « Terminer les courses » (étape 6). L'écran de cons
 
 Chaque jeu de données porte un numéro de version de schéma, pour migrer proprement si le modèle change.
 
+**Schéma 2** (design, étape 2) : seule valeur modifiée, le rayon `fruits_legumes`, remplacé par `fruits` ou `legumes` dans le dictionnaire, les articles libres de la liste en cours et l'historique. Le format des données ne change pas. `DB.migrerSchema` s'exécute au démarrage si `version_schema` < 2 : s'il y a des rayons à changer, copie des données d'origine dans `spesa_avant_migration` (une seule copie, jamais supprimée automatiquement, non incluse dans les sauvegardes), puis écriture en tout-ou-rien. En cas d'échec (stockage plein), les données restent intactes, une alerte s'affiche et la migration est retentée au lancement suivant. Une sauvegarde ou une copie de secours au schéma 1 est migrée à la restauration (`mettreAJourSauvegarde`).
+
 ## 5. Règles métier
 
 **Normalisation** : minuscules, sans accents, espaces et ponctuation nettoyés. « Oliu », « OLIU », « oliu » donnent la même clé. Le libellé affiché reste celui saisi la première fois.
@@ -152,7 +154,7 @@ Chaque jeu de données porte un numéro de version de schéma, pour migrer propr
 - Pas de conversion entre masse et volume.
 - Arrondi (étape 13) : une fois les quantités additionnées, les pièces et les pincées sont arrondies à l'entier supérieur dans la liste de courses (0,5 + 0,5 carotte = 1 ; 4,5 gousses = 5). Les autres unités gardent leurs décimales. La page d'une recette garde les quantités exactes.
 
-**Rayons** (liste fixe, ordre modifiable plus tard dans le code) : fruits, légumes, boulangerie, boucherie-poissonnerie, crèmerie, épicerie salée, épicerie sucrée, surgelés, boissons, hygiène et entretien, autre. Cette liste est une proposition à ajuster à l'ordre de ton magasin habituel. Changement (design 0.5) : « fruits et légumes » (`fruits_legumes`) est séparé en `fruits` et `legumes`. Les données déjà enregistrées avec `fruits_legumes` sont lues comme `legumes` (`Logic.rayonActuel`), sans réécriture du stockage.
+**Rayons** (liste fixe, ordre modifiable plus tard dans le code) : fruits, légumes, boulangerie, boucherie-poissonnerie, crèmerie, épicerie salée, épicerie sucrée, surgelés, boissons, hygiène et entretien, autre. Cette liste est une proposition à ajuster à l'ordre de ton magasin habituel. Changement (design 0.5) : « fruits et légumes » (`fruits_legumes`) est séparé en `fruits` et `legumes`. Les données enregistrées avec `fruits_legumes` sont migrées au démarrage (schéma 2, voir section 4) : `Logic.rayonFruitsLegumes` classe chaque ingrédient en `fruits` (liste de mots `Logic.FRUITS`, pluriel accepté, exception « pomme de terre ») ou `legumes` (tomate, avocat, rhubarbe, noix de coco et aromates y restent). Seul `fruits_legumes` est touché : un rayon choisi par l'utilisateur ne change jamais.
 
 ## 6. Langues (traduction de l'interface)
 

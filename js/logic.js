@@ -10,13 +10,49 @@ const Logic = {
     "epicerie_sucree", "surgeles", "boissons", "hygiene_entretien", "autre"
   ],
 
-  // Anciens rayons supprimés -> rayon actuel. « fruits_legumes » a été séparé en deux :
-  // les données déjà enregistrées passent en « legumes » (on peut les changer ensuite).
-  RAYONS_ANCIENS: { fruits_legumes: "legumes" },
+  // --- Migration du schéma 1 vers 2 : « fruits_legumes » est séparé en « fruits » et « legumes » ---
+  // Un ingrédient est un fruit si l'un de ses mots (forme normalisée, pluriel accepté) est dans cette liste.
+  // Tomate, avocat, rhubarbe, noix de coco, aromates : volontairement classés en légumes.
+  FRUITS: [
+    "pomme", "poire", "banane", "orange", "citron", "clementine", "mandarine", "pamplemousse",
+    "fraise", "framboise", "myrtille", "mure", "cerise", "peche", "nectarine", "abricot", "prune",
+    "raisin", "melon", "pasteque", "kiwi", "ananas", "mangue", "figue", "grenade", "litchi", "papaye",
+    "fruit de la passion"
+  ],
 
-  // Rayon à utiliser pour une valeur lue dans les données (ancienne ou actuelle)
-  rayonActuel(rayon) {
-    return this.RAYONS_ANCIENS[rayon] || rayon;
+  // Exceptions : contiennent un mot de FRUITS mais sont des légumes
+  LEGUMES_EXCEPTIONS: ["pomme de terre"],
+
+  // « fruits » ou « legumes » pour un nom d'ingrédient (le rayon d'un ancien « fruits_legumes »)
+  rayonFruitsLegumes(nom) {
+    const texte = " " + this.normaliser(nom) + " ";
+    const contient = (mot) => texte.includes(" " + mot + " ") || texte.includes(" " + mot + "s ");
+    if (this.LEGUMES_EXCEPTIONS.some(contient)) return "legumes";
+    return this.FRUITS.some(contient) ? "fruits" : "legumes";
+  },
+
+  // Remplace « fruits_legumes » dans le dictionnaire, la liste en cours (articles libres) et l'historique.
+  // Ne touche à aucun autre rayon. Renvoie de nouvelles données (rien n'est modifié sur place)
+  // et le nombre de rayons changés.
+  migrerRayons({ dico, historique, liste }) {
+    let changements = 0;
+    const nouveau = (rayon, nom) => {
+      if (rayon !== "fruits_legumes") return rayon;
+      changements++;
+      return this.rayonFruitsLegumes(nom);
+    };
+    const dicoNeuf = {};
+    for (const [cle, fiche] of Object.entries(dico || {})) {
+      dicoNeuf[cle] = { ...fiche, rayon: nouveau(fiche.rayon, cle) };
+    }
+    const historiqueNeuf = (historique || []).map((h) => ({
+      ...h,
+      lignes: h.lignes.map((l) => ({ ...l, rayon: nouveau(l.rayon, l.libelle) }))
+    }));
+    const listeNeuve = liste
+      ? { ...liste, manuels: liste.manuels.map((m) => ({ ...m, rayon: nouveau(m.rayon, m.nom) })) }
+      : liste;
+    return { dico: dicoNeuf, historique: historiqueNeuf, liste: listeNeuve, changements };
   },
 
   // Normalisation : minuscules, sans accents, ponctuation et espaces nettoyés
@@ -120,7 +156,7 @@ const Logic = {
   ingredientsAvecRayon(ingredients, dico) {
     return ingredients.map((ing) => {
       const fiche = dico[this.normaliser(ing.nom)];
-      return { ...ing, rayon: fiche ? this.rayonActuel(fiche.rayon) : "" };
+      return { ...ing, rayon: fiche ? fiche.rayon : "" };
     });
   },
 
@@ -196,7 +232,7 @@ const Logic = {
       const cle = this.normaliser(ligne.nom);
       if (!groupes.has(cle)) {
         const fiche = dico[cle];
-        const rayon = this.rayonActuel(fiche ? fiche.rayon : ligne.rayon);
+        const rayon = fiche ? fiche.rayon : ligne.rayon;
         groupes.set(cle, {
           cle,
           libelle: fiche ? fiche.libelle : ligne.nom,
@@ -234,7 +270,7 @@ const Logic = {
     return this.RAYONS
       .map((rayon) => ({
         rayon,
-        lignes: lignes.filter((l) => this.rayonActuel(l.rayon) === rayon).sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"))
+        lignes: lignes.filter((l) => l.rayon === rayon).sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"))
       }))
       .filter((groupe) => groupe.lignes.length > 0);
   },

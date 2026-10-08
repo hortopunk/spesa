@@ -147,6 +147,7 @@
   "avertissement_doublon": "Une recette porte déjà ce titre. Si c'est la même, n'enregistre pas : tu aurais un doublon.",
   "erreur_stockage": "Impossible d'enregistrer : le stockage du téléphone est plein. Rien n'a été modifié. Fais une sauvegarde, puis libère de la place.",
   "erreur_inattendue": "Une erreur est survenue. Rien n'a été perdu : réessaie.",
+  "alerte_migration_impossible": "Tes données n'ont pas pu être mises à jour (stockage plein ?). Elles sont intactes. Fais une sauvegarde puis relance l'appli.",
   "alerte_donnees_abimees": "Des données n'ont pas pu être lues. Une copie est gardée à part. Restaure ta dernière sauvegarde dans les Réglages.",
   "recherche_courses": "Rechercher",
   "recherche_article": "Rechercher un article",
