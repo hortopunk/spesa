@@ -387,7 +387,9 @@ const UI = {
   // Message d'erreur dans la zone `id` (celle du formulaire de recette par défaut)
   afficherErreur(message, id = "f-erreur") {
     const p = document.getElementById(id);
-    p.textContent = message;
+    // Message d'un pied de carte (écran Ajout) : pastille « ! » + texte, jamais de rouge
+    if (p.classList.contains("erreur-carte")) p.replaceChildren(pastilleAlerte(), el("span", { texte: message }));
+    else p.textContent = message;
     p.hidden = false;
   },
 
