@@ -79,35 +79,25 @@ body {
   line-height: 1.4;
 }
 
-/* Contenu : on laisse la place à la barre du bas */
-/* Écrans pas encore refaits : tout leur contenu est dans une seule carte claire sur le noir */
-#ecrans {
-  padding: 16px 16px 88px;
-  max-width: 600px;
-  min-height: calc(100dvh - var(--nav-hauteur) - var(--gap-card));
-  margin: 0 auto calc(var(--nav-hauteur) + var(--gap-card));
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
-  background: var(--card);
-  color: var(--ink);
-}
-
 /* Repère visible quand on navigue au clavier ou avec un lecteur d'écran */
 :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 
-/* Retour immédiat à l'appui : l'élément réagit dès que le doigt touche */
+/* Retour immédiat à l'appui : fond inversé noir/transparent (sans déplacement si « mouvement réduit ») */
 :root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); }  /* ease-out plus tonique que le « ease-out » standard */
-.bouton, .carte, .onglet, .suggestion, .coche-ligne, .ligne-course, #bouton-sauvegarde {
-  transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out);
+.onglet, .suggestion, .bouton-contour, .bouton-importer, .bouton-sombre, .bouton-carre, .bouton-rond, .filtre, .carte-rappel {
+  transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out), color 120ms var(--ease-out);
 }
-.bouton:active, .carte:active, #bouton-sauvegarde:active { transform: scale(0.97); }
-.bouton:active, .carte:active { background-color: var(--ink); color: var(--ink-on-dark); }
-.bouton.principal:active, .ajout-rapide.ajoute:active, #bouton-sauvegarde:active { background-color: var(--ink); color: var(--ink-on-dark); }
 .onglet:active { transform: scale(0.95); }
-.suggestion:active, .coche-ligne:active, .ligne-course:active { background-color: var(--gris-clair); }
+.suggestion:active { background-color: var(--gris-clair); }
+.bouton-contour:active, .bouton-carre:active, .bouton-rond:active { background-color: var(--ink); color: var(--ink-on-dark); }
+.bouton-carre.plein:active, .bouton-importer:active { background-color: var(--card-done); }
+.bouton-sombre:active { background-color: var(--ink-on-dark); color: var(--card-done); }
+.filtre:active { background-color: var(--gris-clair); }
+.carte-rappel:active { background-color: var(--ink); }
+.onglet.actif:active { background-color: var(--card-done); }
 
-/* Mouvement réduit : plus de déplacement, la couleur reste pour confirmer l'appui */
 @media (prefers-reduced-motion: reduce) {
-  .bouton:active, .carte:active, .onglet:active, #bouton-sauvegarde:active { transform: none; }
+  .onglet:active { transform: none; }
 }
 
 /* Changement d'écran ou de vue : fondu rapide (opacité seulement, donc compatible « mouvement réduit ») */
@@ -117,12 +107,8 @@ body {
 /* L'attribut hidden doit toujours gagner */
 [hidden] { display: none !important; }
 
-h1 { font-size: 1.5rem; margin: 0 0 16px; }
-
-.vide { color: var(--ink-soft); }
-
-/* Barre d'onglets : pied « onglets seuls » (demi-carte collée en bas). Sur les écrans avec une action,
-   body.design la transforme en étage du bas du coupon (voir plus bas). */
+/* Barre d'onglets : pied « onglets seuls » (demi-carte collée en bas, Réglages). Sur les écrans avec une action,
+   elle devient l'étage du bas du coupon (voir plus bas). */
 #navigation {
   position: fixed;
   left: 0; right: 0; bottom: 0;
@@ -166,25 +152,6 @@ h1 { font-size: 1.5rem; margin: 0 0 16px; }
 /* Onglet actif : fond noir + aria-current (jamais la couleur seule) */
 .onglet.actif { background: var(--noir); color: var(--ink-on-dark); }
 
-/* ---------- Boutons ---------- */
-.bouton {
-  min-height: 44px;
-  padding: 10px 16px;
-  border: 2.5px solid var(--ink);
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  cursor: pointer;
-}
-.bouton.principal { border-color: var(--accent-green); background: var(--accent-green); color: var(--ink); }
-.bouton.danger { border-style: dashed; }   /* pas de rouge : le tiret signale une action de retrait */
-.bouton.lien { border: 0; background: none; padding-left: 0; }
-.bouton.rond { min-width: 44px; padding: 0; border-radius: var(--radius-pill); }
-
-.actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
-#vue-liste > .bouton.principal { width: 100%; margin-top: 16px; }
-
 /* ---------- Champs de saisie ---------- */
 input, select, textarea {
   width: 100%;
@@ -196,19 +163,8 @@ input, select, textarea {
   color: var(--ink);
   font: inherit;
 }
-label { display: block; margin: 16px 0 4px; font-weight: 600; }
-h2 { font-size: 1.1rem; margin: 24px 0 8px; }
-.erreur { color: var(--ink); font-weight: 600; }
 
-/* Une ligne d'ingrédient : nom en haut, quantité + unité + retrait dessous */
-.ligne-ingredient {
-  display: grid;
-  grid-template-columns: 1fr 1fr 44px;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.ligne-ingredient .i-nom,
-.ligne-ingredient .i-rayon { grid-column: 1 / -1; }
+h2 { font-size: 1.1rem; margin: 24px 0 8px; }
 
 /* Suggestions d'autocomplétion, sous le nom de l'ingrédient */
 .suggestions {
@@ -234,100 +190,8 @@ h2 { font-size: 1.1rem; margin: 24px 0 8px; }
   cursor: pointer;
 }
 
-/* ---------- Liste de recettes ---------- */
-.cartes { list-style: none; padding: 0; margin: 16px 0 0; }
-.cartes li { display: flex; align-items: flex-start; gap: 8px; }
-.carte {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: 100%;
-  min-height: 56px;
-  margin-bottom: 8px;
-  padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  border: 1.5px solid var(--ink);
-  border-radius: var(--radius-box);
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.carte-titre { font-weight: 600; }
-
-/* Bouton « panier + » à droite d'une recette : ajout rapide à la liste de courses */
-.ajout-rapide {
-  flex: none;
-  width: 56px;
-  min-height: 56px;
-  margin-bottom: 8px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.ajout-rapide svg {
-  width: 26px; height: 26px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.ajout-rapide.ajoute { background: var(--accent-green); color: var(--ink); }
-.carte-info { color: var(--ink-soft); font-size: 0.9rem; white-space: nowrap; }
-
-/* ---------- Détail d'une recette ---------- */
-.parts { display: flex; align-items: center; gap: 12px; }
-.parts-nombre { min-width: 1.5em; text-align: center; font-size: 1.2rem; }
 .quantite { color: var(--ink); font-weight: 600; white-space: nowrap; }
-
-/* ---------- Liste de courses ---------- */
-.ligne-ingredient.sans-retrait { grid-template-columns: 1fr 1fr; }
-h3 { font-size: 1rem; margin: 20px 0 4px; color: var(--ink); }
-.aide { color: var(--ink-soft); }
-
-/* Recette ou article de la liste : titre, puis boutons */
-.ligne-liste {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  padding: 8px 0;
-  border-bottom: 1px dashed var(--ink);
-}
-.ligne-titre { flex: 1 1 8em; }
-.ligne-liste .retrait { margin-left: auto; }
-#contenu-liste > .bouton { margin-top: 12px; }
-
-/* Ligne cochable (révision) et ligne de la liste finale */
-.coche-ligne, .ligne-course {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 52px;
-  margin: 0;
-  padding: 6px 0;
-  border-bottom: 1px dashed var(--ink);
-  font-weight: normal;
-}
-.coche-nom { flex: 1; }
-input[type="checkbox"] {
-  flex: none;
-  width: 28px;
-  min-height: 28px;
-  height: 28px;
-  accent-color: var(--ink);
-}
-
-/* Mode courses : lignes plus hautes, article coché grisé et barré */
-.ligne-course { min-height: 60px; }
-.ligne-course .coche-nom { transition: color 150ms var(--ease-out); }  /* le texte passe au gris en douceur */
-.ligne-course input:checked ~ span { color: var(--ink-soft); text-decoration: line-through; }
+  
 
 /* ---------- Carte article (DESIGN.md, 5.1) ---------- */
 .carte-article {
@@ -410,8 +274,8 @@ input[type="checkbox"] {
   .case:active { transform: none; }
 }
 
-/* ---------- Écran Courses : habillage « cartes sur fond noir » (DESIGN.md, 4 et 5.2 à 5.6) ----------
-   Actif seulement quand body porte la classe « design » (ui.js, majHabillage). */
+/* ---------- Mise en page de tous les écrans : cartes sur fond noir (DESIGN.md, 4 et 5.2 à 5.6) ----------
+   body.secondaire : écran sans onglets ; body.onglets-seuls : Réglages (ui.js, majHabillage). */
 body.design {
   --nav-hauteur: 76px;                /* onglets : 8 + 52 + 8, plus la perforation */
   --nav-total: calc(var(--nav-hauteur) + env(safe-area-inset-bottom, 0px));
@@ -431,24 +295,13 @@ body.design #ecrans {
   flex-direction: column;
   gap: var(--gap-card);
 }
-body.design #ecran-liste, body.design #vue-panier, body.design #contenu-liste, body.design #ecran-recettes, body.design #vue-liste, body.design #vue-detail, body.design #vue-form, body.design #vue-import {
+body.design .ecran, body.design #vue-panier, body.design #contenu-liste, body.design #contenu-reglages, body.design #vue-liste, body.design #vue-detail, body.design #vue-form, body.design #vue-import, body.design #vue-historique {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-body.design #contenu-liste, body.design #vue-liste, body.design #vue-detail, body.design #vue-form, body.design #vue-import { gap: var(--gap-card); }
-body.design #titre-liste, body.design #vue-panier > .bouton-historique { display: none; }   /* repris dans la carte d'en-tête et la carte de fin */
-
-/* Rappel de sauvegarde : une carte comme les autres */
-body.design #bandeau-sauvegarde {
-  flex: none;
-  margin: 0;
-  padding: 12px var(--pad-card-right) 12px var(--pad-card-left);
-  border: 0;
-  border-radius: var(--radius-card);
-  background: var(--card);
-}
+body.design #contenu-liste, body.design #contenu-reglages, body.design #vue-liste, body.design #vue-detail, body.design #vue-form, body.design #vue-import, body.design #vue-historique { gap: var(--gap-card); }
 
 /* En-tête : demi-carte collée en haut */
 .entete-carte {
@@ -498,7 +351,7 @@ body.design #bandeau-sauvegarde {
 }
 .carte-recherche input::placeholder { color: var(--ink-placeholder); opacity: 1; }
 /* Carte colorée de recherche : contour clair en dedans (DESIGN-ecrans.md, focus clavier) */
-.carte-recherche:focus-within { outline: 3px solid var(--ink-on-dark); outline-offset: -8px; }
+.carte-recherche:focus-within { outline: 3px solid var(--ink); outline-offset: -3px; }
 
 /* Carte de filtres : les pastilles passent à la ligne si le texte grossit */
 .carte-filtres {
@@ -513,6 +366,7 @@ body.design #bandeau-sauvegarde {
   background: var(--card);
 }
 .filtre {
+  min-width: 44px;
   min-height: 44px;
   padding: 0 18px;
   border: 1.5px solid var(--ink-soft);
@@ -539,20 +393,6 @@ body.design #bandeau-sauvegarde {
 }
 .zone-liste::-webkit-scrollbar { display: none; }
 #cartes-courses { display: contents; }
-
-/* Carte de fin de liste : oubli, terminer, modifier, historique (anciens boutons, mis aux couleurs des cartes) */
-.carte-fin {
-  flex: none;
-  padding: 12px var(--pad-card-right) 20px var(--pad-card-left);
-  border-radius: var(--radius-card);
-  background: var(--card);
-  color: var(--ink);
-}
-.carte-fin .article-oublie { margin-top: 0; }
-.carte-fin summary { color: var(--ink); font-weight: 600; }
-.carte-fin .bouton { border-color: var(--ink); border-radius: var(--radius-pill); background: transparent; color: var(--ink); }
-.carte-fin .bouton.principal { border-color: var(--accent-green); background: var(--accent-green); color: var(--ink); }
-.carte-fin .actions { margin-top: 12px; }
 
 /* Pied de page : carte avec le bouton vert (encadré dans la carte, pas fond de carte) */
 .pied-carte {
@@ -592,6 +432,10 @@ body.design #navigation {
 body.design .perforation-pied { display: block; position: absolute; left: 0; right: 0; top: 0; background: transparent; }
 .perforation-pied { display: none; }
 /* Écran secondaire : pas d'onglets, l'action reste seule en pied */
+/* Réglages : pas d'action, donc « onglets seuls » (demi-carte de 92 px, sans perforation) */
+body.onglets-seuls { --nav-hauteur: 92px; }
+body.onglets-seuls #navigation { padding: 20px var(--pad-card-left) env(safe-area-inset-bottom, 0px); border-radius: var(--radius-card) var(--radius-card) 0 0; }
+body.onglets-seuls .perforation-pied { display: none; }
 body.secondaire #navigation { display: none; }
 body.secondaire #ecrans { height: 100dvh; }
 
@@ -626,11 +470,11 @@ body.design #vue-ajout { flex: 1; min-height: 0; display: flex; flex-direction: 
 .carte-champ { padding: 14px var(--pad-card-right) 14px var(--pad-card-left); background: var(--accent-yellow); color: var(--ink); }
 .carte-champ.haut { border-radius: var(--radius-card) var(--radius-card) 0 0; }
 .carte-champ.bas { border-radius: 0 0 var(--radius-card) var(--radius-card); }
-.carte-champ.haut:focus-within, .carte-champ.seule:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
+.carte-champ.haut:focus-within, .carte-champ.seule:focus-within { outline: 3px solid var(--ink); outline-offset: -3px; }
 .carte-champ .saisie-carte {
   display: block;
   width: 100%;
-  min-height: 36px;
+  min-height: 44px;   /* 44 : cible tactile minimale (la maquette montre 36 à 40) */
   margin-top: 2px;
   padding: 0;
   border: 0;
@@ -1043,112 +887,72 @@ textarea.champ-encadre.zone-import { margin-top: 12px; height: 128px; resize: no
 .suggestion .s-nom b { font-weight: 800; }
 .suggestion .s-rayon { display: block; font-size: 14px; line-height: 18px; font-weight: 400; color: var(--ink-soft); }
 
-/* ---------- Sauvegarde ---------- */
-/* Bouton flottant en bas à droite, au-dessus de la navigation */
-#bouton-sauvegarde {
+/* ---------- Messages : toujours dans une carte sombre (jamais flottants sur le noir) ---------- */
+#alerte, #annulation {
   position: fixed;
-  right: 16px;
-  bottom: calc(var(--nav-hauteur) + 12px);
-  min-height: 44px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 22px;
-  background: var(--accent-green);
-  color: var(--ink);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Rappel discret en haut de l'écran */
-#bandeau-sauvegarde {
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 8px; right: 8px;
+  z-index: 30;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
-  padding: 8px 12px;
-  border: 1.5px solid var(--ink);
-  border-radius: var(--radius-box);
-  background: transparent;
-  font-size: 0.9rem;
-}
-.succes { color: var(--ink); font-weight: 600; }
-
-/* ---------- Historique ---------- */
-.bouton-historique { margin-top: 32px; }
-.carte-historique { flex-direction: column; align-items: flex-start; gap: 2px; }
-.carte-historique .carte-info { white-space: normal; }
-
-/* ---------- Import de recettes ---------- */
-.bouton-import { width: 100%; margin-top: 12px; }
-details { margin: 12px 0; }
-summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--ink); }
-textarea[readonly] { font-size: 0.8rem; color: var(--ink-soft); }
-.avertissements {
-  margin: 0 0 8px;
-  padding: 8px 12px;
-  border: 1.5px dashed var(--ink);
-  border-radius: var(--radius-box);
-  background: transparent;
-}
-.avertissements p { margin: 0 0 4px; font-weight: 600; }
-.avertissements ul { margin: 0; padding-left: 1.2em; }
-
-/* Petite explication sous un champ */
-.aide-champ { margin: 4px 0 0; font-size: 0.9rem; }
-
-/* Alerte fixée en haut : stockage plein, données abîmées */
-#alerte {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--radius-tile);
   background: var(--card-done);
   color: var(--ink-on-dark);
-  font-size: 0.95rem;
 }
-
-/* Message « Recette supprimée. [Annuler] » : en haut de l'écran, 6 secondes
-   (en bas il masquait les boutons de la page). Il passe devant l'alerte (z-index 10) pour rester visible. */
 #annulation {
-  position: fixed;
-  left: 16px; right: 16px;
-  top: 12px;
-  z-index: 11;
-  max-width: 568px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 4px 8px 4px 16px;
-  border-radius: var(--radius-box);
-  background: var(--card-done);
-  color: var(--ink-on-dark);
+  z-index: 31;   /* devant l'alerte */
   transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
   @starting-style { opacity: 0; transform: translateY(-8px); }
-}
-#annulation button {
-  min-height: 44px;
-  padding: 0 12px;
-  border: 0;
-  background: none;
-  color: var(--ink-on-dark);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
 }
 @media (prefers-reduced-motion: reduce) {
   #annulation { @starting-style { transform: none; } }
 }
+.message-texte { flex: 1; min-width: 0; font-size: 17px; line-height: 24px; font-weight: 500; overflow-wrap: anywhere; }
+.bouton-sombre {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 2px solid var(--ink-on-dark);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-on-dark);
+  font: inherit;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+}
+.bouton-sombre:focus-visible { outline: 3px solid var(--ink-on-dark); outline-offset: 2px; }
 
-/* Article oublié (onglet Courses) et copie de secours (Réglages) */
-.article-oublie { margin-top: 24px; }
-.article-oublie .bouton { margin-top: 4px; }
-.secours { margin-top: 24px; }
+/* Rappel de sauvegarde : carte sombre en tête des listes, un bouton qui ouvre les Réglages */
+.carte-rappel {
+  flex: none;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px var(--pad-card-right) 8px var(--pad-card-left);
+  display: flex; align-items: center; gap: 12px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--card-done);
+  color: var(--ink-on-dark);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.carte-rappel:focus-visible { outline: 3px solid var(--ink-on-dark); outline-offset: -6px; }
+
+/* ---------- Préparation de la liste, historique, réglages, feuilles ---------- */
+.liste-prepa { margin-top: 8px; }
+.ligne-prepa { display: flex; flex-direction: column; gap: 4px; }
+.ligne-prepa .stepper { margin-top: 0; flex-wrap: wrap; }
+.liste-choix { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.liste-choix .bouton-contour { width: 100%; justify-content: flex-start; text-align: left; }
+.carte-simple > .rangee-boutons, .carte-simple > .puces { margin-top: 12px; }
+.rangee-boutons .bouton-ajout { flex: 1 1 180px; width: auto; padding: 0 16px; }
+.texte-carte.secondaire { margin-top: 8px; font-size: 14px; line-height: 18px; font-weight: 400; color: var(--ink-soft); }
+.carte-simple > .texte-carte:first-of-type { margin-top: 6px; }
+.feuille-boutons { display: flex; flex-wrap: wrap; gap: 8px; }
+.feuille-boutons > .bouton-ajout { flex: 1 1 180px; width: auto; padding: 0 16px; }
+.feuille-boutons > .bouton-contour { flex: 1 1 100px; }
+.feuille h2:focus { outline: none; }
+.carte-recette-vide .carte-nom { overflow-wrap: anywhere; }

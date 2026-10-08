@@ -225,7 +225,7 @@ function executerAction(bouton) {
     }
     case "feuille-valider": {
       const { id, parts } = etat.feuille;
-      UI.fermerFeuilleParts();
+      UI.fermerFeuille();
       modifierListe((l) => {
         const choix = l.recettes.find((c) => c.id === id);
         if (choix) choix.parts = parts;
@@ -236,12 +236,12 @@ function executerAction(bouton) {
     }
     case "feuille-retirer": {
       const { id } = etat.feuille;
-      UI.fermerFeuilleParts();
+      UI.fermerFeuille();
       modifierListe((l) => { l.recettes = l.recettes.filter((c) => c.id !== id); });
       redessinerRecettes();
       break;
     }
-    case "feuille-annuler": UI.fermerFeuilleParts(); break;
+    case "feuille-annuler": UI.fermerFeuille(); break;
     case "retour": afficherListe(); break;
     case "parts-moins":
       if (etat.partsVoulues > 1) { etat.partsVoulues--; majDetail(); }
@@ -327,7 +327,16 @@ function executerAction(bouton) {
       if (choix.parts > 1) choix.parts--;
     }); break;
     case "liste-parts-plus": modifierListe((l) => l.recettes[Number(bouton.dataset.index)].parts++); break;
-    case "liste-ajouter-article": ajouterArticle("m-ligne", "m-erreur"); break;
+    case "aller-reglages": document.querySelector('.onglet[data-cible="reglages"]').click(); break;
+    case "confirmation-oui": {
+      const suite = suiteConfirmation;
+      suiteConfirmation = null;
+      UI.fermerFeuille();
+      if (suite) suite();
+      break;
+    }
+    case "confirmation-non": suiteConfirmation = null; UI.fermerFeuille(); break;
+    case "langue": changerLangue(bouton.dataset.langue); break;
     case "liste-retirer-article": modifierListe((l) => l.manuels.splice(Number(bouton.dataset.index), 1)); break;
     case "liste-effacer": {
       const avant = DB.liste();
@@ -345,10 +354,10 @@ function executerAction(bouton) {
     case "revision-valider":
       // Les articles déjà cochés restent cochés (ceux qui ont disparu de la liste sont oubliés)
       etat.courses = { filtre: "tout", recherche: "" };
-      modifierListe((l) => { l.etat = "courses"; l.coches = Logic.garderCoches(l.coches, groupesDeLaListe(l, true)); }, false);
+      modifierListe((l) => { l.etat = "courses"; l.coches = Logic.garderCoches(l.coches, groupesDeLaListe(l, true)); });
       window.scrollTo(0, 0);
       break;
-    case "liste-modifier": modifierListe((l) => { l.etat = "revision"; }, false); window.scrollTo(0, 0); break;
+    case "liste-modifier": modifierListe((l) => { l.etat = "revision"; }); window.scrollTo(0, 0); break;
     case "cocher": {
       // Mode courses : article dans le caddie ou non (pas de nouveau dessin, pour ne pas faire sauter l'écran)
       const liste = DB.liste();
@@ -403,11 +412,13 @@ function executerAction(bouton) {
     case "fermer-alerte": UI.fermerAlerte(); break;
     case "restaurer": document.getElementById("fichier-restauration").click(); break;
     case "basculer": {
-      // Décocher = « je l'ai déjà » : la clé est mémorisée dans `decoches`
+      // « Déjà à la maison » : la clé est mémorisée dans `decoches` (la carte passe en sombre)
       const liste = DB.liste();
+      const maison = bouton.getAttribute("aria-pressed") !== "true";   // la case est un bouton à bascule
       liste.decoches = liste.decoches.filter((cle) => cle !== bouton.dataset.cle);
-      if (!bouton.checked) liste.decoches.push(bouton.dataset.cle);
+      if (maison) liste.decoches.push(bouton.dataset.cle);
       DB.enregistrerListe(liste);
+      UI.majEtatCarte(bouton, maison);
       break;
     }
   }
@@ -432,8 +443,6 @@ function groupesDeLaListe(liste, final) {
 function afficherEcranListe() {
   const liste = DB.liste();
   const avant = JSON.stringify(liste);
-  UI.titreListe(t(liste.etat === "courses" ? "titre_courses" : "titre_liste"));
-  UI.definirModeCourses(liste.etat === "courses");
   // Une recette supprimée disparaît de la liste
   liste.recettes = liste.recettes.filter((choix) => DB.recette(choix.id));
 
@@ -464,11 +473,8 @@ function enregistrerSiChange(liste, avant) {
   if (JSON.stringify(liste) !== avant) DB.enregistrerListe(liste);
 }
 
-// Redessine l'écran Liste en gardant l'article libre en cours de saisie
 function redessinerListe() {
-  const brouillon = UI.lireBrouillonArticle();
   afficherEcranListe();
-  UI.restaurerBrouillonArticle(brouillon);
 }
 
 // --- Sauvegarde et restauration (le travail est dans backup.js) ---
@@ -493,7 +499,7 @@ function afficherHistorique() {
       const nb = archive.lignes.length;
       const articles = nb + " " + (nb > 1 ? t("articles") : t("article"));
       const titres = archive.recettes.map((r) => r.titre).join(", ");
-      return { index, date: formaterDate(archive.date), resume: titres ? titres + " · " + articles : articles };
+      return { index, date: formaterDate(archive.date), nombre: nb, resume: titres ? titres + " · " + articles : articles };
     })
     .reverse();
   UI.rendreHistorique(entrees);
@@ -509,7 +515,7 @@ function afficherArchive(index) {
 function afficherReglages() {
   const secours = DB.secours();
   const texteSecours = secours ? t("secours_info").replace("{date}", formaterDate(secours.date)) : null;
-  UI.rendreReglages(textePhraseSauvegarde(), texteSecours);
+  UI.rendreReglages(textePhraseSauvegarde(), texteSecours, Langue.courante);
 }
 
 // Affiche ou cache le bandeau « pense à sauvegarder »
@@ -556,7 +562,14 @@ async function restaurer(fichier) {
   const resultat = Backup.analyser(await fichier.text(), DB.VERSION_SCHEMA);
   if (resultat.erreur) return UI.messageReglages(t(resultat.erreur), true);
   const s = resultat.sauvegarde;
-  if (!confirm(t("confirmer_restauration").replace("{n}", s.recettes.length))) return;
+  demanderConfirmation({
+    titre: t("titre_confirmer_restauration"),
+    texte: t("confirmer_restauration").replace("{n}", s.recettes.length),
+    confirmer: t("restaurer_bouton")
+  }, () => appliquerRestauration(s));
+}
+
+function appliquerRestauration(s) {
   // Réglages complétés si le fichier est incomplet ; la date de sauvegarde = celle du fichier
   s.reglages.langue = s.reglages.langue || "fr";
   mettreAJourSauvegarde(s);
@@ -574,12 +587,16 @@ async function restaurer(fichier) {
 // Remet les données d'avant la dernière restauration
 function annulerRestauration() {
   const secours = DB.secours();
-  if (!secours || !confirm(t("confirmer_annuler_restauration"))) return;
-  mettreAJourSauvegarde(secours);   // une copie faite par une ancienne version peut être au schéma 1
-  DB.remplacerTout(secours);
-  DB.supprimerSecours();
-  toutRedessiner();
-  UI.messageReglages(t("restauration_annulee"), false);
+  if (!secours) return;
+  demanderConfirmation({
+    titre: t("titre_confirmer_annuler_restauration"), texte: t("confirmer_annuler_restauration"), confirmer: t("revenir_bouton")
+  }, () => {
+    mettreAJourSauvegarde(secours);   // une copie faite par une ancienne version peut être au schéma 1
+    DB.remplacerTout(secours);
+    DB.supprimerSecours();
+    toutRedessiner();
+    UI.messageReglages(t("restauration_annulee"), false);
+  });
 }
 
 // Termine les courses : archive la liste dans l'historique, puis repart d'une liste vide
@@ -588,35 +605,59 @@ function terminerCourses() {
   const groupes = groupesDeLaListe(liste, true);
   const compte = Logic.compterCoches(groupes, liste.coches);
   const reste = compte.total - compte.coches;
-  const question = reste > 0
-    ? t("confirmer_terminer_reste").replace("{n}", reste)
-    : t("confirmer_terminer");
-  if (!confirm(question)) return;
-  DB.terminerCourses(Logic.construireArchive(liste, DB.recettes(), groupes, new Date().toISOString()));
-  etat.choixRecette = false;
-  afficherEcranListe();
-  UI.afficherEcran("liste");
-  rafraichirBandeau();
-  // Fin des courses : bon moment pour sauvegarder (l'historique vient de changer)
-  if (confirm(t("proposer_sauvegarde"))) sauvegarder();
+  demanderConfirmation({
+    titre: t("titre_confirmer_terminer"),
+    texte: reste > 0 ? t("terminer_texte_reste").replace("{n}", reste) : t("terminer_texte"),
+    confirmer: t("terminer_courses")
+  }, () => {
+    DB.terminerCourses(Logic.construireArchive(liste, DB.recettes(), groupes, new Date().toISOString()));
+    etat.choixRecette = false;
+    afficherEcranListe();
+    UI.afficherEcran("liste");
+    rafraichirBandeau();
+    // Fin des courses : bon moment pour sauvegarder (l'historique vient de changer)
+    demanderConfirmation({
+      titre: t("titre_proposer_sauvegarde"), texte: t("proposer_sauvegarde"), confirmer: t("sauvegarder"), annuler: t("plus_tard")
+    }, sauvegarder);
+  });
+}
+
+// --- Feuilles de confirmation (à la place des fenêtres du navigateur) ---
+// `suiteConfirmation` : ce qu'on fait si la personne confirme (oubliée si elle annule ou appuie sur Échap)
+let suiteConfirmation = null;
+function demanderConfirmation(options, suite) {
+  suiteConfirmation = suite;
+  UI.ouvrirConfirmation(options);
+}
+
+// Changement de langue (Réglages) : on recharge les textes puis on redessine tous les écrans
+async function changerLangue(code) {
+  if (code === Langue.courante) return;
+  const reglages = DB.reglages();
+  reglages.langue = code;
+  try {
+    DB.ecrire("reglages", reglages);
+  } catch (erreur) {
+    return signalerErreur(erreur);
+  }
+  await Langue.init(code);
+  Langue.appliquer();
+  document.documentElement.lang = code;
+  document.getElementById("vue-liste").replaceChildren();   // la coque de la liste des recettes est dessinée une seule fois : on la refait
+  toutRedessiner();
 }
 
 // Applique un changement à la liste, l'enregistre et réaffiche.
-// `garderBrouillon` : l'article libre en cours de saisie survit au redessin.
-function modifierListe(changement, garderBrouillon = true) {
-  const brouillon = garderBrouillon ? UI.lireBrouillonArticle() : null;
+function modifierListe(changement) {
   const liste = DB.liste();
   changement(liste);
   DB.enregistrerListe(liste);
   afficherEcranListe();
-  UI.restaurerBrouillonArticle(brouillon);
 }
 
 // Ajoute l'article libre saisi (nom, quantité, unité, rayon) à la liste.
 // `conteneur` et `idErreur` : la ligne de saisie et son message d'erreur (écran Liste ou Courses).
-function ajouterArticle(conteneur, idErreur) {
-  enregistrerArticle(UI.lireArticle(conteneur), idErreur);
-}
+
 
 // Ouvre l'écran « Nouvel article », vide
 function ouvrirAjout() {
@@ -731,6 +772,7 @@ async function demarrer() {
   }
   await Langue.init(DB.reglages().langue);
   Langue.appliquer();
+  document.documentElement.lang = Langue.courante;
 
   // Navigation du bas : on réaffiche l'écran choisi, car ses données ont pu changer
   document.querySelectorAll(".onglet").forEach((onglet) => {
@@ -768,7 +810,7 @@ async function demarrer() {
   // affichage, donc on écoute le document (délégation) plutôt que chaque bouton.
   document.addEventListener("click", gererClic);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") UI.fermerFeuilleParts();   // Échap = annuler
+    if (e.key === "Escape") { suiteConfirmation = null; UI.fermerFeuille(); }   // Échap = annuler
   });
 
   // Lignes d'ingrédient (recette ou article libre) : autocomplétion et rayon

@@ -242,7 +242,7 @@ Après toute suppression : message avec action « Annuler » pendant quelques se
 ## 8. États et interactions
 
 - Cibles tactiles ≥ 44, visées 48, espacées d'≥ 8.
-- **Focus clavier** : sur carte claire, `outline: 3px solid #000; outline-offset:2px` ; sur carte de recherche bleue et cartes jaunes : `outline: 3px solid #EDEDED; outline-offset:-3px` (en dedans). Pas d'ombre.
+- **Focus clavier** : sur carte claire, `outline: 3px solid #000; outline-offset:2px` ; sur carte de recherche bleue et cartes jaunes : `outline: 3px solid #EDEDED; outline-offset:-3px` (en dedans). Pas d'ombre. **[À VALIDER] contraste** : `#EDEDED` sur jaune (≈ 1,2:1) ou sur bleu (≈ 1,4:1) est sous le seuil de 3:1 (WCAG 2.2, 1.4.11). L'app utilise à la place un anneau **noir** de 3 px en dedans (`outline-offset:-3px`), contraste ≈ 15:1 (vérifié par `tests/design.test.js`).
 - **Erreur** : 5.8. **Désactivé** : 5.6. **Pressé** : [À MAQUETTER] (proposition : fond du bouton inversé noir/transparent pendant l'appui, sans animation si `prefers-reduced-motion`).
 - Mouvement : 150–250 ms, une seule courbe ; cocher = légère contraction + changement d'état ; simple fondu si `prefers-reduced-motion`. Tout geste (balayer) a un bouton équivalent.
 - Premier lancement (liste vide) : cartes vides de 5.12 ; [À MAQUETTER] pour le guidage initial.

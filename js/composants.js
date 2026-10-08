@@ -166,8 +166,10 @@ function bouton(role, { texte, action = null, icone: nomIcone = null, libelle = 
 }
 
 // Bouton rond 48 (− et +), icône seule
-function boutonRond(nomIcone, { action, libelle }) {
-  return el("button", { type: "button", class: "bouton-rond", "data-action": action, "aria-label": libelle }, [icone(nomIcone)]);
+function boutonRond(nomIcone, { action, libelle, donnees = {} }) {
+  const props = { type: "button", class: "bouton-rond", "data-action": action, "aria-label": libelle };
+  for (const [cle, valeur] of Object.entries(donnees)) props["data-" + cle] = valeur;
+  return el("button", props, [icone(nomIcone)]);
 }
 
 // Bouton carré 48 (retirer, ajout rapide). `plein` : fond noir, icône claire.
@@ -249,4 +251,17 @@ function contenuResume(titre, libelles) {
       el("div", { class: "resume-liste", texte: libelles.join(" · ") })
     ])
   ];
+}
+
+// Feuille modale (DESIGN.md 5.17) qui remplace le pied de page : confirmation « titre, texte, deux boutons ».
+// Les actions "confirmation-oui" et "confirmation-non" sont traitées par app.js.
+function feuilleConfirmation({ titre, texte, confirmer, annuler }) {
+  return el("div", { class: "feuille", role: "dialog", "aria-modal": "true", "aria-labelledby": "feuille-titre" }, [
+    el("h2", { id: "feuille-titre", tabindex: "-1", texte: titre }),
+    texte && el("p", { class: "feuille-recette", texte }),
+    el("div", { class: "feuille-boutons" }, [
+      bouton("principal", { texte: confirmer, action: "confirmation-oui" }),
+      bouton("secondaire", { texte: annuler, action: "confirmation-non" })
+    ])
+  ]);
 }

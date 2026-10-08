@@ -14,21 +14,12 @@
   <link rel="preload" href="polices/archivo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <!-- Alerte (stockage plein, données abîmées) : cachée tant qu'il n'y a rien à dire -->
-  <div id="alerte" role="alert" hidden>
-    <span id="alerte-texte"></span>
-    <button class="bouton" data-action="fermer-alerte" data-i18n="fermer"></button>
-  </div>
+<body class="design">
+  <!-- Alerte (stockage plein, données abîmées) : une carte sombre en haut, cachée tant qu'il n'y a rien à dire -->
+  <div id="alerte" role="alert" hidden></div>
 
   <!-- Zone qui affiche l'écran courant -->
   <main id="ecrans">
-    <!-- Rappel discret : visible seulement si la dernière sauvegarde est ancienne -->
-    <div id="bandeau-sauvegarde" hidden>
-      <span id="bandeau-texte"></span>
-      <button class="bouton" data-action="sauvegarder" data-i18n="sauvegarder"></button>
-    </div>
-
     <section class="ecran" id="ecran-recettes" data-ecran="recettes">
       <!-- Trois vues : liste, détail, formulaire (une seule visible à la fois) -->
       <div id="vue-liste"></div>
@@ -42,30 +33,21 @@
     <section class="ecran" id="ecran-liste" data-ecran="liste" hidden>
       <!-- Deux vues : la liste en cours (ajouts, révision ou courses selon l'étape) et l'historique -->
       <div id="vue-panier">
-        <h1 id="titre-liste" data-i18n="titre_liste"></h1>
-        <div id="contenu-liste"></div>
-        <button class="bouton bouton-historique" data-action="historique-ouvrir" data-i18n="historique_ouvrir"></button>
+      <div id="contenu-liste"></div>
       </div>
       <div id="vue-ajout" hidden></div>
       <div id="vue-historique" hidden></div>
     </section>
 
     <section class="ecran" id="ecran-reglages" data-ecran="reglages" hidden>
-      <h1 data-i18n="titre_reglages"></h1>
       <div id="contenu-reglages"></div>
       <!-- Sélecteur de fichier caché : ouvert par le bouton « Restaurer » -->
       <input type="file" id="fichier-restauration" accept=".json,application/json" hidden>
     </section>
   </main>
 
-  <!-- Bouton flottant, toujours visible, au-dessus de la navigation -->
-  <button id="bouton-sauvegarde" data-action="sauvegarder" data-i18n="sauvegarder"></button>
-
-  <!-- Message temporaire avec « Annuler » après une suppression -->
-  <div id="annulation" role="status" hidden>
-    <span id="annulation-texte"></span>
-    <button data-action="defaire" data-i18n="annuler"></button>
-  </div>
+  <!-- Message temporaire avec « Annuler » après une suppression : une carte sombre en haut -->
+  <div id="annulation" role="status" hidden></div>
 
   <!-- Navigation en bas, à portée du pouce -->
   <nav id="navigation" data-i18n-aria-label="nav_principale">

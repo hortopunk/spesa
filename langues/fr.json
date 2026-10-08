@@ -1,4 +1,26 @@
 {
+  "liste_sans_article": "Aucun article libre.",
+  "articles_court": "art.",
+  "archive_pris": "pris",
+  "archive_non_pris": "pas pris",
+  "retour_historique": "Retour à l'historique",
+  "ouvrir_reglages": "Ouvrir les réglages.",
+  "section_secours": "Copie de secours",
+  "section_langue": "Langue",
+  "langue_fr": "Français",
+  "langue_co": "Corsu",
+  "langue_brouillon": "Le corse est un brouillon : les textes sont à faire relire par un locuteur natif. Ce qui n'est pas encore traduit reste en français.",
+  "article_a_la_maison": "déjà à la maison",
+  "article_a_acheter": "à acheter",
+  "titre_confirmer_terminer": "Terminer les courses ?",
+  "terminer_texte": "La liste sera archivée dans l'historique.",
+  "terminer_texte_reste": "Il reste {n} article(s) non coché(s). La liste sera archivée dans l'historique.",
+  "titre_proposer_sauvegarde": "Courses terminées",
+  "plus_tard": "Plus tard",
+  "titre_confirmer_restauration": "Restaurer la sauvegarde ?",
+  "restaurer_bouton": "Restaurer",
+  "titre_confirmer_annuler_restauration": "Annuler la restauration ?",
+  "revenir_bouton": "Revenir en arrière",
   "nav_principale": "Navigation principale",
   "nav_recettes": "Recettes",
   "nav_courses": "Courses",
@@ -58,8 +80,6 @@
   "courses_liste_vide": "Rien à acheter : tout est déjà à la maison.",
   "terminer_courses": "Terminer les courses",
   "articles_coches": "articles dans le caddie",
-  "confirmer_terminer": "Terminer les courses ? La liste sera archivée.",
-  "confirmer_terminer_reste": "Il reste {n} article(s) non coché(s). Terminer quand même ? La liste sera archivée.",
   "retirer": "Retirer",
   "fermer": "Fermer",
 
@@ -143,8 +163,14 @@
   "rayon_autre": "Autre",
 
   "importer_recette": "Importer une recette",
-  "titre_import": "Importer",
-  "prompt_copie_echec": "Copie impossible. Sélectionne le texte du prompt ci-dessous et copie-le à la main.",
+  "titre_import": "Importer",
+
+
+
+
+  "prompt_copie_echec": "Copie impossible. Sélectionne le texte du prompt ci-dessous et copie-le à la main.",
+
+
   "choisir_fichier": "Choisir un fichier",
   "titre_apercu_import": "Aperçu de la recette importée",
   "avertissements_import": "Points à vérifier avant d'enregistrer :",

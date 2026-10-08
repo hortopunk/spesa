@@ -55,15 +55,20 @@ SPESA_dev/
 │   └── style.css         Tout le style
 ├── langues/
 │   ├── fr.json           Tous les textes de l'interface (français)
-│   └── co.json           Corse : vide au départ
+│   └── co.json           Corse : brouillon (seulement les textes de design/DESIGN.md section 11 ; le reste retombe sur le français)
 ├── js/
 │   ├── db.js             Lecture/écriture LocalStorage (seul fichier qui y touche)
 │   ├── logic.js          Normalisation, fusion, conversion d'unités, parts
 │   ├── langue.js         Fonction t("cle") et changement de langue
 │   ├── backup.js         Export, import, rappel de sauvegarde
+│   ├── composants.js     Éléments de base du design (en-tête, perforation, boutons, pastilles, champs, vignettes de rayon...)
 │   ├── ui.js             Rendu de l'interface (DOM)
 │   └── app.js            Démarrage et événements (clics, saisies)
 ├── icons/                Icônes de l'appli (192 et 512 px)
+├── polices/              Police Archivo hébergée (licence OFL)
+├── design/               DESIGN.md (source de vérité du design) et maquettes de référence
+├── dev/                  Données et page de démonstration des composants (non publiées, voir .git/info/exclude)
+├── tests/                Tests Node (logique, base de données, fichiers, design)
 ├── ARCHITECTURE.md       Ce document
 └── (fichier de consignes) Consignes pour l'assistant de code, non publié (à créer à l'étape 0)
 ```
@@ -237,12 +242,18 @@ Limite assumée : la sauvegarde est manuelle (deux appuis environ). Évolution p
 
 ## 10. Design
 
-Petit projet, besoin esthétique modéré, mais soigné et lisible.
-- Minimaliste, clair. 2 ou 3 couleurs (fond, texte, une couleur d'accent). Mode sombre non prévu en v1.
-- Police système (aucun chargement externe). Une seule police embarquée est possible plus tard.
-- Zones tactiles : 44 px minimum. Navigation en bas de l'écran (à portée du pouce) : Recettes, Courses, Réglages. L'onglet Courses regroupe la préparation de la liste (ajouts, révision) et le mode courses (cochage), selon l'étape en cours (`etat`) ; l'historique s'ouvre depuis le même onglet. Dans la liste des recettes, un bouton « panier + » à droite de chaque recette l'ajoute à la liste avec ses parts (✓ si elle y est déjà).
-- Icônes : quelques SVG en ligne, sans bibliothèque.
-- Aucune dépendance externe : tout fonctionne sans réseau.
+La source de vérité est `design/DESIGN.md` (jetons de couleur, composants, 11 rayons et leurs formes, écrans, accessibilité). Les maquettes de référence sont dans `design/mockups/`. En cas de doute, DESIGN.md prévaut.
+
+Mise en œuvre (octobre 2026) :
+- **Un seul fichier CSS** (`css/style.css`). Les couleurs, rayons et espacements viennent tous des jetons de `:root` (palette fermée de 9 teintes + 4 couleurs de vignette). Le test `tests/design.test.js` vérifie qu'aucune couleur n'est écrite ailleurs, qu'il n'y a ni ombre floue ni dégradé (sauf les tirets de la perforation) et que les contrastes de la palette respectent les seuils (texte ≥ 4,5:1, formes et contours ≥ 3:1).
+- **Composants** dans `js/composants.js` : fonctions qui construisent du DOM (`entete`, `perforation`, `bouton`, `boutonRond`, `boutonCarre`, `pastille`, `pastilleAlerte`, `pastilleNumero`, `champ`, `selecteur`, `selecteurRayon`, `rayonTile`, `feuilleConfirmation`...). Aucun texte en dur : les textes arrivent déjà traduits. La page `dev/composants.html` les montre tous.
+- **Mise en page** : fond noir, tout le contenu dans des cartes, en-tête et pied en demi-cartes. Trois pieds de page : action seule (écrans secondaires : Ajout, Détail, Formulaire, Import, Révision, Historique), action + onglets en « coupon à deux étages » (Recettes, Courses, préparation de la liste), onglets seuls (Réglages). La classe `secondaire` ou `onglets-seuls` est posée sur `body` par `UI.majHabillage`.
+- **Écrans sans maquette** (préparation de la liste, révision, historique, réglages, messages, confirmations) : composés uniquement avec les composants existants, dans l'esprit du design. À valider ou à remplacer quand leurs maquettes existeront.
+- **Messages** : l'alerte (stockage plein, données abîmées) et « Supprimé. Annuler » sont des cartes sombres en haut de l'écran ; le rappel de sauvegarde est une carte sombre en tête des listes (un bouton qui ouvre les Réglages). Il n'y a plus de bouton « Sauvegarder » flottant : la sauvegarde est dans les Réglages.
+- **Confirmations** : feuilles modales (`role="dialog"`, focus piégé, Échap) à la place des fenêtres `confirm()` du navigateur (fin de courses, restauration, annulation de restauration, proposition de sauvegarde).
+- **Langue** : choix Français / Corsu dans les Réglages (le seul endroit). Le corse est un brouillon à faire relire ; les textes sans traduction retombent sur le français.
+- Navigation : onglets Recettes · Courses · Réglages. L'onglet Courses regroupe la préparation de la liste (ajouts, révision) et le mode courses selon `etat` ; l'historique s'ouvre depuis le mode courses. Dans la liste des recettes, le bouton carré à droite de chaque recette ouvre la feuille de parts.
+- Icônes : SVG à trait simple (section 5.20 de DESIGN.md), sans bibliothèque. Aucune dépendance externe : police et ressources sont locales.
 
 ## 11. Méthode de développement
 

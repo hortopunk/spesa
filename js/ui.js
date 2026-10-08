@@ -14,45 +14,22 @@ const UI = {
       else onglet.removeAttribute("aria-current");
     });
     this.ecranCourant = nom;
-    this.majBoutonSauvegarde();
     this.majHabillage();
   },
 
-  // En mode courses (liste validée), le bouton flottant masquerait des quantités : on le cache
-  // (le bandeau de rappel et les Réglages permettent de sauvegarder)
   ecranCourant: "recettes",
-  modeCourses: false,
+  revision: false,   // l'écran Liste montre la révision (écran secondaire, sans onglets)
 
-  definirModeCourses(actif) {
-    this.modeCourses = actif;
-    this.majBoutonSauvegarde();
-    this.majHabillage();
-  },
-
-  // Le nouvel habillage (fond noir, cartes) s'applique à l'écran Courses quand la liste est validée.
-  // Les autres écrans gardent l'ancien style en attendant leur tour.
+  // Pied de page selon l'écran (DESIGN.md 5.3) :
+  //  - écran secondaire (Ajout, Détail, Formulaire, Import, Révision, Historique) : action seule, sans onglets ;
+  //  - Réglages : onglets seuls ; - Recettes et Courses : action + onglets (coupon à deux étages).
   majHabillage() {
-    const vueCourses = !document.getElementById("vue-panier").hidden || !document.getElementById("vue-ajout").hidden;
-    const courses = this.ecranCourant === "liste" && this.modeCourses && vueCourses;
-    const detail = this.ecranCourant === "recettes" && !document.getElementById("vue-detail").hidden;
-    const formulaire = this.ecranCourant === "recettes" && !document.getElementById("vue-form").hidden;
-    const importer = this.ecranCourant === "recettes" && !document.getElementById("vue-import").hidden;
-    const recettes = this.ecranCourant === "recettes" && (!document.getElementById("vue-liste").hidden || detail || formulaire || importer);
-    const actif = courses || recettes;
-    document.body.classList.toggle("design", actif);
-    // Écran secondaire (Ajout, Détail) : pas d'onglets, l'action reste seule en pied
-    document.body.classList.toggle("secondaire", (courses && !document.getElementById("vue-ajout").hidden) || detail || formulaire || importer);
-    this.majBoutonSauvegarde();
-  },
-
-  majBoutonSauvegarde() {
-    document.getElementById("bouton-sauvegarde").hidden =
-      document.body.classList.contains("design") || (this.ecranCourant === "liste" && this.modeCourses);
-  },
-
-  // Titre de l'écran Liste : « Liste » pendant la préparation, « Courses » une fois validée
-  titreListe(texte) {
-    document.getElementById("titre-liste").textContent = texte;
+    const cache = (id) => document.getElementById(id).hidden;
+    let secondaire = false;
+    if (this.ecranCourant === "recettes") secondaire = cache("vue-liste");
+    else if (this.ecranCourant === "liste") secondaire = !cache("vue-ajout") || !cache("vue-historique") || this.revision;
+    document.body.classList.toggle("secondaire", secondaire);
+    document.body.classList.toggle("onglets-seuls", this.ecranCourant === "reglages");
   },
 
   // Dans l'écran Recettes : "liste", "detail", "form" ou "import"
@@ -78,7 +55,7 @@ const UI = {
           svg("0 0 24 24", [["circle", { cx: 11, cy: 11, r: 7 }], ["path", { d: "M20 20l-4-4" }]], "icone-trait loupe"),
           champ
         ]),
-        el("div", { class: "zone-liste" }, [el("ul", { id: "liste-recettes", class: "liste-cartes" })]),
+        el("div", { class: "zone-liste", "data-rappel": "" }, [el("ul", { id: "liste-recettes", class: "liste-cartes" })]),
         el("div", { class: "pied-carte pied-double" }, [
           el("button", { type: "button", class: "bouton-ajout", "data-action": "nouvelle" }, [
             svg("0 0 24 24", [["path", { d: "M12 5v14M5 12h14" }]], "icone-trait plus"),
@@ -89,6 +66,7 @@ const UI = {
       );
     }
     document.getElementById("resume-recettes").textContent = t(total > 1 ? "recettes_plusieurs" : "recettes_un").replace("{n}", total);
+    this.majRappels();
 
     const ul = document.getElementById("liste-recettes");
     ul.replaceChildren();
@@ -131,7 +109,6 @@ const UI = {
 
   // Feuille « Pour combien de parts ? » : remplace le pied, sans onglets (dialogue modal)
   ouvrirFeuilleParts(recette, parts, dejaDedans) {
-    this.fermerFeuilleParts();
     const feuille = el("div", { id: "feuille-parts", class: "feuille", role: "dialog", "aria-modal": "true", "aria-labelledby": "feuille-titre" }, [
       el("h2", { id: "feuille-titre", texte: t("feuille_titre") }),
       el("p", { class: "feuille-recette", texte: recette.titre }),
@@ -148,11 +125,25 @@ const UI = {
       dejaDedans ? el("button", { type: "button", class: "bouton-contour tirets", "data-action": "feuille-retirer", texte: t("retirer_de_la_liste") }) : null
     ]);
     feuille.dataset.id = recette.id;
-    document.body.append(feuille);
-    // Le reste de l'écran n'est plus accessible tant que la feuille est ouverte
-    ["ecrans", "navigation"].forEach((id) => document.getElementById(id).setAttribute("inert", ""));
+    this.afficherFeuille(feuille, feuille.querySelector(".feuille-valeur"));
     this.majFeuilleParts(parts);
-    feuille.querySelector(".feuille-valeur").focus();
+  },
+
+  // Montre une feuille modale : le reste de l'écran n'est plus accessible (inert), le focus entre dans la
+  // feuille et revient à l'élément d'origine à la fermeture (Échap = fermer, voir app.js)
+  declencheur: null,
+  afficherFeuille(feuille, cibleFocus) {
+    this.fermerFeuille();
+    this.declencheur = document.activeElement;
+    document.body.append(feuille);
+    ["ecrans", "navigation"].forEach((id) => document.getElementById(id).setAttribute("inert", ""));
+    cibleFocus.focus();
+  },
+
+  // Feuille de confirmation (fin de courses, restauration...). `options` = { titre, texte, confirmer, annuler }
+  ouvrirConfirmation(options) {
+    const feuille = feuilleConfirmation({ ...options, annuler: options.annuler || t("annuler") });
+    this.afficherFeuille(feuille, feuille.querySelector("h2"));
   },
 
   // Met à jour la valeur affichée (et le mot « part(s) »)
@@ -161,15 +152,20 @@ const UI = {
     document.getElementById("feuille-unite").textContent = " " + t(parts > 1 ? "parts" : "part");
   },
 
-  // Ferme la feuille et redonne le focus au bouton qui l'avait ouverte
-  fermerFeuilleParts() {
-    const feuille = document.getElementById("feuille-parts");
+  // Ferme la feuille ouverte (s'il y en a une) et redonne le focus à l'élément qui l'avait ouverte
+  fermerFeuille() {
+    const feuille = document.querySelector(".feuille");
     if (!feuille) return;
     const id = feuille.dataset.id;
     feuille.remove();
     ["ecrans", "navigation"].forEach((n) => document.getElementById(n).removeAttribute("inert"));
-    const bouton = document.querySelector('[data-action="ajout-rapide"][data-id="' + id + '"]');
-    if (bouton) bouton.focus();
+    const origine = this.declencheur;
+    this.declencheur = null;
+    if (origine && document.contains(origine)) origine.focus();
+    else if (id) {
+      const bouton = document.querySelector('[data-action="ajout-rapide"][data-id="' + id + '"]');
+      if (bouton) bouton.focus();
+    }
   },
 
   // --- Détail d'une recette (DESIGN.md 7.4) ---
@@ -530,35 +526,6 @@ const UI = {
     )));
   },
 
-  // Ajoute une ligne d'ingrédient (nom, quantité, unité, rayon) dans `conteneur`.
-  // Utilisée par le formulaire de recette et par les articles libres de la liste.
-  ajouterLigneIngredient(conteneur, ing = { nom: "", quantite: null, unite: "piece", rayon: "" }, avecRetrait = true) {
-    const options = Logic.UNITES.map((u) =>
-      el("option", { value: u, selected: u === (ing.unite || "piece"), texte: t("unite_" + u) })
-    );
-    const optionsRayon = [el("option", { value: "", texte: t("choisir_rayon") })].concat(
-      Logic.RAYONS.map((r) => el("option", { value: r, selected: r === ing.rayon, texte: t("rayon_" + r) }))
-    );
-    const suggestions = el("ul", { class: "suggestions", hidden: true });
-    // Garde le focus dans le champ quand on touche une suggestion
-    suggestions.addEventListener("mousedown", (e) => e.preventDefault());
-    const rayon = el("select", { class: "i-rayon", "aria-label": t("champ_rayon") }, optionsRayon);
-    if (ing.rayon) rayon.dataset.auto = "1";   // rayon repris du dictionnaire
-    conteneur.append(
-      el("div", { class: "ligne-ingredient" + (avecRetrait ? "" : " sans-retrait") }, [
-        el("input", { class: "i-nom", type: "text", autocomplete: "off", placeholder: t("champ_nom_ingredient"), value: ing.nom }),
-        suggestions,
-        el("input", {
-          class: "i-quantite", type: "text", inputmode: "decimal",
-          placeholder: t("champ_quantite"), value: ing.quantite === null ? "" : String(ing.quantite).replace(".", ",")
-        }),
-        el("select", { class: "i-unite" }, options),
-        avecRetrait && el("button", { class: "bouton rond", "data-action": "retirer-ingredient", "aria-label": t("retirer_ingredient"), texte: "✕" }),
-        rayon
-      ])
-    );
-  },
-
   // Affiche (ou cache si la liste est vide) les suggestions d'une ligne (DESIGN.md 5.19).
   // `suggestions` = [{ libelle, rayon }] ; `saisie` = ce qui est tapé (son début est mis en gras).
   rendreSuggestions(ligne, suggestions, saisie = "") {
@@ -612,8 +579,13 @@ const UI = {
 
   // Message d'alerte en haut de l'écran (stockage plein, données abîmées...), fermable
   afficherAlerte(texte) {
-    document.getElementById("alerte-texte").textContent = texte;
-    document.getElementById("alerte").hidden = false;
+    const a = document.getElementById("alerte");
+    a.replaceChildren(
+      pastilleAlerte({ inverse: true }),
+      el("span", { class: "message-texte", texte }),
+      el("button", { type: "button", class: "bouton-sombre", "data-action": "fermer-alerte", texte: t("fermer") })
+    );
+    a.hidden = false;
   },
 
   fermerAlerte() {
@@ -622,8 +594,12 @@ const UI = {
 
   // Message temporaire avec un bouton « Annuler » (après une suppression)
   afficherAnnulation(texte) {
-    document.getElementById("annulation-texte").textContent = texte;
-    document.getElementById("annulation").hidden = false;
+    const a = document.getElementById("annulation");
+    a.replaceChildren(
+      el("span", { class: "message-texte", texte }),
+      el("button", { type: "button", class: "bouton-sombre", "data-action": "defaire", texte: t("annuler") })
+    );
+    a.hidden = false;
   },
 
   cacherAnnulation() {
@@ -699,107 +675,93 @@ const UI = {
     return q.unite === "piece" ? "× " + nombre : nombre + " " + t("unite_" + q.unite);
   },
 
-  // --- Liste, étape « ajouts » ---
+  // --- Liste, étape « ajouts » (préparation) ---
   // choisies : [{ index, titre, parts }] ; disponibles : [{ id, titre }] ;
   // manuels : articles libres ; choixOuvert : le choix de recette est déplié
   rendreAjouts(choisies, disponibles, manuels, choixOuvert) {
+    this.revision = false;
     const c = document.getElementById("contenu-liste");
-    c.replaceChildren(el("h2", { texte: t("section_recettes") }));
+    const carte = (libelle, enfants) => el("div", { class: "carte-simple" }, [el("div", { class: "libelle-carte", texte: libelle }), ...enfants]);
+    const compteRecettes = t(choisies.length > 1 ? "recettes_plusieurs" : "recettes_un").replace("{n}", choisies.length);
+    const compteArticles = manuels.length + " " + t(manuels.length > 1 ? "articles" : "article");
 
-    if (choisies.length === 0) c.append(el("p", { class: "vide", texte: t("liste_sans_recette") }));
-    choisies.forEach((r) => c.append(el("div", { class: "ligne-liste" }, [
-      el("span", { class: "ligne-titre", texte: r.titre }),
-      el("div", { class: "parts" }, [
-        el("button", { class: "bouton rond", "data-action": "liste-parts-moins", "data-index": r.index, "aria-label": t("diminuer_parts"), texte: "−" }),
-        el("strong", { class: "parts-nombre", texte: r.parts }),
-        el("button", { class: "bouton rond", "data-action": "liste-parts-plus", "data-index": r.index, "aria-label": t("augmenter_parts"), texte: "+" }),
-        el("span", { texte: r.parts > 1 ? t("parts") : t("part") })
-      ]),
-      el("button", { class: "bouton rond retrait", "data-action": "liste-retirer-recette", "data-index": r.index, "aria-label": t("retirer"), texte: "✕" })
-    ])));
-
-    c.append(el("button", {
-      class: "bouton", "data-action": "liste-choix-recette",
-      texte: choixOuvert ? t("fermer") : "+ " + t("ajouter_recette")
-    }));
-    if (choixOuvert) {
-      if (disponibles.length === 0) c.append(el("p", { class: "vide", texte: t("aucune_recette_disponible") }));
-      c.append(el("ul", { class: "cartes" }, disponibles.map((r) => el("li", {}, [
-        el("button", { class: "carte", "data-action": "liste-ajouter-recette", "data-id": r.id }, [
-          el("span", { class: "carte-titre", texte: r.titre })
+    // Recettes de la liste : nom, parts modifiables, retirer
+    const lignesRecettes = choisies.flatMap((r, i) => [
+      i > 0 && perforation("ligne"),
+      el("div", { class: "ligne-prepa" }, [
+        el("div", { class: "carte-nom", texte: r.titre }),
+        el("div", { class: "stepper" }, [
+          boutonRond("moins", { action: "liste-parts-moins", libelle: t("diminuer_parts") + ", " + r.titre, donnees: { index: r.index } }),
+          el("div", { class: "valeur-parts", "aria-live": "polite" }, [el("strong", { texte: r.parts }), el("span", { texte: " " + t(r.parts > 1 ? "parts" : "part") })]),
+          boutonRond("plus", { action: "liste-parts-plus", libelle: t("augmenter_parts") + ", " + r.titre, donnees: { index: r.index } }),
+          boutonCarre("corbeille", { action: "liste-retirer-recette", libelle: t("retirer") + " " + r.titre, donnees: { index: r.index } })
         ])
-      ]))));
+      ])
+    ]).filter(Boolean);
+    const cartes = [
+      carte(t("section_recettes"), [
+        choisies.length === 0 ? el("p", { class: "texte-carte secondaire", texte: t("liste_sans_recette") }) : el("div", { class: "liste-prepa" }, lignesRecettes),
+        bouton("secondaire", { texte: choixOuvert ? t("fermer") : t("ajouter_recette"), icone: choixOuvert ? null : "plus", action: "liste-choix-recette" })
+      ])
+    ];
+    if (choixOuvert) {
+      cartes.push(carte(t("ajouter_recette"), [
+        disponibles.length === 0
+          ? el("p", { class: "texte-carte secondaire", texte: t("aucune_recette_disponible") })
+          : el("div", { class: "liste-choix" }, disponibles.map((r) => bouton("secondaire", { texte: r.titre, icone: "plus", action: "liste-ajouter-recette", donnees: { id: r.id } })))
+      ]));
+    }
+    // Articles libres : vignette du rayon, nom, quantité, retirer
+    cartes.push(carte(t("section_articles"), [
+      manuels.length === 0 ? el("p", { class: "texte-carte secondaire", texte: t("liste_sans_article") }) : el("div", { class: "liste-prepa" },
+        manuels.flatMap((m, i) => [
+          i > 0 && perforation("ligne"),
+          el("div", { class: "ligne-detail" }, [
+            rayonTile(m.rayon, 32),
+            el("span", { class: "nom" }, [
+              Logic.majuscule(m.nom),
+              el("span", { class: "rayon-detail", texte: [m.quantite === null ? "" : this.texteQuantites([m]), t("rayon_" + m.rayon)].filter(Boolean).join(" · ") })
+            ]),
+            boutonCarre("corbeille", { action: "liste-retirer-article", libelle: t("retirer") + " " + m.nom, donnees: { index: i } })
+          ])
+        ]).filter(Boolean))
+    ]));
+    if (choisies.length > 0 || manuels.length > 0) {
+      cartes.push(el("div", { class: "carte-actions" }, [bouton("retrait", { texte: t("tout_effacer"), action: "liste-effacer" })]));
     }
 
-    c.append(el("h2", { texte: t("section_articles") }));
-    manuels.forEach((m, index) => c.append(el("div", { class: "ligne-liste" }, [
-      el("span", { class: "ligne-titre", texte: Logic.majuscule(m.nom) }),
-      el("span", { class: "quantite", texte: m.quantite === null ? "" : this.texteQuantites([m]) }),
-      el("button", { class: "bouton rond retrait", "data-action": "liste-retirer-article", "data-index": index, "aria-label": t("retirer"), texte: "✕" })
-    ])));
-    c.append(el("div", { id: "m-ligne" }));
-    this.ajouterLigneIngredient(document.getElementById("m-ligne"), undefined, false);
-    c.append(
-      el("button", { class: "bouton", "data-action": "liste-ajouter-article", texte: "+ " + t("ajouter_article") }),
-      el("p", { id: "m-erreur", class: "erreur", role: "alert", hidden: true }),
-      el("div", { class: "actions" }, [
-        el("button", {
-          class: "bouton principal", "data-action": "liste-reviser",
-          disabled: choisies.length === 0 && manuels.length === 0, texte: t("passer_revision")
-        }),
-        el("button", { class: "bouton danger", "data-action": "liste-effacer", texte: t("tout_effacer") })
+    c.replaceChildren(
+      entete({ titre: t("titre_liste"), resume: { id: "resume-ajouts" } }),
+      el("div", { class: "zone-liste", "data-rappel": "" }, cartes),
+      el("div", { class: "pied-carte pied-actions" }, [
+        bouton("principal", { texte: t("passer_revision"), action: "liste-reviser", desactive: choisies.length === 0 && manuels.length === 0 }),
+        bouton("secondaire", { texte: t("ajouter_un_article"), icone: "plus", action: "courses-ouvrir-ajout" })
       ])
     );
+    document.getElementById("resume-ajouts").textContent = compteRecettes + " · " + compteArticles;
+    this.majRappels();
+    this.majHabillage();
   },
 
-  // Ligne de l'article libre en cours de saisie (`conteneur` : "m-ligne" dans Liste, "c-ligne" dans Courses)
-  lireArticle(conteneur = "m-ligne") {
-    return this.lireLigne(document.querySelector("#" + conteneur + " .ligne-ingredient"));
-  },
-
-  // Brouillon de l'article libre (Liste) : gardé quand l'écran est redessiné, pour ne pas perdre la saisie
-  lireBrouillonArticle() {
-    const ligne = document.querySelector("#m-ligne .ligne-ingredient");
-    if (!ligne) return null;
-    return { ...this.lireLigne(ligne), auto: ligne.querySelector(".i-rayon").dataset.auto === "1" };
-  },
-
-  restaurerBrouillonArticle(brouillon) {
-    const ligne = document.querySelector("#m-ligne .ligne-ingredient");
-    if (!brouillon || !ligne) return;
-    ligne.querySelector(".i-nom").value = brouillon.nom;
-    ligne.querySelector(".i-quantite").value = brouillon.quantite;
-    ligne.querySelector(".i-unite").value = brouillon.unite;
-    const rayon = ligne.querySelector(".i-rayon");
-    rayon.value = brouillon.rayon;
-    if (brouillon.auto) rayon.dataset.auto = "1"; else delete rayon.dataset.auto;
-  },
-
-  // --- Liste, étape « révision » : tout est coché, on décoche ce qu'on a déjà ---
+  // --- Liste, étape « révision » : tout est à acheter, on marque ce qu'on a déjà à la maison ---
   rendreRevision(groupes, decoches) {
+    this.revision = true;
     const c = document.getElementById("contenu-liste");
+    const cartes = [el("div", { class: "carte-simple" }, [el("p", { class: "texte-carte", texte: t("aide_revision") })])];
+    groupes.forEach((groupe) => groupe.lignes.forEach((l) => cartes.push(this.carteArticle(l, decoches.includes(l.cle), "revision"))));
     c.replaceChildren(
-      el("button", { class: "bouton lien", "data-action": "revision-retour", texte: "‹ " + t("retour_ajouts") }),
-      el("h2", { texte: t("titre_revision") }),
-      el("p", { class: "aide", texte: t("aide_revision") })
+      entete({ titre: t("titre_revision"), retour: { action: "revision-retour", libelle: t("retour_ajouts") } }),
+      el("div", { class: "zone-liste" }, cartes),
+      el("div", { class: "pied-carte pied-actions" }, [bouton("principal", { texte: t("valider_liste"), icone: "coche", action: "revision-valider" })])
     );
-    groupes.forEach((groupe) => {
-      c.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
-      groupe.lignes.forEach((l) => c.append(el("label", { class: "coche-ligne" }, [
-        el("input", { type: "checkbox", "data-action": "basculer", "data-cle": l.cle, checked: !decoches.includes(l.cle) }),
-        el("span", { class: "coche-nom", texte: Logic.majuscule(l.libelle) }),
-        el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
-      ])));
-    });
-    c.append(el("div", { class: "actions" }, [
-      el("button", { class: "bouton principal", "data-action": "revision-valider", texte: t("valider_liste") })
-    ]));
+    this.majHabillage();
   },
 
   // --- Liste, étape « courses » (liste validée) : liste finale rangée par rayon ---
   // Carte article (DESIGN.md, 5.1) : vignette du rayon, nom, « quantité · rayon », case à cocher.
   // `ligne` = { cle, libelle, rayon, quantites }. Le bouton porte data-action="cocher".
-  carteArticle(ligne, coche) {
+  // `mode` : "courses" (coché = dans le caddie) ou "revision" (coché = déjà à la maison)
+  carteArticle(ligne, coche, mode = "courses") {
     const nom = Logic.majuscule(ligne.libelle);
     const quantite = this.texteQuantites(ligne.quantites);
     const rayon = t("rayon_" + ligne.rayon);
@@ -810,7 +772,7 @@ const UI = {
         el("span", { class: "carte-meta", texte: quantite ? quantite + " · " + rayon : rayon })
       ]),
       el("button", {
-        type: "button", class: "case", "data-action": "cocher", "data-cle": ligne.cle,
+        type: "button", class: "case", "data-action": mode === "revision" ? "basculer" : "cocher", "data-cle": ligne.cle, "data-mode": mode,
         "data-description": [nom, quantite, rayon.toLowerCase()].filter(Boolean).join(", ")
       }, [svg("0 0 24 24", [["path", { d: "M5 12.5l4.5 4.5L19 7.5" }]], "coche-icone")])
     ]);
@@ -822,7 +784,8 @@ const UI = {
   // et le libellé lu par un lecteur d'écran : « Lait, 2 L, crèmerie, non coché ».
   majEtatCarte(bouton, coche) {
     bouton.setAttribute("aria-pressed", coche ? "true" : "false");
-    bouton.setAttribute("aria-label", bouton.dataset.description + ", " + t(coche ? "article_coche" : "article_non_coche"));
+    const cles = bouton.dataset.mode === "revision" ? ["article_a_la_maison", "article_a_acheter"] : ["article_coche", "article_non_coche"];
+    bouton.setAttribute("aria-label", bouton.dataset.description + ", " + t(coche ? cles[0] : cles[1]));
     bouton.closest(".carte-article").classList.toggle("coche", coche);
   },
 
@@ -943,6 +906,7 @@ const UI = {
   // Écran Courses (DESIGN.md 5.2 à 5.6) : en-tête, recherche, filtres, cartes qui défilent, bouton vert.
   // `filtres` = { filtre, recherche }. La coque est dessinée ici ; les cartes par majZoneCourses.
   rendreCourses(groupes, coches, filtres) {
+    this.revision = false;
     const c = document.getElementById("contenu-liste");
     c.replaceChildren();
 
@@ -963,14 +927,12 @@ const UI = {
     ));
 
     // Zone qui défile : cartes (redessinées à chaque filtre) puis carte de fin
-    c.append(el("div", { class: "zone-liste", id: "zone-courses" }, [
+    c.append(el("div", { class: "zone-liste", id: "zone-courses", "data-rappel": "" }, [
       el("div", { id: "cartes-courses" }),
-      el("div", { class: "carte-fin" }, [
-        el("div", { class: "actions" }, [
-          el("button", { class: "bouton principal", "data-action": "terminer-courses", texte: t("terminer_courses") }),
-          el("button", { class: "bouton", "data-action": "liste-modifier", texte: t("modifier_liste") }),
-          el("button", { class: "bouton", "data-action": "historique-ouvrir", texte: t("historique_ouvrir") })
-        ])
+      el("div", { class: "carte-actions" }, [
+        bouton("secondaire", { texte: t("terminer_courses"), icone: "coche", action: "terminer-courses" }),
+        bouton("secondaire", { texte: t("modifier_liste"), icone: "crayon", action: "liste-modifier" }),
+        bouton("secondaire", { texte: t("historique_ouvrir"), action: "historique-ouvrir" })
       ])
     ]));
 
@@ -982,6 +944,8 @@ const UI = {
     ]));
 
     this.majZoneCourses(groupes, coches, filtres);
+    this.majRappels();
+    this.majHabillage();
   },
 
   // Redessine les cartes selon le filtre et la recherche, sans toucher au reste ni remonter la liste
@@ -1002,7 +966,7 @@ const UI = {
     }
     document.getElementById("cartes-courses").replaceChildren(...cartes);
     zone.scrollTop = haut;
-    document.querySelectorAll(".filtre").forEach((b) => b.setAttribute("aria-pressed", b.dataset.filtre === filtres.filtre ? "true" : "false"));
+    document.querySelectorAll(".carte-filtres .filtre").forEach((b) => b.setAttribute("aria-pressed", b.dataset.filtre === filtres.filtre ? "true" : "false"));
     this.majResume(compte.coches, compte.total);
   },
 
@@ -1029,81 +993,124 @@ const UI = {
     window.scrollTo(0, 0);
   },
 
-  // entrees : [{ index, date, resume }], de la plus récente à la plus ancienne
+  // entrees : [{ index, date, resume, nombre }], de la plus récente à la plus ancienne
   rendreHistorique(entrees) {
+    this.revision = false;
     const vue = document.getElementById("vue-historique");
+    const cartes = entrees.length === 0
+      ? [el("div", { class: "carte-recette carte-recette-vide" }, [
+          el("span", { class: "tuile-noire" }, [el("span", { class: "tuile-nombre", texte: "0" })]),
+          el("span", { class: "carte-texte" }, [el("span", { class: "carte-nom", texte: t("historique_vide") })])
+        ])]
+      : entrees.map((e) => el("div", { class: "carte-recette" }, [
+          el("button", { type: "button", class: "carte-recette-lien", "data-action": "historique-detail", "data-index": e.index }, [
+            el("span", { class: "tuile-noire" }, [
+              el("span", { class: "tuile-nombre", texte: e.nombre }),
+              el("span", { class: "tuile-unite", texte: t("articles_court") })
+            ]),
+            el("span", { class: "carte-texte" }, [
+              el("span", { class: "carte-nom", texte: e.date }),
+              el("span", { class: "carte-meta", texte: e.resume })
+            ])
+          ])
+        ]));
     vue.replaceChildren(
-      el("button", { class: "bouton lien", "data-action": "historique-fermer", texte: "‹ " + t("retour") }),
-      el("h1", { texte: t("titre_historique") })
+      entete({ titre: t("titre_historique"), retour: { action: "historique-fermer", libelle: t("retour_courses") } }),
+      el("div", { class: "zone-liste" }, cartes)
     );
-    if (entrees.length === 0) return vue.append(el("p", { class: "vide", texte: t("historique_vide") }));
-    vue.append(el("ul", { class: "cartes" }, entrees.map((e) => el("li", {}, [
-      el("button", { class: "carte carte-historique", "data-action": "historique-detail", "data-index": e.index }, [
-        el("span", { class: "carte-titre", texte: e.date }),
-        el("span", { class: "carte-info", texte: e.resume })
-      ])
-    ]))));
   },
 
-  // Une liste terminée : recettes, puis articles par rayon (cochés = étaient dans le caddie)
+  // Une liste terminée : recettes, puis articles par rayon (en sombre = étaient dans le caddie)
   rendreDetailHistorique(entree, date, groupes) {
     const vue = document.getElementById("vue-historique");
-    vue.replaceChildren(
-      el("button", { class: "bouton lien", "data-action": "historique-retour", texte: "‹ " + t("retour") }),
-      el("h1", { texte: date })
-    );
+    const cartes = [];
     if (entree.recettes.length > 0) {
-      vue.append(
-        el("h2", { texte: t("section_recettes") }),
-        el("ul", { class: "ingredients" }, entree.recettes.map((r) => el("li", {}, [
-          el("span", { texte: r.titre }),
-          el("span", { class: "quantite", texte: r.parts + " " + (r.parts > 1 ? t("parts") : t("part")) })
-        ])))
-      );
+      cartes.push(el("div", { class: "carte-simple" }, [
+        el("div", { class: "libelle-carte", texte: t("section_recettes") }),
+        el("div", { class: "liste-prepa" }, entree.recettes.flatMap((r, i) => [
+          i > 0 && perforation("ligne"),
+          el("div", { class: "ligne-detail" }, [
+            el("span", { class: "nom", texte: r.titre }),
+            el("span", { class: "quantite", texte: r.parts + " " + t(r.parts > 1 ? "parts" : "part") })
+          ])
+        ]).filter(Boolean))
+      ]));
     }
-    vue.append(el("h2", { texte: t("section_articles_achetes") }), el("p", { class: "aide", texte: t("aide_historique") }));
-    groupes.forEach((groupe) => {
-      vue.append(el("h3", { texte: t("rayon_" + groupe.rayon) }));
-      groupe.lignes.forEach((l) => vue.append(el("div", { class: "ligne-course" }, [
-        el("input", { type: "checkbox", disabled: true, checked: l.coche }),
-        el("span", { class: "coche-nom", texte: Logic.majuscule(l.libelle) }),
-        el("span", { class: "quantite", texte: this.texteQuantites(l.quantites) })
-      ])));
+    cartes.push(el("div", { class: "carte-simple" }, [el("p", { class: "texte-carte", texte: t("aide_historique") })]));
+    groupes.forEach((groupe) => groupe.lignes.forEach((l) => {
+      const nom = Logic.majuscule(l.libelle);
+      const quantite = this.texteQuantites(l.quantites);
+      cartes.push(el("div", { class: "carte-article" + (l.coche ? " coche" : "") }, [
+        rayonTile(l.rayon),
+        el("span", { class: "carte-texte" }, [
+          el("span", { class: "carte-nom", texte: nom }),
+          el("span", { class: "carte-meta", texte: [quantite, t("rayon_" + l.rayon), t(l.coche ? "archive_pris" : "archive_non_pris")].filter(Boolean).join(" · ") })
+        ])
+      ]));
+    }));
+    vue.replaceChildren(
+      entete({ titre: date, retour: { action: "historique-retour", libelle: t("retour_historique") } }),
+      el("div", { class: "zone-liste" }, cartes)
+    );
+  },
+
+  // --- Rappel de sauvegarde : une carte sombre en tête des listes (un bouton qui ouvre les Réglages) ---
+  rappel: null,
+  afficherBandeau(texte) {
+    this.rappel = texte;
+    this.majRappels();
+  },
+
+  majRappels() {
+    document.querySelectorAll(".carte-rappel").forEach((c) => c.remove());
+    if (this.rappel === null) return;
+    document.querySelectorAll(".zone-liste[data-rappel]").forEach((zone) => {
+      zone.prepend(el("button", { type: "button", class: "carte-rappel", "data-action": "aller-reglages", "aria-label": this.rappel + " " + t("ouvrir_reglages") }, [
+        pastilleAlerte({ inverse: true }),
+        el("span", { class: "message-texte", texte: this.rappel })
+      ]));
     });
   },
 
-  // --- Sauvegarde ---
-  // Bandeau de rappel : `texte` à afficher, ou null pour le cacher
-  afficherBandeau(texte) {
-    document.getElementById("bandeau-sauvegarde").hidden = texte === null;
-    if (texte !== null) document.getElementById("bandeau-texte").textContent = texte;
-  },
-
-  // Écran Réglages : `texteDate` = phrase sur la dernière sauvegarde
-  // `texteSecours` : phrase sur la copie d'avant restauration, ou null s'il n'y en a pas
-  rendreReglages(texteDate, texteSecours) {
-    document.getElementById("contenu-reglages").replaceChildren(
-      el("h2", { texte: t("section_sauvegarde") }),
-      el("p", { texte: texteDate }),
-      el("p", { class: "aide", texte: t("aide_sauvegarde") }),
-      el("div", { class: "actions" }, [
-        el("button", { class: "bouton principal", "data-action": "sauvegarder", texte: t("sauvegarder") }),
-        el("button", { class: "bouton", "data-action": "restaurer", texte: t("restaurer") })
+  // Écran Réglages : `texteDate` = phrase sur la dernière sauvegarde ; `texteSecours` : phrase sur la copie
+  // d'avant restauration, ou null ; `langue` : code de la langue choisie
+  rendreReglages(texteDate, texteSecours, langue) {
+    const carte = (libelle, enfants) => el("div", { class: "carte-simple" }, [el("div", { class: "libelle-carte", texte: libelle }), ...enfants]);
+    const cartes = [
+      carte(t("section_sauvegarde"), [
+        el("p", { class: "texte-carte", texte: texteDate }),
+        el("p", { class: "texte-carte secondaire", texte: t("aide_sauvegarde") }),
+        el("div", { class: "rangee-boutons" }, [
+          bouton("principal", { texte: t("sauvegarder"), icone: "importer", action: "sauvegarder" }),
+          bouton("secondaire", { texte: t("restaurer"), icone: "fichier", action: "restaurer" })
+        ]),
+        el("p", { id: "message-reglages", class: "erreur-champ", role: "status", hidden: true })
+      ])
+    ];
+    if (texteSecours !== null) {
+      cartes.push(carte(t("section_secours"), [
+        el("p", { class: "texte-carte secondaire", texte: texteSecours }),
+        el("div", { class: "rangee-boutons" }, [bouton("secondaire", { texte: t("annuler_restauration"), action: "annuler-restauration" })])
+      ]));
+    }
+    cartes.push(carte(t("section_langue"), [
+      el("div", { class: "puces", role: "group", "aria-label": t("section_langue") }, [
+        pastille(t("langue_fr"), { action: "langue", pressee: langue === "fr", donnees: { langue: "fr" } }),
+        pastille(t("langue_co"), { action: "langue", pressee: langue === "co", donnees: { langue: "co" } })
       ]),
-      ...(texteSecours === null ? [] : [el("div", { class: "secours" }, [
-        el("p", { class: "aide", texte: texteSecours }),
-        el("button", { class: "bouton danger", "data-action": "annuler-restauration", texte: t("annuler_restauration") })
-      ])]),
-      el("p", { id: "message-reglages", role: "alert", hidden: true })
+      el("p", { class: "texte-carte secondaire", texte: t("langue_brouillon") })
+    ]));
+    document.getElementById("contenu-reglages").replaceChildren(
+      entete({ titre: t("titre_reglages") }),
+      el("div", { class: "zone-liste" }, cartes)
     );
   },
 
-  // Message sous les boutons (réussite ou erreur)
+  // Message dans la carte Sauvegarde (réussite ou erreur)
   messageReglages(texte, erreur) {
     const p = document.getElementById("message-reglages");
     if (!p) return;
-    p.textContent = texte;
-    p.className = erreur ? "erreur" : "succes";
+    p.replaceChildren(erreur ? pastilleAlerte() : icone("coche", { taille: 20, trait: 3 }), el("span", { texte }));
     p.setAttribute("role", erreur ? "alert" : "status");
     p.hidden = false;
   },
