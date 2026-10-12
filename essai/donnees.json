@@ -1,0 +1,2472 @@
+{
+  "format": "spesa-sauvegarde-v1",
+  "version_schema": 2,
+  "description": "Données d'essai SPESA. Recettes « (essai) » : rédigées pour les tests, non sourcées. Autres recettes : réelles.",
+  "recettes": [
+    {
+      "id": "r_marianne1",
+      "titre": "Gâteau au chocolat de Marianne",
+      "parts": 1,
+      "ingredients": [
+        {
+          "nom": "chocolat noir",
+          "quantite": 125,
+          "unite": "g"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 125,
+          "unite": "g"
+        },
+        {
+          "nom": "œuf",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "sucre",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "farine",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "levure chimique",
+          "quantite": 2,
+          "unite": "cc"
+        }
+      ],
+      "etapes": [
+        "Dans un bain-marie (moyennement chaud), casser les morceaux de chocolat et le beurre. Remuer jusqu'à ce que le mélange soit bien homogène.",
+        "Fouetter les œufs et le sucre longuement pour obtenir un mélange mousseux et bien blanc.",
+        "À ce mélange, incorporer le mélange beurre-chocolat.",
+        "Ajouter à la préparation la farine et la levure chimique. Mélanger.",
+        "Verser la pâte dans le moule.",
+        "Glisser au milieu du four chauffé à 180 °C. Cuire pendant environ 1 heure."
+      ],
+      "notes": "Catégorie : Dessert\nCuisson : 1 h à 180 °C\nMoule : rond, 22 à 24 cm de diamètre, à bords assez hauts (le gâteau gonfle à la cuisson)\nNombre de parts non indiqué : quantités de la recette entière (1 part = 1 recette)."
+    },
+    {
+      "id": "r_marianne2",
+      "titre": "Gâteau chocolat Elliot",
+      "parts": 1,
+      "ingredients": [
+        {
+          "nom": "sucre",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "chocolat",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "œuf",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "farine",
+          "quantite": 100,
+          "unite": "g"
+        }
+      ],
+      "etapes": [
+        "Faire fondre le chocolat et le beurre.",
+        "Ajouter le sucre.",
+        "Ajouter les œufs et la farine, puis mettre (suite non notée sur le manuscrit : cuisson à compléter)."
+      ],
+      "notes": "Catégorie : Dessert\nCuisson à compléter (non notée sur le manuscrit).\nNombre de parts non indiqué : quantités de la recette entière (1 part = 1 recette)."
+    },
+    {
+      "id": "r_marianne3",
+      "titre": "Baba au rhum",
+      "parts": 1,
+      "ingredients": [
+        {
+          "nom": "sucre",
+          "quantite": 150,
+          "unite": "g"
+        },
+        {
+          "nom": "œuf",
+          "quantite": 3,
+          "unite": "piece"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 60,
+          "unite": "g"
+        },
+        {
+          "nom": "farine",
+          "quantite": 150,
+          "unite": "g"
+        },
+        {
+          "nom": "sachet de levure",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "sucre",
+          "quantite": 250,
+          "unite": "g"
+        },
+        {
+          "nom": "eau",
+          "quantite": 450,
+          "unite": "ml"
+        },
+        {
+          "nom": "rhum ambré",
+          "quantite": 150,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Préchauffer le four à 180 °C (Th 6).",
+        "Mélanger le sucre et les œufs au batteur.",
+        "Ajouter le beurre fondu, la farine et la levure.",
+        "Mixer pour obtenir une pâte bien lisse.",
+        "Verser dans le moule.",
+        "Cuire 15 min, puis baisser la température à 150 °C (Th 5) et cuire encore 15 min.",
+        "Sirop : porter à ébullition l'eau, le sucre et le rhum. Compter 3 min de cuisson à petits bouillons.",
+        "Démouler le baba dans un plat creux.",
+        "Verser le sirop sur le gâteau, bien l'imbiber."
+      ],
+      "notes": "Catégorie : Dessert\nCuisson : 15 min à 180 °C (Th 6), puis 15 min à 150 °C (Th 5)\nPâte : 150 g de sucre, 3 œufs, 60 g de beurre fondu, 150 g de farine, 1 sachet de levure.\nSirop : 250 g de sucre, 450 ml d'eau (45 cl), 150 ml de rhum ambré (15 cl).\nNombre de parts non indiqué : quantités de la recette entière (1 part = 1 recette)."
+    },
+    {
+      "id": "r_marianne4",
+      "titre": "Poisson braisé",
+      "parts": 1,
+      "ingredients": [
+        {
+          "nom": "gousse d'ail",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "oignon",
+          "quantite": 3,
+          "unite": "piece"
+        },
+        {
+          "nom": "piment",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "branche de céleri",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "gingembre",
+          "quantite": 10,
+          "unite": "g"
+        },
+        {
+          "nom": "tomate",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "poireau",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "poisson",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "huile",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Thermomix : 10 s, vitesse 8.",
+        "Faire revenir dans l'huile la pâte : 70 °C pendant 20 min.",
+        "Badigeonner les poissons.",
+        "Faire cuire 18 min à 200 °C."
+      ],
+      "notes": "Catégorie : Plat principal\nCuisson : 18 min à 200 °C\nQuantités d'ail, de poisson et d'huile non indiquées : à compléter.\nNombre de parts non indiqué : quantités de la recette entière (1 part = 1 recette)."
+    },
+    {
+      "id": "r_marianne5",
+      "titre": "Biscuit de vin blanc (U Biscottu di Venacò)",
+      "parts": 1,
+      "ingredients": [
+        {
+          "nom": "farine",
+          "quantite": 450,
+          "unite": "g"
+        },
+        {
+          "nom": "vin blanc",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "huile d'arachide",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "sucre en poudre",
+          "quantite": 100,
+          "unite": "g"
+        },
+        {
+          "nom": "sucre glace",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "huile",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Faire une fontaine avec la farine et verser au centre le vin, l'huile et le sucre. Mélanger et pétrir longuement jusqu'à obtenir une pâte homogène.",
+        "Étaler la pâte au rouleau sur un plan de travail fariné, puis la rouler sur elle-même. Couper des tranches dans ce rouleau, les saupoudrer de sucre glace, les disposer sur une plaque huilée et les cuire environ 40 min à 160 °C."
+      ],
+      "notes": "Catégorie : Dessert / Biscuit\nSource : livre de cuisine corse\nCuisson : environ 40 min à 160 °C\nFarine : 400 g + 50 g (pour fariner le plan de travail) = 450 g.\nVin blanc : 1 verre. Huile d'arachide : 1 verre. Sucre glace (ou cristallisé) : quantité libre.\nNombre de parts non indiqué : quantités de la recette entière (1 part = 1 recette)."
+    },
+    {
+      "id": "r_marianne6",
+      "titre": "Aubergines à la menthe sauvage (I Mirizani incu a menta)",
+      "parts": 1,
+      "ingredients": [
+        {
+          "nom": "aubergine",
+          "quantite": 5,
+          "unite": "piece"
+        },
+        {
+          "nom": "menthe sauvage",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "huile",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "gros sel",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Laver les aubergines, les couper en dés, les mettre dans une passoire avec beaucoup de gros sel pour les faire dégorger. Une fois qu'elles ont rendu leur eau, les laver et les sécher.",
+        "Les faire revenir 10 min dans l'huile, ajouter la menthe ciselée, saler, poivrer et servir chaud."
+      ],
+      "notes": "Catégorie : Accompagnement\nSource : livre de cuisine corse\nCuisson : 10 min\nAubergines : 5 belles aubergines. Menthe sauvage : quelques feuilles.\nNombre de parts non indiqué : quantités de la recette entière (1 part = 1 recette)."
+    },
+    {
+      "id": "r_marianne7",
+      "titre": "Pâtes sauce Alfredo au chou-fleur (vegan)",
+      "parts": 2,
+      "ingredients": [
+        {
+          "nom": "pâtes complètes",
+          "quantite": 175,
+          "unite": "g"
+        },
+        {
+          "nom": "chou-fleur",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "purée de noix de cajou",
+          "quantite": 20,
+          "unite": "g"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "levure maltée",
+          "quantite": 10,
+          "unite": "g"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "jus de citron jaune",
+          "quantite": 5,
+          "unite": "ml"
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Émincer l'oignon et l'ail, les faire dorer à la poêle.",
+        "En parallèle, cuire le chou-fleur 10 min dans l'eau bouillante non salée.",
+        "Cuire les pâtes complètes dans l'eau bouillante non salée, al dente (9 à 12 min selon les pâtes).",
+        "Mettre le chou-fleur cuit dans un mixeur. Ajouter 300 ml d'eau de cuisson des pâtes, la purée de cajou, la levure maltée, le jus de citron, le sel, l'oignon et l'ail dorés.",
+        "Mixer jusqu'à obtenir une texture bien lisse (ajouter de l'eau de cuisson si besoin).",
+        "Goûter et rectifier l'assaisonnement.",
+        "Égoutter les pâtes, les remettre dans la casserole, verser la sauce et mélanger.",
+        "Servir avec deux tours de moulin à poivre."
+      ],
+      "notes": "Catégorie : Plat principal\nSource : https://sainplementhealthy.com/recette/pates-sauce-alfredo-au-chou-fleur-vegan\nPréparation : 10 min\nCuisson : 10 min\nPâtes : poids cru. Purée de cajou : ou noix de cajou entières."
+    },
+    {
+      "id": "r_reel_aligot",
+      "titre": "Aligot de pommes de terre à la tomme fraîche",
+      "parts": 6,
+      "ingredients": [
+        {
+          "nom": "pomme de terre à chair farineuse",
+          "quantite": 1,
+          "unite": "kg"
+        },
+        {
+          "nom": "tomme fraîche",
+          "quantite": 450,
+          "unite": "g"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "crème fraîche épaisse",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "gros sel",
+          "quantite": 30,
+          "unite": "g"
+        }
+      ],
+      "etapes": [
+        "Éplucher les gousses d'ail et les dégermer.",
+        "Cuire l'ail et les pommes de terre entières, avec la peau, dans de l'eau salée (10 g de gros sel par litre) jusqu'à ce qu'un couteau les traverse sans résistance.",
+        "Couper la tomme en petits dés et la laisser à température ambiante.",
+        "Peler les pommes de terre, les couper, puis les écraser avec l'ail. Ajouter la crème et la tomme, et travailler jusqu'à obtenir un fil lisse.",
+        "Servir dans des assiettes creuses."
+      ],
+      "notes": "Garder une louche d'eau de cuisson pour ajuster l'onctuosité. Assaisonner selon les goûts."
+    },
+    {
+      "id": "r_reel_curry",
+      "titre": "Wok de nouilles complètes et dinde au curry-coco",
+      "parts": 1,
+      "ingredients": [
+        {
+          "nom": "carotte",
+          "quantite": 0.5,
+          "unite": "piece"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 0.5,
+          "unite": "piece"
+        },
+        {
+          "nom": "oignon nouveau",
+          "quantite": 15,
+          "unite": "g"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 0.5,
+          "unite": "piece"
+        },
+        {
+          "nom": "gingembre frais",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "escalope de dinde",
+          "quantite": 110,
+          "unite": "g"
+        },
+        {
+          "nom": "paquet de lait de coco",
+          "quantite": 0.5,
+          "unite": "piece"
+        },
+        {
+          "nom": "sachet de curry en poudre",
+          "quantite": 0.5,
+          "unite": "piece"
+        },
+        {
+          "nom": "nouilles de blé complet",
+          "quantite": 100,
+          "unite": "g"
+        },
+        {
+          "nom": "huile de tournesol",
+          "quantite": 1,
+          "unite": "cs"
+        },
+        {
+          "nom": "bouillon cube de volaille",
+          "quantite": 0.25,
+          "unite": "piece"
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Préparer les légumes : couper la carotte et l'oignon, émincer l'oignon nouveau, hacher l'ail, râper le gingembre.",
+        "Faire cuire la dinde, puis ajouter la base aromatique.",
+        "Ajouter le bouillon, le lait de coco et les nouilles, laisser cuire à couvert.",
+        "Servir dans des assiettes creuses."
+      ],
+      "notes": "Parts : 1, valeur supposée (absente de la source).\nHuile, bouillon cube, sel et poivre ne sont pas fournis dans le colis d'origine."
+    },
+    {
+      "id": "r_reel_puree",
+      "titre": "Purée de pommes de terre (recette de Joël Robuchon)",
+      "parts": 6,
+      "ingredients": [
+        {
+          "nom": "pomme de terre",
+          "quantite": 1,
+          "unite": "kg"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 250,
+          "unite": "g"
+        },
+        {
+          "nom": "lait entier",
+          "quantite": 250,
+          "unite": "ml"
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Choisir des pommes de terre de même calibre.",
+        "Les cuire avec leur peau dans de l'eau salée pendant environ 25 minutes, en vérifiant la cuisson à la pointe d'un couteau.",
+        "Les peler encore chaudes et les passer au moulin à légumes.",
+        "Dans une casserole, dessécher la purée, puis porter le lait à ébullition.",
+        "Incorporer le beurre froid progressivement, en mélangeant à la spatule.",
+        "Finir au fouet en ajoutant le lait, puis tamiser pour une texture fine."
+      ],
+      "notes": "Parts : 6, valeur supposée (absente de la source).\nBeurre : au minimum 250 g selon la page."
+    },
+    {
+      "id": "r_essai_01",
+      "titre": "Ratatouille (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "aubergine",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "courgette",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "poivron rouge",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "poivron vert",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "tomate",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 4,
+          "unite": "cs"
+        },
+        {
+          "nom": "thym",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Couper tous les légumes en dés.",
+        "Faire revenir l'oignon et l'ail dans l'huile.",
+        "Ajouter poivrons, aubergine et courgettes, cuire 10 min.",
+        "Ajouter les tomates et le thym, mijoter 40 min à couvert."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_02",
+      "titre": "Spaghetti bolognaise (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "spaghetti",
+          "quantite": 400,
+          "unite": "g"
+        },
+        {
+          "nom": "bœuf haché",
+          "quantite": 400,
+          "unite": "g"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "carotte",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "coulis de tomate",
+          "quantite": 500,
+          "unite": "ml"
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 2,
+          "unite": "cs"
+        },
+        {
+          "nom": "parmesan",
+          "quantite": 50,
+          "unite": "g"
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Hacher oignon, carotte et ail, les faire revenir dans l'huile.",
+        "Ajouter la viande et la faire dorer.",
+        "Verser le coulis, mijoter 30 min.",
+        "Cuire les pâtes, servir avec la sauce et le parmesan."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_03",
+      "titre": "Quiche lorraine (essai)",
+      "parts": 6,
+      "ingredients": [
+        {
+          "nom": "pâte brisée",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "lardon",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "œuf",
+          "quantite": 3,
+          "unite": "piece"
+        },
+        {
+          "nom": "crème fraîche épaisse",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "lait entier",
+          "quantite": 200,
+          "unite": "ml"
+        },
+        {
+          "nom": "emmental râpé",
+          "quantite": 100,
+          "unite": "g"
+        },
+        {
+          "nom": "noix de muscade",
+          "quantite": 1,
+          "unite": "pincee"
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Préchauffer le four à 200 °C.",
+        "Faire dorer les lardons à la poêle.",
+        "Battre œufs, crème et lait, assaisonner.",
+        "Garnir la pâte de lardons et de fromage, verser l'appareil, cuire 35 min."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_04",
+      "titre": "Poulet rôti et pommes de terre (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "poulet entier",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "pomme de terre",
+          "quantite": 1,
+          "unite": "kg"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "thym",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 3,
+          "unite": "cs"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 30,
+          "unite": "g"
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Préchauffer le four à 210 °C.",
+        "Badigeonner le poulet de beurre, saler, poivrer.",
+        "Disposer les pommes de terre en quartiers et l'ail autour, arroser d'huile.",
+        "Rôtir 1 h 15 en arrosant de temps en temps."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_05",
+      "titre": "Soupe de légumes (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "carotte",
+          "quantite": 3,
+          "unite": "piece"
+        },
+        {
+          "nom": "poireau",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "pomme de terre",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "navet",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "bouillon cube de légumes",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "crème liquide",
+          "quantite": 10,
+          "unite": "cs"
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Éplucher et couper les légumes.",
+        "Les couvrir d'eau avec le bouillon, cuire 30 min.",
+        "Mixer, ajouter la crème, rectifier l'assaisonnement."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_06",
+      "titre": "Gratin dauphinois (essai)",
+      "parts": 6,
+      "ingredients": [
+        {
+          "nom": "pomme de terre",
+          "quantite": 1.5,
+          "unite": "kg"
+        },
+        {
+          "nom": "crème liquide",
+          "quantite": 400,
+          "unite": "ml"
+        },
+        {
+          "nom": "lait entier",
+          "quantite": 400,
+          "unite": "ml"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 20,
+          "unite": "g"
+        },
+        {
+          "nom": "noix de muscade",
+          "quantite": 1,
+          "unite": "pincee"
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Préchauffer le four à 160 °C.",
+        "Couper les pommes de terre en fines rondelles.",
+        "Frotter le plat avec l'ail et le beurrer.",
+        "Disposer les pommes de terre, couvrir de lait et de crème assaisonnés, cuire 1 h 30."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_07",
+      "titre": "Salade niçoise (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "salade verte",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "tomate",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "œuf",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "thon en conserve",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "haricot vert",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "olive noire",
+          "quantite": 80,
+          "unite": "g"
+        },
+        {
+          "nom": "oignon rouge",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 4,
+          "unite": "cs"
+        },
+        {
+          "nom": "vinaigre de vin",
+          "quantite": 1,
+          "unite": "cs"
+        }
+      ],
+      "etapes": [
+        "Cuire les œufs 10 min et les haricots verts 8 min.",
+        "Couper tomates, oignon et œufs.",
+        "Assembler avec la salade, le thon et les olives, assaisonner."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_08",
+      "titre": "Chili con carne (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "bœuf haché",
+          "quantite": 500,
+          "unite": "g"
+        },
+        {
+          "nom": "haricot rouge en conserve",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "tomate pelée en conserve",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "poivron rouge",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "cumin",
+          "quantite": 1,
+          "unite": "cc"
+        },
+        {
+          "nom": "paprika",
+          "quantite": 1,
+          "unite": "cc"
+        },
+        {
+          "nom": "piment",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "riz",
+          "quantite": 300,
+          "unite": "g"
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 2,
+          "unite": "cs"
+        }
+      ],
+      "etapes": [
+        "Faire revenir oignons, ail et poivron dans l'huile.",
+        "Ajouter la viande et les épices, dorer.",
+        "Ajouter tomates et haricots égouttés, mijoter 45 min.",
+        "Servir avec le riz."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_09",
+      "titre": "Risotto aux champignons (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "riz arborio",
+          "quantite": 300,
+          "unite": "g"
+        },
+        {
+          "nom": "champignon de paris",
+          "quantite": 400,
+          "unite": "g"
+        },
+        {
+          "nom": "échalote",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "vin blanc",
+          "quantite": 100,
+          "unite": "ml"
+        },
+        {
+          "nom": "bouillon cube de volaille",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "parmesan",
+          "quantite": 60,
+          "unite": "g"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 40,
+          "unite": "g"
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 2,
+          "unite": "cs"
+        }
+      ],
+      "etapes": [
+        "Préparer 1 l de bouillon chaud.",
+        "Faire revenir les échalotes, ajouter le riz et le nacrer.",
+        "Déglacer au vin blanc, puis ajouter le bouillon louche par louche (18 min).",
+        "Ajouter les champignons poêlés, le beurre et le parmesan."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_10",
+      "titre": "Crêpes (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "farine",
+          "quantite": 250,
+          "unite": "g"
+        },
+        {
+          "nom": "œuf",
+          "quantite": 4,
+          "unite": "piece"
+        },
+        {
+          "nom": "lait demi-écrémé",
+          "quantite": 500,
+          "unite": "ml"
+        },
+        {
+          "nom": "sucre",
+          "quantite": 2,
+          "unite": "cs"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 50,
+          "unite": "g"
+        },
+        {
+          "nom": "sel",
+          "quantite": 1,
+          "unite": "pincee"
+        }
+      ],
+      "etapes": [
+        "Mélanger farine, sucre et sel, ajouter les œufs.",
+        "Verser le lait petit à petit, puis le beurre fondu.",
+        "Laisser reposer 1 h.",
+        "Cuire les crêpes dans une poêle chaude."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_11",
+      "titre": "Blanquette de veau (essai)",
+      "parts": 6,
+      "ingredients": [
+        {
+          "nom": "épaule de veau",
+          "quantite": 1.2,
+          "unite": "kg"
+        },
+        {
+          "nom": "carotte",
+          "quantite": 3,
+          "unite": "piece"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "champignon de paris",
+          "quantite": 250,
+          "unite": "g"
+        },
+        {
+          "nom": "crème fraîche épaisse",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "œuf",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "bouillon cube de volaille",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "feuille de laurier",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "farine",
+          "quantite": 2,
+          "unite": "cs"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 40,
+          "unite": "g"
+        },
+        {
+          "nom": "riz",
+          "quantite": 400,
+          "unite": "g"
+        }
+      ],
+      "etapes": [
+        "Couvrir la viande d'eau avec bouillon, carottes, oignon et laurier, cuire 1 h 30.",
+        "Faire un roux beurre-farine, le mouiller avec le bouillon filtré.",
+        "Ajouter champignons, crème et jaune d'œuf hors du feu.",
+        "Remettre la viande, servir avec le riz."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_12",
+      "titre": "Omelette au brocciu et à la menthe (essai)",
+      "parts": 2,
+      "ingredients": [
+        {
+          "nom": "œuf",
+          "quantite": 6,
+          "unite": "piece"
+        },
+        {
+          "nom": "brocciu",
+          "quantite": 150,
+          "unite": "g"
+        },
+        {
+          "nom": "menthe",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 1,
+          "unite": "cs"
+        },
+        {
+          "nom": "sel",
+          "quantite": null,
+          "unite": ""
+        },
+        {
+          "nom": "poivre",
+          "quantite": null,
+          "unite": ""
+        }
+      ],
+      "etapes": [
+        "Battre les œufs avec la menthe ciselée.",
+        "Ajouter le brocciu émietté.",
+        "Cuire à feu doux dans l'huile, plier et servir."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_13",
+      "titre": "Figatellu aux lentilles (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "figatellu",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "lentille verte",
+          "quantite": 300,
+          "unite": "g"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "carotte",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "feuille de laurier",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "huile d'olive",
+          "quantite": 1,
+          "unite": "cs"
+        }
+      ],
+      "etapes": [
+        "Cuire les lentilles 25 min avec carottes, oignon et laurier.",
+        "Griller les figatelli à la poêle.",
+        "Servir les figatelli sur les lentilles."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_14",
+      "titre": "Curry de pois chiches (essai)",
+      "parts": 4,
+      "ingredients": [
+        {
+          "nom": "pois chiche en conserve",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "lait de coco",
+          "quantite": 400,
+          "unite": "ml"
+        },
+        {
+          "nom": "tomate pelée en conserve",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "nom": "gingembre",
+          "quantite": 20,
+          "unite": "g"
+        },
+        {
+          "nom": "curry en poudre",
+          "quantite": 2,
+          "unite": "cc"
+        },
+        {
+          "nom": "épinard",
+          "quantite": 150,
+          "unite": "g"
+        },
+        {
+          "nom": "riz basmati",
+          "quantite": 300,
+          "unite": "g"
+        },
+        {
+          "nom": "huile de tournesol",
+          "quantite": 2,
+          "unite": "cs"
+        }
+      ],
+      "etapes": [
+        "Faire revenir oignon, ail et gingembre, ajouter le curry.",
+        "Ajouter tomates, lait de coco et pois chiches, mijoter 20 min.",
+        "Ajouter les épinards en fin de cuisson.",
+        "Servir avec le riz."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_15",
+      "titre": "Lasagnes (essai)",
+      "parts": 6,
+      "ingredients": [
+        {
+          "nom": "feuille de lasagne",
+          "quantite": 250,
+          "unite": "g"
+        },
+        {
+          "nom": "bœuf haché",
+          "quantite": 500,
+          "unite": "g"
+        },
+        {
+          "nom": "coulis de tomate",
+          "quantite": 700,
+          "unite": "ml"
+        },
+        {
+          "nom": "oignon",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "gousse d'ail",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 50,
+          "unite": "g"
+        },
+        {
+          "nom": "farine",
+          "quantite": 50,
+          "unite": "g"
+        },
+        {
+          "nom": "lait entier",
+          "quantite": 500,
+          "unite": "ml"
+        },
+        {
+          "nom": "emmental râpé",
+          "quantite": 100,
+          "unite": "g"
+        },
+        {
+          "nom": "noix de muscade",
+          "quantite": 1,
+          "unite": "pincee"
+        }
+      ],
+      "etapes": [
+        "Préparer une bolognaise avec oignon, ail, viande et coulis.",
+        "Préparer une béchamel avec beurre, farine et lait.",
+        "Alterner pâtes, bolognaise et béchamel dans un plat.",
+        "Couvrir de fromage, cuire 40 min à 180 °C."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    },
+    {
+      "id": "r_essai_16",
+      "titre": "Tarte aux pommes (essai)",
+      "parts": 6,
+      "ingredients": [
+        {
+          "nom": "pâte brisée",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "nom": "pomme",
+          "quantite": 5,
+          "unite": "piece"
+        },
+        {
+          "nom": "sucre",
+          "quantite": 50,
+          "unite": "g"
+        },
+        {
+          "nom": "beurre",
+          "quantite": 30,
+          "unite": "g"
+        },
+        {
+          "nom": "compote",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "nom": "cannelle",
+          "quantite": 1,
+          "unite": "pincee"
+        }
+      ],
+      "etapes": [
+        "Préchauffer le four à 190 °C.",
+        "Étaler la pâte et la garnir de compote.",
+        "Disposer les pommes en lamelles, saupoudrer de sucre et de cannelle, parsemer de beurre.",
+        "Cuire 35 min."
+      ],
+      "notes": "Recette d'essai, non sourcée : rédigée pour tester l'appli, quantités indicatives."
+    }
+  ],
+  "dico": {
+    "pomme": {
+      "libelle": "pomme",
+      "rayon": "fruits"
+    },
+    "poire": {
+      "libelle": "poire",
+      "rayon": "fruits"
+    },
+    "banane": {
+      "libelle": "banane",
+      "rayon": "fruits"
+    },
+    "orange": {
+      "libelle": "orange",
+      "rayon": "fruits"
+    },
+    "citron": {
+      "libelle": "citron",
+      "rayon": "fruits"
+    },
+    "citron vert": {
+      "libelle": "citron vert",
+      "rayon": "fruits"
+    },
+    "clementine": {
+      "libelle": "clémentine",
+      "rayon": "fruits"
+    },
+    "pamplemousse": {
+      "libelle": "pamplemousse",
+      "rayon": "fruits"
+    },
+    "fraise": {
+      "libelle": "fraise",
+      "rayon": "fruits"
+    },
+    "framboise": {
+      "libelle": "framboise",
+      "rayon": "fruits"
+    },
+    "myrtille": {
+      "libelle": "myrtille",
+      "rayon": "fruits"
+    },
+    "cerise": {
+      "libelle": "cerise",
+      "rayon": "fruits"
+    },
+    "peche": {
+      "libelle": "pêche",
+      "rayon": "fruits"
+    },
+    "nectarine": {
+      "libelle": "nectarine",
+      "rayon": "fruits"
+    },
+    "abricot": {
+      "libelle": "abricot",
+      "rayon": "fruits"
+    },
+    "prune": {
+      "libelle": "prune",
+      "rayon": "fruits"
+    },
+    "raisin": {
+      "libelle": "raisin",
+      "rayon": "fruits"
+    },
+    "melon": {
+      "libelle": "melon",
+      "rayon": "fruits"
+    },
+    "pasteque": {
+      "libelle": "pastèque",
+      "rayon": "fruits"
+    },
+    "kiwi": {
+      "libelle": "kiwi",
+      "rayon": "fruits"
+    },
+    "ananas": {
+      "libelle": "ananas",
+      "rayon": "fruits"
+    },
+    "mangue": {
+      "libelle": "mangue",
+      "rayon": "fruits"
+    },
+    "figue": {
+      "libelle": "figue",
+      "rayon": "fruits"
+    },
+    "chataigne": {
+      "libelle": "châtaigne",
+      "rayon": "fruits"
+    },
+    "tomate": {
+      "libelle": "tomate",
+      "rayon": "legumes"
+    },
+    "tomate cerise": {
+      "libelle": "tomate cerise",
+      "rayon": "legumes"
+    },
+    "aubergine": {
+      "libelle": "aubergine",
+      "rayon": "legumes"
+    },
+    "courgette": {
+      "libelle": "courgette",
+      "rayon": "legumes"
+    },
+    "poivron rouge": {
+      "libelle": "poivron rouge",
+      "rayon": "legumes"
+    },
+    "poivron vert": {
+      "libelle": "poivron vert",
+      "rayon": "legumes"
+    },
+    "concombre": {
+      "libelle": "concombre",
+      "rayon": "legumes"
+    },
+    "carotte": {
+      "libelle": "carotte",
+      "rayon": "legumes"
+    },
+    "pomme de terre": {
+      "libelle": "pomme de terre",
+      "rayon": "legumes"
+    },
+    "patate douce": {
+      "libelle": "patate douce",
+      "rayon": "legumes"
+    },
+    "oignon": {
+      "libelle": "oignon",
+      "rayon": "legumes"
+    },
+    "oignon rouge": {
+      "libelle": "oignon rouge",
+      "rayon": "legumes"
+    },
+    "echalote": {
+      "libelle": "échalote",
+      "rayon": "legumes"
+    },
+    "gousse d ail": {
+      "libelle": "gousse d'ail",
+      "rayon": "legumes"
+    },
+    "poireau": {
+      "libelle": "poireau",
+      "rayon": "legumes"
+    },
+    "branche de celeri": {
+      "libelle": "branche de céleri",
+      "rayon": "legumes"
+    },
+    "celeri rave": {
+      "libelle": "céleri-rave",
+      "rayon": "legumes"
+    },
+    "chou fleur": {
+      "libelle": "chou-fleur",
+      "rayon": "legumes"
+    },
+    "brocoli": {
+      "libelle": "brocoli",
+      "rayon": "legumes"
+    },
+    "chou vert": {
+      "libelle": "chou vert",
+      "rayon": "legumes"
+    },
+    "epinard": {
+      "libelle": "épinard",
+      "rayon": "legumes"
+    },
+    "salade verte": {
+      "libelle": "salade verte",
+      "rayon": "legumes"
+    },
+    "roquette": {
+      "libelle": "roquette",
+      "rayon": "legumes"
+    },
+    "mache": {
+      "libelle": "mâche",
+      "rayon": "legumes"
+    },
+    "haricot vert": {
+      "libelle": "haricot vert",
+      "rayon": "legumes"
+    },
+    "champignon de paris": {
+      "libelle": "champignon de paris",
+      "rayon": "legumes"
+    },
+    "radis": {
+      "libelle": "radis",
+      "rayon": "legumes"
+    },
+    "navet": {
+      "libelle": "navet",
+      "rayon": "legumes"
+    },
+    "betterave cuite": {
+      "libelle": "betterave cuite",
+      "rayon": "legumes"
+    },
+    "fenouil": {
+      "libelle": "fenouil",
+      "rayon": "legumes"
+    },
+    "potiron": {
+      "libelle": "potiron",
+      "rayon": "legumes"
+    },
+    "courge butternut": {
+      "libelle": "courge butternut",
+      "rayon": "legumes"
+    },
+    "avocat": {
+      "libelle": "avocat",
+      "rayon": "legumes"
+    },
+    "artichaut": {
+      "libelle": "artichaut",
+      "rayon": "legumes"
+    },
+    "asperge": {
+      "libelle": "asperge",
+      "rayon": "legumes"
+    },
+    "persil": {
+      "libelle": "persil",
+      "rayon": "legumes"
+    },
+    "coriandre": {
+      "libelle": "coriandre",
+      "rayon": "legumes"
+    },
+    "basilic": {
+      "libelle": "basilic",
+      "rayon": "legumes"
+    },
+    "ciboulette": {
+      "libelle": "ciboulette",
+      "rayon": "legumes"
+    },
+    "menthe": {
+      "libelle": "menthe",
+      "rayon": "legumes"
+    },
+    "thym": {
+      "libelle": "thym",
+      "rayon": "legumes"
+    },
+    "romarin": {
+      "libelle": "romarin",
+      "rayon": "legumes"
+    },
+    "feuille de laurier": {
+      "libelle": "feuille de laurier",
+      "rayon": "legumes"
+    },
+    "gingembre": {
+      "libelle": "gingembre",
+      "rayon": "legumes"
+    },
+    "piment": {
+      "libelle": "piment",
+      "rayon": "legumes"
+    },
+    "citronnelle": {
+      "libelle": "citronnelle",
+      "rayon": "legumes"
+    },
+    "blette": {
+      "libelle": "blette",
+      "rayon": "legumes"
+    },
+    "pain": {
+      "libelle": "pain",
+      "rayon": "boulangerie"
+    },
+    "baguette": {
+      "libelle": "baguette",
+      "rayon": "boulangerie"
+    },
+    "pain de mie": {
+      "libelle": "pain de mie",
+      "rayon": "boulangerie"
+    },
+    "pain complet": {
+      "libelle": "pain complet",
+      "rayon": "boulangerie"
+    },
+    "brioche": {
+      "libelle": "brioche",
+      "rayon": "boulangerie"
+    },
+    "pain de campagne": {
+      "libelle": "pain de campagne",
+      "rayon": "boulangerie"
+    },
+    "poulet entier": {
+      "libelle": "poulet entier",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "blanc de poulet": {
+      "libelle": "blanc de poulet",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "cuisse de poulet": {
+      "libelle": "cuisse de poulet",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "escalope de dinde": {
+      "libelle": "escalope de dinde",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "boeuf hache": {
+      "libelle": "bœuf haché",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "steak hache": {
+      "libelle": "steak haché",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "boeuf a braiser": {
+      "libelle": "bœuf à braiser",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "roti de porc": {
+      "libelle": "rôti de porc",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "cote de porc": {
+      "libelle": "côte de porc",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "lardon": {
+      "libelle": "lardon",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "jambon blanc": {
+      "libelle": "jambon blanc",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "jambon cru": {
+      "libelle": "jambon cru",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "chorizo": {
+      "libelle": "chorizo",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "saucisse de toulouse": {
+      "libelle": "saucisse de toulouse",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "merguez": {
+      "libelle": "merguez",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "gigot d agneau": {
+      "libelle": "gigot d'agneau",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "epaule de veau": {
+      "libelle": "épaule de veau",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "escalope de veau": {
+      "libelle": "escalope de veau",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "figatellu": {
+      "libelle": "figatellu",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "lonzu": {
+      "libelle": "lonzu",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "coppa": {
+      "libelle": "coppa",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "pave de saumon": {
+      "libelle": "pavé de saumon",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "dos de cabillaud": {
+      "libelle": "dos de cabillaud",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "crevette": {
+      "libelle": "crevette",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "moule": {
+      "libelle": "moule",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "filet de poisson blanc": {
+      "libelle": "filet de poisson blanc",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "lait demi ecreme": {
+      "libelle": "lait demi-écrémé",
+      "rayon": "cremerie"
+    },
+    "lait entier": {
+      "libelle": "lait entier",
+      "rayon": "cremerie"
+    },
+    "beurre": {
+      "libelle": "beurre",
+      "rayon": "cremerie"
+    },
+    "beurre demi sel": {
+      "libelle": "beurre demi-sel",
+      "rayon": "cremerie"
+    },
+    "creme fraiche epaisse": {
+      "libelle": "crème fraîche épaisse",
+      "rayon": "cremerie"
+    },
+    "creme liquide": {
+      "libelle": "crème liquide",
+      "rayon": "cremerie"
+    },
+    "yaourt nature": {
+      "libelle": "yaourt nature",
+      "rayon": "cremerie"
+    },
+    "fromage blanc": {
+      "libelle": "fromage blanc",
+      "rayon": "cremerie"
+    },
+    "oeuf": {
+      "libelle": "œuf",
+      "rayon": "cremerie"
+    },
+    "emmental rape": {
+      "libelle": "emmental râpé",
+      "rayon": "cremerie"
+    },
+    "gruyere rape": {
+      "libelle": "gruyère râpé",
+      "rayon": "cremerie"
+    },
+    "parmesan": {
+      "libelle": "parmesan",
+      "rayon": "cremerie"
+    },
+    "mozzarella": {
+      "libelle": "mozzarella",
+      "rayon": "cremerie"
+    },
+    "feta": {
+      "libelle": "feta",
+      "rayon": "cremerie"
+    },
+    "chevre frais": {
+      "libelle": "chèvre frais",
+      "rayon": "cremerie"
+    },
+    "brocciu": {
+      "libelle": "brocciu",
+      "rayon": "cremerie"
+    },
+    "comte": {
+      "libelle": "comté",
+      "rayon": "cremerie"
+    },
+    "tomme fraiche": {
+      "libelle": "tomme fraîche",
+      "rayon": "cremerie"
+    },
+    "bleu": {
+      "libelle": "bleu",
+      "rayon": "cremerie"
+    },
+    "mascarpone": {
+      "libelle": "mascarpone",
+      "rayon": "cremerie"
+    },
+    "ricotta": {
+      "libelle": "ricotta",
+      "rayon": "cremerie"
+    },
+    "pate brisee": {
+      "libelle": "pâte brisée",
+      "rayon": "cremerie"
+    },
+    "pate feuilletee": {
+      "libelle": "pâte feuilletée",
+      "rayon": "cremerie"
+    },
+    "pate a pizza": {
+      "libelle": "pâte à pizza",
+      "rayon": "cremerie"
+    },
+    "lait de soja": {
+      "libelle": "lait de soja",
+      "rayon": "cremerie"
+    },
+    "sel": {
+      "libelle": "sel",
+      "rayon": "epicerie_salee"
+    },
+    "gros sel": {
+      "libelle": "gros sel",
+      "rayon": "epicerie_salee"
+    },
+    "poivre": {
+      "libelle": "poivre",
+      "rayon": "epicerie_salee"
+    },
+    "huile d olive": {
+      "libelle": "huile d'olive",
+      "rayon": "epicerie_salee"
+    },
+    "huile de tournesol": {
+      "libelle": "huile de tournesol",
+      "rayon": "epicerie_salee"
+    },
+    "vinaigre de vin": {
+      "libelle": "vinaigre de vin",
+      "rayon": "epicerie_salee"
+    },
+    "vinaigre balsamique": {
+      "libelle": "vinaigre balsamique",
+      "rayon": "epicerie_salee"
+    },
+    "moutarde": {
+      "libelle": "moutarde",
+      "rayon": "epicerie_salee"
+    },
+    "mayonnaise": {
+      "libelle": "mayonnaise",
+      "rayon": "epicerie_salee"
+    },
+    "ketchup": {
+      "libelle": "ketchup",
+      "rayon": "epicerie_salee"
+    },
+    "sauce soja": {
+      "libelle": "sauce soja",
+      "rayon": "epicerie_salee"
+    },
+    "concentre de tomate": {
+      "libelle": "concentré de tomate",
+      "rayon": "epicerie_salee"
+    },
+    "coulis de tomate": {
+      "libelle": "coulis de tomate",
+      "rayon": "epicerie_salee"
+    },
+    "tomate pelee en conserve": {
+      "libelle": "tomate pelée en conserve",
+      "rayon": "epicerie_salee"
+    },
+    "pates": {
+      "libelle": "pâtes",
+      "rayon": "epicerie_salee"
+    },
+    "spaghetti": {
+      "libelle": "spaghetti",
+      "rayon": "epicerie_salee"
+    },
+    "penne": {
+      "libelle": "penne",
+      "rayon": "epicerie_salee"
+    },
+    "tagliatelle": {
+      "libelle": "tagliatelle",
+      "rayon": "epicerie_salee"
+    },
+    "feuille de lasagne": {
+      "libelle": "feuille de lasagne",
+      "rayon": "epicerie_salee"
+    },
+    "riz": {
+      "libelle": "riz",
+      "rayon": "epicerie_salee"
+    },
+    "riz basmati": {
+      "libelle": "riz basmati",
+      "rayon": "epicerie_salee"
+    },
+    "riz arborio": {
+      "libelle": "riz arborio",
+      "rayon": "epicerie_salee"
+    },
+    "semoule": {
+      "libelle": "semoule",
+      "rayon": "epicerie_salee"
+    },
+    "quinoa": {
+      "libelle": "quinoa",
+      "rayon": "epicerie_salee"
+    },
+    "lentille verte": {
+      "libelle": "lentille verte",
+      "rayon": "epicerie_salee"
+    },
+    "pois chiche en conserve": {
+      "libelle": "pois chiche en conserve",
+      "rayon": "epicerie_salee"
+    },
+    "haricot rouge en conserve": {
+      "libelle": "haricot rouge en conserve",
+      "rayon": "epicerie_salee"
+    },
+    "bouillon cube de volaille": {
+      "libelle": "bouillon cube de volaille",
+      "rayon": "epicerie_salee"
+    },
+    "bouillon cube de legumes": {
+      "libelle": "bouillon cube de légumes",
+      "rayon": "epicerie_salee"
+    },
+    "bouillon cube de boeuf": {
+      "libelle": "bouillon cube de bœuf",
+      "rayon": "epicerie_salee"
+    },
+    "cumin": {
+      "libelle": "cumin",
+      "rayon": "epicerie_salee"
+    },
+    "paprika": {
+      "libelle": "paprika",
+      "rayon": "epicerie_salee"
+    },
+    "curry en poudre": {
+      "libelle": "curry en poudre",
+      "rayon": "epicerie_salee"
+    },
+    "curcuma": {
+      "libelle": "curcuma",
+      "rayon": "epicerie_salee"
+    },
+    "herbes de provence": {
+      "libelle": "herbes de provence",
+      "rayon": "epicerie_salee"
+    },
+    "noix de muscade": {
+      "libelle": "noix de muscade",
+      "rayon": "epicerie_salee"
+    },
+    "olive noire": {
+      "libelle": "olive noire",
+      "rayon": "epicerie_salee"
+    },
+    "olive verte": {
+      "libelle": "olive verte",
+      "rayon": "epicerie_salee"
+    },
+    "capre": {
+      "libelle": "câpre",
+      "rayon": "epicerie_salee"
+    },
+    "cornichon": {
+      "libelle": "cornichon",
+      "rayon": "epicerie_salee"
+    },
+    "thon en conserve": {
+      "libelle": "thon en conserve",
+      "rayon": "epicerie_salee"
+    },
+    "mais en conserve": {
+      "libelle": "maïs en conserve",
+      "rayon": "epicerie_salee"
+    },
+    "lait de coco": {
+      "libelle": "lait de coco",
+      "rayon": "epicerie_salee"
+    },
+    "chapelure": {
+      "libelle": "chapelure",
+      "rayon": "epicerie_salee"
+    },
+    "nouille": {
+      "libelle": "nouille",
+      "rayon": "epicerie_salee"
+    },
+    "tortilla": {
+      "libelle": "tortilla",
+      "rayon": "epicerie_salee"
+    },
+    "cacahuete": {
+      "libelle": "cacahuète",
+      "rayon": "epicerie_salee"
+    },
+    "sucre": {
+      "libelle": "sucre",
+      "rayon": "epicerie_sucree"
+    },
+    "sucre roux": {
+      "libelle": "sucre roux",
+      "rayon": "epicerie_sucree"
+    },
+    "sucre glace": {
+      "libelle": "sucre glace",
+      "rayon": "epicerie_sucree"
+    },
+    "sucre vanille": {
+      "libelle": "sucre vanillé",
+      "rayon": "epicerie_sucree"
+    },
+    "farine": {
+      "libelle": "farine",
+      "rayon": "epicerie_sucree"
+    },
+    "maizena": {
+      "libelle": "maïzena",
+      "rayon": "epicerie_sucree"
+    },
+    "levure chimique": {
+      "libelle": "levure chimique",
+      "rayon": "epicerie_sucree"
+    },
+    "levure boulangere": {
+      "libelle": "levure boulangère",
+      "rayon": "epicerie_sucree"
+    },
+    "chocolat noir": {
+      "libelle": "chocolat noir",
+      "rayon": "epicerie_sucree"
+    },
+    "chocolat au lait": {
+      "libelle": "chocolat au lait",
+      "rayon": "epicerie_sucree"
+    },
+    "cacao en poudre": {
+      "libelle": "cacao en poudre",
+      "rayon": "epicerie_sucree"
+    },
+    "miel": {
+      "libelle": "miel",
+      "rayon": "epicerie_sucree"
+    },
+    "confiture": {
+      "libelle": "confiture",
+      "rayon": "epicerie_sucree"
+    },
+    "pate a tartiner": {
+      "libelle": "pâte à tartiner",
+      "rayon": "epicerie_sucree"
+    },
+    "cereales": {
+      "libelle": "céréales",
+      "rayon": "epicerie_sucree"
+    },
+    "flocons d avoine": {
+      "libelle": "flocons d'avoine",
+      "rayon": "epicerie_sucree"
+    },
+    "biscuit": {
+      "libelle": "biscuit",
+      "rayon": "epicerie_sucree"
+    },
+    "amande en poudre": {
+      "libelle": "amande en poudre",
+      "rayon": "epicerie_sucree"
+    },
+    "amande": {
+      "libelle": "amande",
+      "rayon": "epicerie_sucree"
+    },
+    "noisette": {
+      "libelle": "noisette",
+      "rayon": "epicerie_sucree"
+    },
+    "noix": {
+      "libelle": "noix",
+      "rayon": "epicerie_sucree"
+    },
+    "raisin sec": {
+      "libelle": "raisin sec",
+      "rayon": "epicerie_sucree"
+    },
+    "extrait de vanille": {
+      "libelle": "extrait de vanille",
+      "rayon": "epicerie_sucree"
+    },
+    "cannelle": {
+      "libelle": "cannelle",
+      "rayon": "epicerie_sucree"
+    },
+    "cafe": {
+      "libelle": "café",
+      "rayon": "epicerie_sucree"
+    },
+    "the": {
+      "libelle": "thé",
+      "rayon": "epicerie_sucree"
+    },
+    "compote": {
+      "libelle": "compote",
+      "rayon": "epicerie_sucree"
+    },
+    "farine de chataigne": {
+      "libelle": "farine de châtaigne",
+      "rayon": "epicerie_sucree"
+    },
+    "petit pois surgele": {
+      "libelle": "petit pois surgelé",
+      "rayon": "surgeles"
+    },
+    "epinard surgele": {
+      "libelle": "épinard surgelé",
+      "rayon": "surgeles"
+    },
+    "haricot vert surgele": {
+      "libelle": "haricot vert surgelé",
+      "rayon": "surgeles"
+    },
+    "frite surgelee": {
+      "libelle": "frite surgelée",
+      "rayon": "surgeles"
+    },
+    "glace a la vanille": {
+      "libelle": "glace à la vanille",
+      "rayon": "surgeles"
+    },
+    "poisson pane": {
+      "libelle": "poisson pané",
+      "rayon": "surgeles"
+    },
+    "pizza surgelee": {
+      "libelle": "pizza surgelée",
+      "rayon": "surgeles"
+    },
+    "poelee de legumes surgelee": {
+      "libelle": "poêlée de légumes surgelée",
+      "rayon": "surgeles"
+    },
+    "eau minerale": {
+      "libelle": "eau minérale",
+      "rayon": "boissons"
+    },
+    "eau gazeuse": {
+      "libelle": "eau gazeuse",
+      "rayon": "boissons"
+    },
+    "jus d orange": {
+      "libelle": "jus d'orange",
+      "rayon": "boissons"
+    },
+    "jus de pomme": {
+      "libelle": "jus de pomme",
+      "rayon": "boissons"
+    },
+    "vin rouge": {
+      "libelle": "vin rouge",
+      "rayon": "boissons"
+    },
+    "vin blanc": {
+      "libelle": "vin blanc",
+      "rayon": "boissons"
+    },
+    "biere": {
+      "libelle": "bière",
+      "rayon": "boissons"
+    },
+    "rhum ambre": {
+      "libelle": "rhum ambré",
+      "rayon": "boissons"
+    },
+    "soda": {
+      "libelle": "soda",
+      "rayon": "boissons"
+    },
+    "sirop": {
+      "libelle": "sirop",
+      "rayon": "boissons"
+    },
+    "papier toilette": {
+      "libelle": "papier toilette",
+      "rayon": "hygiene_entretien"
+    },
+    "essuie tout": {
+      "libelle": "essuie-tout",
+      "rayon": "hygiene_entretien"
+    },
+    "liquide vaisselle": {
+      "libelle": "liquide vaisselle",
+      "rayon": "hygiene_entretien"
+    },
+    "pastille lave vaisselle": {
+      "libelle": "pastille lave-vaisselle",
+      "rayon": "hygiene_entretien"
+    },
+    "lessive": {
+      "libelle": "lessive",
+      "rayon": "hygiene_entretien"
+    },
+    "adoucissant": {
+      "libelle": "adoucissant",
+      "rayon": "hygiene_entretien"
+    },
+    "eponge": {
+      "libelle": "éponge",
+      "rayon": "hygiene_entretien"
+    },
+    "sac poubelle": {
+      "libelle": "sac poubelle",
+      "rayon": "hygiene_entretien"
+    },
+    "dentifrice": {
+      "libelle": "dentifrice",
+      "rayon": "hygiene_entretien"
+    },
+    "brosse a dents": {
+      "libelle": "brosse à dents",
+      "rayon": "hygiene_entretien"
+    },
+    "shampoing": {
+      "libelle": "shampoing",
+      "rayon": "hygiene_entretien"
+    },
+    "gel douche": {
+      "libelle": "gel douche",
+      "rayon": "hygiene_entretien"
+    },
+    "savon": {
+      "libelle": "savon",
+      "rayon": "hygiene_entretien"
+    },
+    "deodorant": {
+      "libelle": "déodorant",
+      "rayon": "hygiene_entretien"
+    },
+    "mouchoir": {
+      "libelle": "mouchoir",
+      "rayon": "hygiene_entretien"
+    },
+    "coton": {
+      "libelle": "coton",
+      "rayon": "hygiene_entretien"
+    },
+    "rasoir": {
+      "libelle": "rasoir",
+      "rayon": "hygiene_entretien"
+    },
+    "nettoyant multi usage": {
+      "libelle": "nettoyant multi-usage",
+      "rayon": "hygiene_entretien"
+    },
+    "papier aluminium": {
+      "libelle": "papier aluminium",
+      "rayon": "hygiene_entretien"
+    },
+    "film alimentaire": {
+      "libelle": "film alimentaire",
+      "rayon": "hygiene_entretien"
+    },
+    "papier cuisson": {
+      "libelle": "papier cuisson",
+      "rayon": "hygiene_entretien"
+    },
+    "pile": {
+      "libelle": "pile",
+      "rayon": "autre"
+    },
+    "ampoule": {
+      "libelle": "ampoule",
+      "rayon": "autre"
+    },
+    "pomme de terre a chair farineuse": {
+      "libelle": "pomme de terre à chair farineuse",
+      "rayon": "legumes"
+    },
+    "oignon nouveau": {
+      "libelle": "oignon nouveau",
+      "rayon": "legumes"
+    },
+    "gingembre frais": {
+      "libelle": "gingembre frais",
+      "rayon": "legumes"
+    },
+    "paquet de lait de coco": {
+      "libelle": "paquet de lait de coco",
+      "rayon": "epicerie_salee"
+    },
+    "sachet de curry en poudre": {
+      "libelle": "sachet de curry en poudre",
+      "rayon": "epicerie_salee"
+    },
+    "nouilles de ble complet": {
+      "libelle": "nouilles de blé complet",
+      "rayon": "epicerie_salee"
+    },
+    "menthe sauvage": {
+      "libelle": "menthe sauvage",
+      "rayon": "legumes"
+    },
+    "chocolat": {
+      "libelle": "chocolat",
+      "rayon": "epicerie_sucree"
+    },
+    "sachet de levure": {
+      "libelle": "sachet de levure",
+      "rayon": "epicerie_sucree"
+    },
+    "eau": {
+      "libelle": "eau",
+      "rayon": "autre"
+    },
+    "poisson": {
+      "libelle": "poisson",
+      "rayon": "boucherie_poissonnerie"
+    },
+    "huile": {
+      "libelle": "huile",
+      "rayon": "epicerie_salee"
+    },
+    "huile d arachide": {
+      "libelle": "huile d'arachide",
+      "rayon": "epicerie_salee"
+    },
+    "sucre en poudre": {
+      "libelle": "sucre en poudre",
+      "rayon": "epicerie_sucree"
+    },
+    "pates completes": {
+      "libelle": "pâtes complètes",
+      "rayon": "epicerie_salee"
+    },
+    "puree de noix de cajou": {
+      "libelle": "purée de noix de cajou",
+      "rayon": "epicerie_salee"
+    },
+    "levure maltee": {
+      "libelle": "levure maltée",
+      "rayon": "epicerie_salee"
+    },
+    "jus de citron jaune": {
+      "libelle": "jus de citron jaune",
+      "rayon": "epicerie_salee"
+    }
+  },
+  "historique": [],
+  "reglages": {
+    "langue": "fr",
+    "derniere_sauvegarde": null,
+    "version_schema": 2
+  }
+}

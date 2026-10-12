@@ -599,6 +599,27 @@ function annulerRestauration() {
   });
 }
 
+// Données d'essai publiées avec l'appli (essai/donnees.json), pour tester en conditions réelles.
+// Ouvrir l'appli avec `?essai` dans l'adresse propose de les charger, par le même chemin qu'une
+// restauration : vérification du fichier, confirmation, copie de secours (annulable dans les Réglages).
+async function proposerEssai() {
+  history.replaceState(null, "", location.pathname);   // un rechargement ne repose pas la question
+  let resultat;
+  try {
+    const reponse = await fetch("essai/donnees.json", { cache: "no-store" });
+    resultat = Backup.analyser(await reponse.text(), DB.VERSION_SCHEMA);
+  } catch (erreur) {
+    resultat = { erreur: "erreur_essai" };   // hors-ligne ou fichier introuvable
+  }
+  if (resultat.erreur) return UI.afficherAlerte(t("erreur_essai"));
+  const s = resultat.sauvegarde;
+  demanderConfirmation({
+    titre: t("titre_confirmer_essai"),
+    texte: t("confirmer_essai").replace("{n}", s.recettes.length),
+    confirmer: t("essai_bouton")
+  }, () => appliquerRestauration(s));
+}
+
 // Termine les courses : archive la liste dans l'historique, puis repart d'une liste vide
 function terminerCourses() {
   const liste = DB.liste();
@@ -851,6 +872,7 @@ async function demarrer() {
   if (DB.anomalies.length > 0) UI.afficherAlerte(t("alerte_donnees_abimees"));
   if (donneesDev) UI.afficherAlerte(t("alerte_mode_dev"));
   if (migrationImpossible) UI.afficherAlerte(t("alerte_migration_impossible"));
+  if (new URLSearchParams(location.search).has("essai")) proposerEssai();
 }
 
 demarrer();

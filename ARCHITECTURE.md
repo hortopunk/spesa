@@ -68,6 +68,7 @@ SPESA_dev/
 ├── polices/              Police Archivo hébergée (licence OFL)
 ├── design/               DESIGN.md (source de vérité du design) et maquettes de référence
 ├── dev/                  Données et page de démonstration des composants (non publiées, voir .git/info/exclude)
+├── essai/                Données d'essai publiées (recettes réelles + recettes « (essai) » non sourcées, dictionnaire de départ). Chargement : ouvrir l'appli avec ?essai dans l'adresse (passe par la restauration, annulable)
 ├── tests/                Tests Node (logique, base de données, fichiers, design)
 ├── ARCHITECTURE.md       Ce document
 └── (fichier de consignes) Consignes pour l'assistant de code, non publié (à créer à l'étape 0)
